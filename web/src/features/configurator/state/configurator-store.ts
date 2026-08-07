@@ -51,6 +51,7 @@ export function createConfiguratorStore(
           currentStep: 0,
         };
   let pendingSave: ReturnType<typeof setTimeout> | undefined;
+  let pendingGeneration = 0;
 
   return createStore<ConfiguratorStoreState>((set, get) => {
     const saveDraft = () => {
@@ -62,13 +63,21 @@ export function createConfiguratorStore(
         set({ draftPersistenceStatus: "unavailable" });
       }
     };
-    const scheduleDraftSave = () => {
+    const cancelPendingDraft = () => {
       if (pendingSave !== undefined) clearTimeout(pendingSave);
+      pendingSave = undefined;
+      pendingGeneration += 1;
+    };
+    const scheduleDraftSave = () => {
+      cancelPendingDraft();
+      const generation = pendingGeneration;
 
-      pendingSave = setTimeout(() => {
+      const timer = setTimeout(() => {
+        if (pendingSave !== timer || generation !== pendingGeneration) return;
         pendingSave = undefined;
         saveDraft();
       }, debounceMs);
+      pendingSave = timer;
       set({ draftPersistenceStatus: "pending" });
     };
 
@@ -89,17 +98,15 @@ export function createConfiguratorStore(
         scheduleDraftSave();
       },
       flushPendingDraft() {
-        if (pendingSave !== undefined) clearTimeout(pendingSave);
-        pendingSave = undefined;
+        if (pendingSave === undefined) return;
+        cancelPendingDraft();
         saveDraft();
       },
       dispose() {
-        if (pendingSave !== undefined) clearTimeout(pendingSave);
-        pendingSave = undefined;
+        cancelPendingDraft();
       },
       clearDraftAfterPrivateProjectCreated() {
-        if (pendingSave !== undefined) clearTimeout(pendingSave);
-        pendingSave = undefined;
+        cancelPendingDraft();
         try {
           const result = draftStorage.clear();
           if (result.status === "cleared") {

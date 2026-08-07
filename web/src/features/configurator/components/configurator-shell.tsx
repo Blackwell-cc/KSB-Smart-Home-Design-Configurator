@@ -56,6 +56,24 @@ type ConfiguratorShellProps = {
   store?: ReturnType<typeof createConfiguratorStore>;
 };
 
+type BudgetDraft = { min: string; max: string };
+
+function budgetDraftFor(targetBudget: HouseConfiguration["targetBudget"]): BudgetDraft {
+  return { min: targetBudget?.min.toString() ?? "", max: targetBudget?.max.toString() ?? "" };
+}
+
+function budgetErrorFor(budget: BudgetDraft): string | undefined {
+  const hasMinimum = budget.min !== "";
+  const hasMaximum = budget.max !== "";
+  if (!hasMinimum && !hasMaximum) return undefined;
+  if (!hasMinimum || !hasMaximum) return "กรอกงบประมาณทั้งสองช่อง หรือเว้นว่างทั้งคู่";
+  const minimum = Number(budget.min);
+  const maximum = Number(budget.max);
+  if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || minimum <= 0 || maximum <= 0) return "กรุณาระบุงบประมาณเป็นจำนวนบวก";
+  if (minimum > maximum) return "งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น";
+  return undefined;
+}
+
 function createUnavailableDraftStorage(): DraftStorage {
   return {
     load: () => ({ status: "unavailable", operation: "read" }),
@@ -106,9 +124,12 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   const [browserStore] = useState(createBrowserConfiguratorStore);
   const store = injectedStore ?? browserStore;
   const state = useSyncExternalStore(store.subscribe, store.getState, store.getInitialState);
+  const [budgetDraft, setBudgetDraft] = useState<BudgetDraft>(() => budgetDraftFor(state.configuration.targetBudget));
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const isValid = validationForStep(state.configuration, state.currentStep).success;
-  const error = stepError(state.currentStep, isValid);
+  const stepSchemaValid = validationForStep(state.configuration, state.currentStep).success;
+  const budgetError = budgetErrorFor(budgetDraft);
+  const isValid = stepSchemaValid && (state.currentStep !== 2 || budgetError === undefined);
+  const error = stepError(state.currentStep, stepSchemaValid);
   const errorId = state.currentStep === 0 ? "style-error" : "province-error";
   const concept = CONCEPT_CATALOG.find((item) => item.id === state.configuration.styleId) ?? CONCEPT_CATALOG[0];
   const area = calculateArea(state.configuration);
@@ -124,6 +145,16 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   }, [store]);
 
   const updateConfiguration = (patch: Partial<HouseConfiguration>) => state.updateConfiguration(patch);
+  const updateBudget = (key: "min" | "max", value: string) => {
+    const nextBudget = { ...budgetDraft, [key]: value };
+    setBudgetDraft(nextBudget);
+    const nextError = budgetErrorFor(nextBudget);
+    if (nextError !== undefined || (nextBudget.min === "" && nextBudget.max === "")) {
+      updateConfiguration({ targetBudget: null });
+      return;
+    }
+    updateConfiguration({ targetBudget: { min: Number(nextBudget.min), max: Number(nextBudget.max) } });
+  };
   const moveNext = () => {
     if (!isValid) return;
     if (state.currentStep < CONFIGURATOR_STEPS.length - 1) state.setCurrentStep(state.currentStep + 1);
@@ -162,7 +193,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
           <div className={styles.stepContent}>
             {state.currentStep === 0 ? <StyleStep error={error} errorId={errorId} onChange={(styleId) => updateConfiguration({ styleId })} selectedStyleId={state.configuration.styleId} /> : null}
             {state.currentStep === 1 ? <FunctionsStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
-            {state.currentStep === 2 ? <SiteBudgetStep configuration={state.configuration} error={error} errorId={errorId} onChange={updateConfiguration} /> : null}
+            {state.currentStep === 2 ? <SiteBudgetStep budgetDraft={budgetDraft} budgetError={budgetError} configuration={state.configuration} error={error} errorId={errorId} onBudgetChange={updateBudget} onChange={updateConfiguration} /> : null}
             {state.currentStep === 3 ? <MaterialFeaturesStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
             {state.currentStep === 4 ? <ReviewStep configuration={state.configuration} onEdit={(step) => state.setCurrentStep(step)} /> : null}
           </div>

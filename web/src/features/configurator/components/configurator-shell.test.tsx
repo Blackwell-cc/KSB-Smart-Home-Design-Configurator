@@ -154,6 +154,70 @@ test("keeps a temporary reversed budget out of the draft and describes the linke
   expect(store.getState().configuration.targetBudget).toBeNull();
 });
 
+test("requires a complete ordered budget before continuing and supports explicitly clearing it", async () => {
+  const { store, user } = renderConfigurator();
+  await chooseStyleAndContinue(user);
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+
+  const minimum = screen.getByRole("spinbutton", { name: /เริ่มต้น/ });
+  const maximum = screen.getByRole("spinbutton", { name: /สูงสุด/ });
+  const next = screen.getByRole("button", { name: "ถัดไป" });
+
+  await user.type(minimum, "5000000");
+  expect(next).toBeDisabled();
+  expect(screen.getByText("กรอกงบประมาณทั้งสองช่อง หรือเว้นว่างทั้งคู่")).toHaveAttribute("id", "budget-error");
+  expect(minimum).toHaveAttribute("aria-describedby", "budget-error");
+  expect(store.getState().configuration.targetBudget).toBeNull();
+
+  await user.type(maximum, "7000000");
+  expect(next).toBeEnabled();
+  expect(store.getState().configuration.targetBudget).toEqual({ min: 5000000, max: 7000000 });
+
+  await user.clear(maximum);
+  await user.type(maximum, "4000000");
+  expect(next).toBeDisabled();
+  expect(screen.getByText("งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น")).toHaveAttribute("id", "budget-error");
+  expect(store.getState().configuration.targetBudget).toBeNull();
+
+  await user.clear(minimum);
+  await user.clear(maximum);
+  expect(next).toBeEnabled();
+  expect(store.getState().configuration.targetBudget).toBeNull();
+});
+
+test("does not create an unchanged draft on unmount and never recreates a cleared draft", () => {
+  const storage = createMemoryDraftStorage();
+  const unchangedStore = createConfiguratorStore(storage, 300);
+  const unchanged = render(<ConfiguratorShell store={unchangedStore} />);
+  unchanged.unmount();
+  expect(storage.load().status).toBe("none");
+
+  const clearedStore = createConfiguratorStore(storage, 300);
+  const cleared = render(<ConfiguratorShell store={clearedStore} />);
+  act(() => {
+    clearedStore.getState().setCurrentStep(1);
+    clearedStore.getState().clearDraftAfterPrivateProjectCreated();
+  });
+  cleared.unmount();
+  expect(storage.load().status).toBe("none");
+});
+
+test("flushes the latest edit on pagehide before unmount", () => {
+  const storage = createMemoryDraftStorage();
+  const store = createConfiguratorStore(storage, 300);
+  const view = render(<ConfiguratorShell store={store} />);
+
+  act(() => {
+    store.getState().updateConfiguration({ residents: 6 });
+    window.dispatchEvent(new Event("pagehide"));
+  });
+  view.unmount();
+
+  const restored = createConfiguratorStore(storage).getState();
+  expect(restored.configuration.residents).toBe(6);
+});
+
 test("supports arrow-key material selection and blocks preview for an incomplete restored review", async () => {
   const store = createConfiguratorStore(createMemoryDraftStorage(), 0);
   store.getState().setCurrentStep(4);

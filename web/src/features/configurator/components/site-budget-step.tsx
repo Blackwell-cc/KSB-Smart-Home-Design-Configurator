@@ -1,29 +1,18 @@
-import { useState } from "react";
 import { THAI_PROVINCES } from "../domain/provinces";
 import type { HouseConfiguration } from "../domain/configuration";
 import styles from "./configurator-shell.module.css";
 
 type SiteBudgetStepProps = {
+  budgetDraft: { min: string; max: string };
+  budgetError?: string;
   configuration: HouseConfiguration;
   error?: string;
   errorId?: string;
+  onBudgetChange(key: "min" | "max", value: string): void;
   onChange(patch: Partial<HouseConfiguration>): void;
 };
 
-export function SiteBudgetStep({ configuration, error, errorId, onChange }: SiteBudgetStepProps) {
-  const budget = configuration.targetBudget;
-  const [budgetDraft, setBudgetDraft] = useState({ min: budget?.min.toString() ?? "", max: budget?.max.toString() ?? "" });
-  const reversedBudget = budgetDraft.min !== "" && budgetDraft.max !== "" && Number(budgetDraft.min) > Number(budgetDraft.max);
-  const updateBudget = (key: "min" | "max", rawValue: string) => {
-    const next = { ...budgetDraft, [key]: rawValue };
-    setBudgetDraft(next);
-    if (next.min === "" || next.max === "") {
-      onChange({ targetBudget: null });
-      return;
-    }
-    const min = Number(next.min); const max = Number(next.max);
-    if (Number.isFinite(min) && Number.isFinite(max) && min > 0 && max >= min) onChange({ targetBudget: { min, max } });
-  };
+export function SiteBudgetStep({ budgetDraft, budgetError, configuration, error, errorId, onBudgetChange, onChange }: SiteBudgetStepProps) {
 
   return (
     <div className={styles.stepStack}>
@@ -54,10 +43,10 @@ export function SiteBudgetStep({ configuration, error, errorId, onChange }: Site
       <fieldset className={styles.choiceFieldset}>
         <legend>งบประมาณที่วางไว้ <span>(ไม่บังคับ)</span></legend>
         <div className={styles.budgetGrid}>
-          <label>เริ่มต้น (บาท)<input aria-describedby={reversedBudget ? "budget-error" : undefined} inputMode="numeric" min="1" onChange={(event) => updateBudget("min", event.target.value)} type="number" value={budgetDraft.min} /></label>
-          <label>สูงสุด (บาท)<input aria-describedby={reversedBudget ? "budget-error" : undefined} inputMode="numeric" min="1" onChange={(event) => updateBudget("max", event.target.value)} type="number" value={budgetDraft.max} /></label>
+          <label>เริ่มต้น (บาท)<input aria-describedby={budgetError ? "budget-error" : undefined} inputMode="numeric" min="1" onChange={(event) => onBudgetChange("min", event.target.value)} type="number" value={budgetDraft.min} /></label>
+          <label>สูงสุด (บาท)<input aria-describedby={budgetError ? "budget-error" : undefined} inputMode="numeric" min="1" onChange={(event) => onBudgetChange("max", event.target.value)} type="number" value={budgetDraft.max} /></label>
         </div>
-        {reversedBudget ? <p className={styles.error} id="budget-error" role="alert">งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น</p> : null}
+        {budgetError ? <p className={styles.error} id="budget-error" role="alert">{budgetError}</p> : null}
       </fieldset>
     </div>
   );

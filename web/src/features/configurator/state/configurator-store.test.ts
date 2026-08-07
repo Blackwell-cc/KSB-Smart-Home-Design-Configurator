@@ -94,9 +94,10 @@ describe("ConfiguratorStore", () => {
   test("flushes the latest real storage draft before debounce expiry and cancels the stale timer", () => {
     vi.useFakeTimers();
     const records = new Map<string, string>();
+    const setItem = vi.fn((key: string, value: string) => records.set(key, value));
     const storage = createDraftStorage({
       getItem: (key) => records.get(key) ?? null,
-      setItem: (key, value) => records.set(key, value),
+      setItem,
       removeItem: (key) => records.delete(key),
     });
     const store = createConfiguratorStore(storage);
@@ -110,6 +111,43 @@ describe("ConfiguratorStore", () => {
     const restored = createConfiguratorStore(storage).getState();
     expect(restored.configuration.residents).toBe(6);
     expect(restored.currentStep).toBe(1);
+    expect(setItem).toHaveBeenCalledTimes(1);
+  });
+
+  test("does not create a draft when flush and dispose run without a pending edit", () => {
+    vi.useFakeTimers();
+    const records = new Map<string, string>();
+    const storage = createDraftStorage({
+      getItem: (key) => records.get(key) ?? null,
+      setItem: (key, value) => records.set(key, value),
+      removeItem: (key) => records.delete(key),
+    });
+    const store = createConfiguratorStore(storage);
+
+    store.getState().flushPendingDraft();
+    store.getState().dispose();
+    vi.advanceTimersByTime(CONFIGURATOR_DRAFT_DEBOUNCE_MS);
+
+    expect(createConfiguratorStore(storage).getState().draftLoadStatus).toBe("none");
+  });
+
+  test("clearing a draft prevents a pending save from being recreated during flush or disposal", () => {
+    vi.useFakeTimers();
+    const records = new Map<string, string>();
+    const storage = createDraftStorage({
+      getItem: (key) => records.get(key) ?? null,
+      setItem: (key, value) => records.set(key, value),
+      removeItem: (key) => records.delete(key),
+    });
+    const store = createConfiguratorStore(storage);
+
+    store.getState().setCurrentStep(1);
+    store.getState().clearDraftAfterPrivateProjectCreated();
+    store.getState().flushPendingDraft();
+    store.getState().dispose();
+    vi.advanceTimersByTime(CONFIGURATOR_DRAFT_DEBOUNCE_MS);
+
+    expect(createConfiguratorStore(storage).getState().draftLoadStatus).toBe("none");
   });
 
   test("keeps configuration in memory and exposes an unavailable status when persistence fails", () => {
