@@ -1,0 +1,25 @@
+.superpowers/
+.worktrees/
+tmp/
+
+# Dependencies and build output
+node_modules/
+web/node_modules/
+web/.next/
+web/out/
+web/coverage/
+web/playwright-report/
+web/test-results/
+
+# Environment and local tooling
+.env
+.env.*
+!.env.example
+*.local
+.DS_Store
+Thumbs.db
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+
