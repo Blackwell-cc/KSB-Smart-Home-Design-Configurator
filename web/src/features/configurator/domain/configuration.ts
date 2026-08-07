@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { THAI_PROVINCE_CODES } from "./provinces";
 
+export const SPECIAL_FEATURE_CODES = [
+  "pool",
+  "lift",
+  "smart-home",
+  "solar",
+  "ev-charger",
+  "double-volume",
+  "large-glazing",
+] as const;
+
 export const HouseConfigurationSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -25,17 +35,11 @@ export const HouseConfigurationSchema = z
     siteAccess: z.enum(["normal", "restricted", "very-restricted"]),
     targetBudget: z.object({ min: z.number().positive(), max: z.number().positive() }).strict().nullable(),
     materialLevel: z.enum(["select", "premium", "signature"]),
-    specialFeatures: z.array(
-      z.enum([
-        "pool",
-        "lift",
-        "smart-home",
-        "solar",
-        "ev-charger",
-        "double-volume",
-        "large-glazing",
-      ]),
-    ),
+    specialFeatures: z
+      .array(z.enum(SPECIAL_FEATURE_CODES))
+      .refine((features) => new Set(features).size === features.length, {
+        message: "เลือกรายการพิเศษซ้ำไม่ได้",
+      }),
     privateNotes: z.string().max(1000),
   })
   .strict()

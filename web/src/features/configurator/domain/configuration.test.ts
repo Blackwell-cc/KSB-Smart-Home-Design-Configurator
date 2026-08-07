@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   HouseConfigurationSchema,
+  SPECIAL_FEATURE_CODES,
   createDefaultConfiguration,
 } from "./configuration";
 import { THAI_PROVINCES, THAI_PROVINCE_CODES } from "./provinces";
@@ -46,6 +47,33 @@ describe("HouseConfigurationSchema", () => {
       ...createDefaultConfiguration(),
       targetBudget: { min: 20_000_000, max: 10_000_000 },
     }).success).toBe(false);
+  });
+
+  test("rejects duplicate special features so an allowance cannot be requested twice", () => {
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...createDefaultConfiguration(),
+        specialFeatures: ["pool", "pool"],
+      }).success,
+    ).toBe(false);
+  });
+
+  test("exports one canonical special-feature allowlist used by the schema", () => {
+    expect(SPECIAL_FEATURE_CODES).toEqual([
+      "pool",
+      "lift",
+      "smart-home",
+      "solar",
+      "ev-charger",
+      "double-volume",
+      "large-glazing",
+    ]);
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...createDefaultConfiguration(),
+        specialFeatures: SPECIAL_FEATURE_CODES,
+      }).success,
+    ).toBe(true);
   });
 
   test("accepts every Thai province code and rejects values outside the allowlist", () => {

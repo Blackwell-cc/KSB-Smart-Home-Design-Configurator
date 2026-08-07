@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   createDefaultConfiguration,
+  SPECIAL_FEATURE_CODES,
   type HouseConfiguration,
 } from "@/features/configurator/domain/configuration";
 import { calculateEstimate } from "./calculate-estimate";
@@ -98,6 +99,21 @@ describe("calculateEstimate", () => {
     expect(qaPriceBook).toEqual(originalBook);
   });
 
+  test("returns independent money ranges that cannot mutate the source price book", () => {
+    const originalBook = structuredClone(qaPriceBook);
+    const expectedSnapshot = calculateEstimate(goldenPremiumBangkokInput, qaPriceBook);
+    const snapshot = calculateEstimate(goldenPremiumBangkokInput, qaPriceBook);
+    const siteRiskLine = snapshot.lines.find((line) => line.code === "site-risk");
+
+    if (!siteRiskLine) {
+      throw new Error("TEST_SETUP_SITE_RISK_LINE_MISSING");
+    }
+    siteRiskLine.amount.high = 0;
+
+    expect(qaPriceBook).toEqual(originalBook);
+    expect(calculateEstimate(goldenPremiumBangkokInput, qaPriceBook)).toEqual(expectedSnapshot);
+  });
+
   test.each(["select", "premium", "signature"] as const)(
     "calculates valid ranges for %s material level",
     (materialLevel) => {
@@ -125,9 +141,7 @@ describe("calculateEstimate", () => {
     expectSnapshotInvariants(calculateEstimate(estimateInput({}, cfa), qaPriceBook));
   });
 
-  test.each(Object.keys(qaPriceBook.featureAllowances) as Array<
-    HouseConfiguration["specialFeatures"][number]
-  >)("maps the %s special feature to its QA allowance", (specialFeature) => {
+  test.each(SPECIAL_FEATURE_CODES)("maps the %s special feature to its QA allowance", (specialFeature) => {
     const snapshot = calculateEstimate(
       estimateInput({ specialFeatures: [specialFeature] }),
       qaPriceBook,
@@ -140,10 +154,10 @@ describe("calculateEstimate", () => {
   });
 
   test("aggregates every special feature allowance and keeps supervision excluded", () => {
-    const specialFeatures = Object.keys(qaPriceBook.featureAllowances) as Array<
-      HouseConfiguration["specialFeatures"][number]
-    >;
-    const snapshot = calculateEstimate(estimateInput({ specialFeatures }), qaPriceBook);
+    const snapshot = calculateEstimate(
+      estimateInput({ specialFeatures: [...SPECIAL_FEATURE_CODES] }),
+      qaPriceBook,
+    );
 
     expect(snapshot.lines.find((line) => line.code === "special-features")?.amount).toEqual({
       low: 2_465_000,
@@ -152,6 +166,12 @@ describe("calculateEstimate", () => {
     });
     expect(snapshot.excludedItems).toContain(SUPERVISION_EXCLUSION);
     expectSnapshotInvariants(snapshot);
+  });
+
+  test("keeps QA allowance keys exactly aligned with canonical feature codes", () => {
+    expect(Object.keys(qaPriceBook.featureAllowances).sort()).toEqual(
+      [...SPECIAL_FEATURE_CODES].sort(),
+    );
   });
 
   test("rejects missing province and special-feature mappings", () => {
@@ -176,6 +196,26 @@ describe("calculateEstimate", () => {
     );
   });
 
+  test.each([
+    { status: "draft", production: false, error: "PRICE_BOOK_STATUS_NOT_ALLOWED" },
+    { status: "draft", production: true, error: "PRICE_BOOK_STATUS_NOT_ALLOWED" },
+    { status: "review", production: false },
+    { status: "review", production: true, error: "PUBLISHED_PRICE_BOOK_REQUIRED" },
+    { status: "published", production: false },
+    { status: "published", production: true },
+    { status: "retired", production: false, error: "PRICE_BOOK_STATUS_NOT_ALLOWED" },
+    { status: "retired", production: true, error: "PRICE_BOOK_STATUS_NOT_ALLOWED" },
+  ] as const)("enforces the $status price-book status gate for production=$production", ({ status, production, error }) => {
+    const book: PriceBook = { ...qaPriceBook, status };
+    const calculate = () => calculateEstimate(estimateInput({}, 198, production), book);
+
+    if (error) {
+      expect(calculate).toThrow(error);
+      return;
+    }
+    expect(calculate().pricingVersion).toBe(qaPriceBook.version);
+  });
+
   test.each([-1, 0, Number.NaN, Number.POSITIVE_INFINITY])(
     "rejects unsafe CFA value %s instead of calculating silently",
     (constructionFloorAreaM2) => {
@@ -184,6 +224,44 @@ describe("calculateEstimate", () => {
       );
     },
   );
+
+  test.each([2_001, Number.MAX_VALUE])(
+    "rejects CFA value %s above the supported calculation ceiling",
+    (constructionFloorAreaM2) => {
+      expect(() => calculateEstimate(estimateInput({}, constructionFloorAreaM2), qaPriceBook)).toThrow(
+        "CONSTRUCTION_FLOOR_AREA_OUT_OF_RANGE",
+      );
+    },
+  );
+
+  test("rejects an overflowed combined factor before it can create an unsafe estimate", () => {
+    const overflowedFactorBook: PriceBook = structuredClone(qaPriceBook);
+    overflowedFactorBook.materialFactors.premium = Number.MAX_VALUE;
+
+    expect(() => calculateEstimate(goldenPremiumBangkokInput, overflowedFactorBook)).toThrow(
+      "CALCULATION_OVERFLOW",
+    );
+  });
+
+  test("rejects an unsafe rate before it can overflow a calculated money range", () => {
+    const unsafeRateBook: PriceBook = structuredClone(qaPriceBook);
+    unsafeRateBook.taxRate = Number.MAX_VALUE;
+
+    expect(() => calculateEstimate(goldenPremiumBangkokInput, unsafeRateBook)).toThrow(
+      "INVALID_PRICE_BOOK:taxRate",
+    );
+  });
+
+  test("rejects forged duplicate special features before allowances can double-count", () => {
+    expect(() =>
+      calculateEstimate(
+        estimateInput({
+          specialFeatures: ["pool", "pool"] as HouseConfiguration["specialFeatures"],
+        }),
+        qaPriceBook,
+      ),
+    ).toThrow("DUPLICATE_SPECIAL_FEATURE");
+  });
 
   test("rejects malformed money ranges and unsafe numeric price-book values", () => {
     const negativeRateBook: PriceBook = structuredClone(qaPriceBook);
