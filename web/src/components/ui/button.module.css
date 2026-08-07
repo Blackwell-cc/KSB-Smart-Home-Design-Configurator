@@ -1,0 +1,29 @@
+.button {
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 0 24px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.gold {
+  color: #17120c;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+}
+
+.ghost {
+  color: var(--ivory);
+  border: 1px solid var(--line);
+  background: transparent;
+}

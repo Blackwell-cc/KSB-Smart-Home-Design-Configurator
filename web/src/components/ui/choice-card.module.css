@@ -1,0 +1,79 @@
+.card {
+  width: 100%;
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  color: var(--ivory);
+  text-align: left;
+  font: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.card:hover:not(:disabled) {
+  border-color: var(--gold);
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.card:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.card[data-selected="true"] {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.content {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.title {
+  font-weight: 700;
+}
+
+.description {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.selection {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.indicator {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: var(--gold-light);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+
+.card[data-selected="true"] .selection {
+  color: var(--gold-light);
+}

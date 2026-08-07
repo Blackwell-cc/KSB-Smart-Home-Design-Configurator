@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { notoSansThai } from "./fonts";
+import { thaiFont } from "./fonts";
 
 export const metadata: Metadata = {
   title: "KSB Architect | Smart Home Design Configurator",
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="th" className={notoSansThai.variable}>
-      <body>{children}</body>
+    <html lang="th">
+      <body className={thaiFont.variable}>{children}</body>
     </html>
   );
 }
