@@ -57,6 +57,7 @@ type ConfiguratorShellProps = {
 };
 
 type BudgetDraft = { min: string; max: string };
+type AreaDraft = string;
 
 function budgetDraftFor(targetBudget: HouseConfiguration["targetBudget"]): BudgetDraft {
   return { min: targetBudget?.min.toString() ?? "", max: targetBudget?.max.toString() ?? "" };
@@ -71,6 +72,17 @@ function budgetErrorFor(budget: BudgetDraft): string | undefined {
   const maximum = Number(budget.max);
   if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || minimum <= 0 || maximum <= 0) return "กรุณาระบุงบประมาณเป็นจำนวนบวก";
   if (minimum > maximum) return "งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น";
+  return undefined;
+}
+
+function areaDraftFor(usableAreaOverrideM2: HouseConfiguration["usableAreaOverrideM2"]): AreaDraft {
+  return usableAreaOverrideM2?.toString() ?? "";
+}
+
+function areaErrorFor(area: AreaDraft): string | undefined {
+  if (area === "") return undefined;
+  const value = Number(area);
+  if (!Number.isFinite(value) || value < 60 || value > 1500) return "โปรดระบุพื้นที่ใช้สอยระหว่าง 60–1,500 ตร.ม.";
   return undefined;
 }
 
@@ -125,10 +137,12 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   const store = injectedStore ?? browserStore;
   const state = useSyncExternalStore(store.subscribe, store.getState, store.getInitialState);
   const [budgetDraft, setBudgetDraft] = useState<BudgetDraft>(() => budgetDraftFor(state.configuration.targetBudget));
+  const [areaDraft, setAreaDraft] = useState<AreaDraft>(() => areaDraftFor(state.configuration.usableAreaOverrideM2));
   const headingRef = useRef<HTMLHeadingElement>(null);
   const stepSchemaValid = validationForStep(state.configuration, state.currentStep).success;
   const budgetError = budgetErrorFor(budgetDraft);
-  const isValid = stepSchemaValid && (state.currentStep !== 2 || budgetError === undefined);
+  const areaError = areaErrorFor(areaDraft);
+  const isValid = stepSchemaValid && (state.currentStep !== 1 || areaError === undefined) && (state.currentStep !== 2 || budgetError === undefined);
   const error = stepError(state.currentStep, stepSchemaValid);
   const errorId = state.currentStep === 0 ? "style-error" : "province-error";
   const concept = CONCEPT_CATALOG.find((item) => item.id === state.configuration.styleId) ?? CONCEPT_CATALOG[0];
@@ -154,6 +168,11 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
       return;
     }
     updateConfiguration({ targetBudget: { min: Number(nextBudget.min), max: Number(nextBudget.max) } });
+  };
+  const updateArea = (value: string) => {
+    setAreaDraft(value);
+    if (areaErrorFor(value) !== undefined) return;
+    updateConfiguration({ usableAreaOverrideM2: value === "" ? null : Number(value) });
   };
   const moveNext = () => {
     if (!isValid) return;
@@ -182,8 +201,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
           <div className={styles.previewCopy} aria-live="polite">
             <p>CONCEPT PREVIEW</p>
             <h2>{concept.label}</h2>
-            <span>พื้นที่ใช้สอย {area.usableAreaM2.toLocaleString("th-TH")} ตร.ม. {state.configuration.usableAreaOverrideM2 ? "(กำหนดเอง)" : "(แนะนำ)"}</span>
-            <span>พื้นที่แนะนำ {area.recommendedUsableAreaM2.toLocaleString("th-TH")} ตร.ม. · CFA {area.constructionFloorAreaM2.toLocaleString("th-TH")} ตร.ม.</span>
+            {areaError ? <span>พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง</span> : <><span>พื้นที่ใช้สอย {area.usableAreaM2.toLocaleString("th-TH")} ตร.ม. {state.configuration.usableAreaOverrideM2 ? "(กำหนดเอง)" : "(แนะนำ)"}</span><span>พื้นที่แนะนำ {area.recommendedUsableAreaM2.toLocaleString("th-TH")} ตร.ม. · CFA {area.constructionFloorAreaM2.toLocaleString("th-TH")} ตร.ม.</span></>}
           </div>
         </aside>
         <section aria-labelledby="step-heading" className={styles.formPanel}>
@@ -192,7 +210,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
           <p className={styles.intro}>ให้ข้อมูลเท่าที่สะดวก เพื่อจัดกรอบความต้องการเบื้องต้นก่อนคุยกับสถาปนิก</p>
           <div className={styles.stepContent}>
             {state.currentStep === 0 ? <StyleStep error={error} errorId={errorId} onChange={(styleId) => updateConfiguration({ styleId })} selectedStyleId={state.configuration.styleId} /> : null}
-            {state.currentStep === 1 ? <FunctionsStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
+            {state.currentStep === 1 ? <FunctionsStep areaDraft={areaDraft} areaError={areaError} configuration={state.configuration} onAreaChange={updateArea} onChange={updateConfiguration} /> : null}
             {state.currentStep === 2 ? <SiteBudgetStep budgetDraft={budgetDraft} budgetError={budgetError} configuration={state.configuration} error={error} errorId={errorId} onBudgetChange={updateBudget} onChange={updateConfiguration} /> : null}
             {state.currentStep === 3 ? <MaterialFeaturesStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
             {state.currentStep === 4 ? <ReviewStep configuration={state.configuration} onEdit={(step) => state.setCurrentStep(step)} /> : null}

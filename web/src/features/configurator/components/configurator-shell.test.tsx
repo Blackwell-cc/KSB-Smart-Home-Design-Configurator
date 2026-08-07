@@ -138,6 +138,53 @@ test("uses the selected usable-area override and site access in the review summa
   expect(screen.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toHaveFocus();
 });
 
+test("requires a valid usable-area override before continuing and clears it back to the recommendation", async () => {
+  const { store, user } = renderConfigurator();
+  await chooseStyleAndContinue(user);
+
+  const usableArea = screen.getByRole("spinbutton", { name: /พื้นที่ใช้สอยที่ต้องการ/ });
+  const next = screen.getByRole("button", { name: "ถัดไป" });
+  await user.type(usableArea, "59");
+
+  expect(next).toBeDisabled();
+  expect(usableArea).toHaveAttribute("aria-describedby", "usable-area-help usable-area-error");
+  expect(screen.getByText("โปรดระบุพื้นที่ใช้สอยระหว่าง 60–1,500 ตร.ม.")).toHaveAttribute("id", "usable-area-error");
+  expect(store.getState().configuration.usableAreaOverrideM2).toBeNull();
+  expect(screen.getByText("พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง")).toBeInTheDocument();
+
+  await user.clear(usableArea);
+  await user.type(usableArea, "220");
+  expect(next).toBeEnabled();
+  expect(store.getState().configuration.usableAreaOverrideM2).toBe(220);
+  expect(screen.getByText(/^พื้นที่ใช้สอย 220/)).toHaveTextContent("(กำหนดเอง)");
+
+  await user.clear(usableArea);
+  expect(next).toBeEnabled();
+  expect(store.getState().configuration.usableAreaOverrideM2).toBeNull();
+  expect(screen.getByText(/^พื้นที่ใช้สอย 164/)).toHaveTextContent("(แนะนำ)");
+});
+
+test("does not present an old override as current while the replacement is invalid", async () => {
+  const store = createConfiguratorStore(createMemoryDraftStorage(), 0);
+  act(() => {
+    store.getState().updateConfiguration({ styleId: "contemporary-warm-luxury", usableAreaOverrideM2: 220 });
+    store.getState().setCurrentStep(1);
+  });
+  const user = userEvent.setup();
+  render(<ConfiguratorShell store={store} />);
+
+  const usableArea = screen.getByRole("spinbutton", { name: /พื้นที่ใช้สอยที่ต้องการ/ });
+  expect(usableArea).toHaveValue(220);
+  await user.clear(usableArea);
+  await user.type(usableArea, "59");
+
+  expect(screen.getByRole("button", { name: "ถัดไป" })).toBeDisabled();
+  expect(usableArea).toHaveValue(59);
+  expect(store.getState().configuration.usableAreaOverrideM2).toBeNull();
+  expect(screen.getByText("พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง")).toBeInTheDocument();
+  expect(screen.queryByText(/^พื้นที่ใช้สอย 220/)).not.toBeInTheDocument();
+});
+
 test("keeps a temporary reversed budget out of the draft and describes the linked correction", async () => {
   const { store, user } = renderConfigurator();
   await chooseStyleAndContinue(user);

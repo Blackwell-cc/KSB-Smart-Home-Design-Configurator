@@ -1,10 +1,12 @@
 import { Counter } from "@/components/ui/counter";
-import { useState } from "react";
 import type { HouseConfiguration } from "../domain/configuration";
 import styles from "./configurator-shell.module.css";
 
 type FunctionsStepProps = {
+  areaDraft: string;
+  areaError?: string;
   configuration: HouseConfiguration;
+  onAreaChange(value: string): void;
   onChange(patch: Partial<HouseConfiguration>): void;
 };
 
@@ -15,8 +17,7 @@ const FUNCTION_CHOICES = [
   ["multipurposeRoom", "ห้องอเนกประสงค์"],
 ] as const;
 
-export function FunctionsStep({ configuration, onChange }: FunctionsStepProps) {
-  const [areaDraft, setAreaDraft] = useState(configuration.usableAreaOverrideM2?.toString() ?? "");
+export function FunctionsStep({ areaDraft, areaError, configuration, onAreaChange, onChange }: FunctionsStepProps) {
   const updateNumber = (key: "residents" | "floors" | "bedrooms" | "bathrooms" | "parkingSpaces") => (value: number) =>
     onChange({ [key]: value });
 
@@ -31,14 +32,9 @@ export function FunctionsStep({ configuration, onChange }: FunctionsStepProps) {
       </div>
       <div className={styles.field}>
         <label htmlFor="usable-area">พื้นที่ใช้สอยที่ต้องการ <span>(ไม่บังคับ)</span></label>
-        <input aria-describedby="usable-area-help" id="usable-area" inputMode="numeric" max="1500" min="60" onChange={(event) => {
-          const value = event.target.value;
-          setAreaDraft(value);
-          if (value === "") onChange({ usableAreaOverrideM2: null });
-          const parsed = Number(value);
-          if (Number.isFinite(parsed) && parsed >= 60 && parsed <= 1500) onChange({ usableAreaOverrideM2: parsed });
-        }} type="number" value={areaDraft} />
+        <input aria-describedby={areaError ? "usable-area-help usable-area-error" : "usable-area-help"} id="usable-area" inputMode="numeric" max="1500" min="60" onChange={(event) => onAreaChange(event.target.value)} type="number" value={areaDraft} />
         <p id="usable-area-help">เว้นว่างเพื่อใช้พื้นที่แนะนำจากจำนวนห้องและผู้อยู่อาศัย (60–1,500 ตร.ม.)</p>
+        {areaError ? <p className={styles.error} id="usable-area-error" role="alert">{areaError}</p> : null}
       </div>
       <fieldset className={styles.choiceFieldset}>
         <legend>ฟังก์ชันเพิ่มเติม</legend>
