@@ -13,16 +13,18 @@ export function ChoiceCard({
   description,
   icon,
   selected = false,
+  type = "button",
   className = "",
   ...props
 }: ChoiceCardProps) {
   return (
     <button
-      aria-label={`${title} ${selected ? "เลือกแล้ว" : "ยังไม่ได้เลือก"}`}
-      aria-pressed={selected}
       className={`${styles.card} ${className}`}
       data-selected={selected}
       {...props}
+      aria-label={`${title} ${selected ? "เลือกแล้ว" : "ยังไม่ได้เลือก"}`}
+      aria-pressed={selected}
+      type={type}
     >
       {icon ? <span className={styles.icon}>{icon}</span> : null}
       <span className={styles.content}>
