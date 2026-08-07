@@ -1,0 +1,40 @@
+.navigation {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.steps {
+  display: flex;
+  min-width: max-content;
+  gap: 8px;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.number {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.steps li[data-state="current"] {
+  color: var(--gold-light);
+}
+
+.steps li[data-state="complete"] {
+  color: var(--sage);
+}

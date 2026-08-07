@@ -41,3 +41,10 @@ test("keeps selected accessibility state when conflicting ARIA props are supplie
     "true",
   );
 });
+
+test("can express a mutually exclusive selection as a radio without button-only state", () => {
+  render(<ChoiceCard selected selectionRole="radio" title="Premium" />);
+
+  expect(screen.getByRole("radio", { name: /Premium/ })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByRole("radio", { name: /Premium/ })).not.toHaveAttribute("aria-pressed");
+});

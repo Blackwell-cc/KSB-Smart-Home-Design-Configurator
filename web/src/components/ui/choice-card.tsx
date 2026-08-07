@@ -6,6 +6,7 @@ type ChoiceCardProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">
   description?: string;
   icon?: ReactNode;
   selected?: boolean;
+  selectionRole?: "button" | "radio";
 };
 
 export function ChoiceCard({
@@ -13,17 +14,23 @@ export function ChoiceCard({
   description,
   icon,
   selected = false,
+  selectionRole = "button",
   type = "button",
   className = "",
   ...props
 }: ChoiceCardProps) {
+  const selectionState =
+    selectionRole === "radio"
+      ? { role: "radio" as const, "aria-checked": selected, "aria-pressed": undefined }
+      : { "aria-pressed": selected };
+
   return (
     <button
       className={`${styles.card} ${className}`}
       data-selected={selected}
       {...props}
+      {...selectionState}
       aria-label={`${title} ${selected ? "เลือกแล้ว" : "ยังไม่ได้เลือก"}`}
-      aria-pressed={selected}
       type={type}
     >
       {icon ? <span className={styles.icon}>{icon}</span> : null}
