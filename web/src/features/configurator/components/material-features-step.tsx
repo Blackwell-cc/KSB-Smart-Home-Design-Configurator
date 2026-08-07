@@ -42,8 +42,19 @@ export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeatur
             description={description}
             key={id}
             onClick={() => onChange({ materialLevel: id })}
+            onKeyDown={(event) => {
+              if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) return;
+              event.preventDefault();
+              const current = MATERIALS.findIndex(([material]) => material === configuration.materialLevel);
+              const direction = ["ArrowRight", "ArrowDown"].includes(event.key) ? 1 : -1;
+              const next = (current + direction + MATERIALS.length) % MATERIALS.length;
+              const group = event.currentTarget.parentElement;
+              onChange({ materialLevel: MATERIALS[next][0] });
+              requestAnimationFrame(() => group?.querySelectorAll<HTMLElement>("[role=radio]")[next]?.focus());
+            }}
             selected={configuration.materialLevel === id}
             selectionRole="radio"
+            tabIndex={configuration.materialLevel === id ? 0 : -1}
             title={title}
           />
         ))}

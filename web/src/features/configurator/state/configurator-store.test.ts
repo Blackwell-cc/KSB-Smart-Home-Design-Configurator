@@ -91,6 +91,27 @@ describe("ConfiguratorStore", () => {
     expect(store.getState().draftPersistenceStatus).toBe("saved");
   });
 
+  test("flushes the latest real storage draft before debounce expiry and cancels the stale timer", () => {
+    vi.useFakeTimers();
+    const records = new Map<string, string>();
+    const storage = createDraftStorage({
+      getItem: (key) => records.get(key) ?? null,
+      setItem: (key, value) => records.set(key, value),
+      removeItem: (key) => records.delete(key),
+    });
+    const store = createConfiguratorStore(storage);
+
+    store.getState().updateConfiguration({ residents: 6 });
+    store.getState().setCurrentStep(1);
+    store.getState().flushPendingDraft();
+    store.getState().dispose();
+    vi.advanceTimersByTime(CONFIGURATOR_DRAFT_DEBOUNCE_MS);
+
+    const restored = createConfiguratorStore(storage).getState();
+    expect(restored.configuration.residents).toBe(6);
+    expect(restored.currentStep).toBe(1);
+  });
+
   test("keeps configuration in memory and exposes an unavailable status when persistence fails", () => {
     vi.useFakeTimers();
     const drafts = createDraftStorageSpy(

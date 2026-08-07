@@ -25,26 +25,23 @@ export const CONFIGURATOR_STEPS = [
   { id: "review", label: "ตรวจทาน" },
 ] as const;
 
-const StyleStepSchema = HouseConfigurationSchema.pick({ styleId: true }).refine((value) => value.styleId !== null, {
+const StyleStepSchema = z.object({ styleId: z.string().nullable() }).refine((value) => value.styleId !== null, {
   message: "โปรดเลือกสไตล์บ้านก่อนดำเนินการต่อ",
   path: ["styleId"],
 });
 
-const FunctionsStepSchema = HouseConfigurationSchema.pick({
-  residents: true,
-  floors: true,
-  bedrooms: true,
-  bathrooms: true,
-  parkingSpaces: true,
-  functions: true,
-});
+const FunctionsStepSchema = z.object({ residents: z.number().int().min(1).max(20), floors: z.number().int().min(1).max(3), bedrooms: z.number().int().min(1).max(12), bathrooms: z.number().int().min(1).max(15), parkingSpaces: z.number().int().min(0).max(10), functions: z.object({ office: z.boolean(), elderlyRoom: z.boolean(), thaiKitchen: z.boolean(), multipurposeRoom: z.boolean() }) });
 
-const SiteBudgetStepSchema = HouseConfigurationSchema.pick({ provinceCode: true }).refine(
+const SiteBudgetStepSchema = z.object({ provinceCode: z.string().nullable() }).refine(
   (value) => value.provinceCode !== null,
   { message: "โปรดเลือกจังหวัดก่อนดำเนินการต่อ", path: ["provinceCode"] },
 );
 
-const MaterialsStepSchema = HouseConfigurationSchema.pick({ materialLevel: true, specialFeatures: true });
+const MaterialsStepSchema = z.object({ materialLevel: z.enum(["select", "premium", "signature"]), specialFeatures: z.array(z.string()) });
+const CompletionSchema = HouseConfigurationSchema.superRefine((value, context) => {
+  if (value.styleId === null) context.addIssue({ code: "custom", path: ["styleId"], message: "ต้องเลือกสไตล์บ้าน" });
+  if (value.provinceCode === null) context.addIssue({ code: "custom", path: ["provinceCode"], message: "ต้องเลือกจังหวัด" });
+});
 
 const STEP_HEADINGS = [
   "เลือกสไตล์บ้าน",
@@ -120,6 +117,12 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
     headingRef.current?.focus();
   }, [state.currentStep]);
 
+  useEffect(() => {
+    const flush = () => store.getState().flushPendingDraft();
+    window.addEventListener("pagehide", flush);
+    return () => { window.removeEventListener("pagehide", flush); flush(); store.getState().dispose(); };
+  }, [store]);
+
   const updateConfiguration = (patch: Partial<HouseConfiguration>) => state.updateConfiguration(patch);
   const moveNext = () => {
     if (!isValid) return;
@@ -129,7 +132,9 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
     if (state.currentStep > 0) state.setCurrentStep(state.currentStep - 1);
   };
   const openPreview = () => {
-    onPreview?.("/preview");
+    if (CompletionSchema.safeParse(state.configuration).success) { onPreview?.("/preview"); return; }
+    const firstInvalidStep = state.configuration.styleId === null ? 0 : state.configuration.provinceCode === null ? 2 : 0;
+    state.setCurrentStep(firstInvalidStep);
   };
 
   return (
@@ -141,12 +146,13 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
       <div className={styles.shell}>
         <aside aria-label="ภาพตัวอย่างบ้าน" className={styles.preview}>
           <div className={styles.imageFrame}>
-            <Image alt={`ภาพตัวอย่าง ${concept.label}`} fill priority sizes="(max-width: 899px) 100vw, 50vw" src={concept.image} />
+            <Image alt={`ภาพตัวอย่าง ${concept.label}`} fill preload sizes="(max-width: 899px) 100vw, 50vw" src={concept.image} />
           </div>
           <div className={styles.previewCopy} aria-live="polite">
             <p>CONCEPT PREVIEW</p>
             <h2>{concept.label}</h2>
-            <span>พื้นที่ใช้งานแนะนำ {area.recommendedUsableAreaM2.toLocaleString("th-TH")} ตร.ม.</span>
+            <span>พื้นที่ใช้สอย {area.usableAreaM2.toLocaleString("th-TH")} ตร.ม. {state.configuration.usableAreaOverrideM2 ? "(กำหนดเอง)" : "(แนะนำ)"}</span>
+            <span>พื้นที่แนะนำ {area.recommendedUsableAreaM2.toLocaleString("th-TH")} ตร.ม. · CFA {area.constructionFloorAreaM2.toLocaleString("th-TH")} ตร.ม.</span>
           </div>
         </aside>
         <section aria-labelledby="step-heading" className={styles.formPanel}>
@@ -158,7 +164,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             {state.currentStep === 1 ? <FunctionsStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
             {state.currentStep === 2 ? <SiteBudgetStep configuration={state.configuration} error={error} errorId={errorId} onChange={updateConfiguration} /> : null}
             {state.currentStep === 3 ? <MaterialFeaturesStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
-            {state.currentStep === 4 ? <ReviewStep configuration={state.configuration} /> : null}
+            {state.currentStep === 4 ? <ReviewStep configuration={state.configuration} onEdit={(step) => state.setCurrentStep(step)} /> : null}
           </div>
           <div className={styles.actions}>
             {state.currentStep > 0 ? <Button onClick={moveBack} variant="ghost">ย้อนกลับ</Button> : <span />}

@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import { act } from "react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { createConfiguratorStore } from "../state/configurator-store";
@@ -97,7 +98,7 @@ test("back navigation preserves previous choices and the live preview reflects t
   expect(screen.getByRole("img", { name: /Modern Tropical Resort/i })).not.toHaveAttribute("src", initialSource);
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
   await user.click(screen.getByRole("button", { name: /จำนวนห้องนอน.*เพิ่ม/ }));
-  expect(screen.getByText(/พื้นที่ใช้งานแนะนำ/)).toHaveTextContent("178");
+  expect(screen.getByText(/^พื้นที่ใช้สอย 178/)).toHaveTextContent("(แนะนำ)");
   await user.click(screen.getByRole("button", { name: "ย้อนกลับ" }));
 
   expect(screen.getByRole("radio", { name: "Modern Tropical Resort" })).toBeChecked();
@@ -117,4 +118,65 @@ test("exposes ordered progress, named counter controls, accessible choice groups
   expect(screen.getByRole("button", { name: /จำนวนชั้น.*ลด/ })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /จำนวนชั้น.*เพิ่ม/ })).toBeInTheDocument();
   expect(screen.getByRole("checkbox", { name: "ห้องทำงาน" })).toBeInTheDocument();
+});
+
+test("uses the selected usable-area override and site access in the review summary", async () => {
+  const { user } = renderConfigurator();
+  await chooseStyleAndContinue(user);
+  await user.clear(screen.getByLabelText(/พื้นที่ใช้สอยที่ต้องการ/));
+  await user.type(screen.getByLabelText(/พื้นที่ใช้สอยที่ต้องการ/), "220");
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+  await user.selectOptions(screen.getByLabelText("สภาพการเข้าถึงหน้างาน"), "restricted");
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+
+  expect(screen.getByText(/พื้นที่ใช้สอยที่เลือก 220 ตร.ม./)).toBeInTheDocument();
+  expect(screen.getByText(/พื้นที่ก่อสร้างรวม.*254/)).toBeInTheDocument();
+  expect(screen.getByText(/เข้าถึงได้จำกัด/)).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "แก้ไขพื้นที่ใช้สอย" }));
+  expect(screen.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toHaveFocus();
+});
+
+test("keeps a temporary reversed budget out of the draft and describes the linked correction", async () => {
+  const { store, user } = renderConfigurator();
+  await chooseStyleAndContinue(user);
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+
+  const minimum = screen.getByRole("spinbutton", { name: /เริ่มต้น/ });
+  const maximum = screen.getByRole("spinbutton", { name: /สูงสุด/ });
+  await user.type(minimum, "9000000");
+  await user.type(maximum, "5000000");
+
+  expect(screen.getByText("งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น")).toHaveAttribute("id", "budget-error");
+  expect(minimum).toHaveAttribute("aria-describedby", "budget-error");
+  expect(maximum).toHaveAttribute("aria-describedby", "budget-error");
+  expect(store.getState().configuration.targetBudget).toBeNull();
+});
+
+test("supports arrow-key material selection and blocks preview for an incomplete restored review", async () => {
+  const store = createConfiguratorStore(createMemoryDraftStorage(), 0);
+  store.getState().setCurrentStep(4);
+  const onPreview = vi.fn();
+  const user = userEvent.setup();
+  render(<ConfiguratorShell onPreview={onPreview} store={store} />);
+
+  await user.click(screen.getByRole("button", { name: "ดู Preview" }));
+  expect(onPreview).not.toHaveBeenCalled();
+  expect(screen.getByRole("heading", { name: "เลือกสไตล์บ้าน" })).toHaveFocus();
+
+  await act(async () => {
+    store.getState().updateConfiguration({ styleId: "contemporary-warm-luxury", provinceCode: "10" });
+    store.getState().setCurrentStep(3);
+  });
+  const premium = screen.getByRole("radio", { name: /Premium/ });
+  premium.focus();
+  await user.keyboard("{ArrowRight}");
+  expect(screen.getByRole("radio", { name: /Signature/ })).toHaveAttribute("aria-checked", "true");
+  await user.keyboard("{ArrowLeft}");
+  expect(screen.getByRole("radio", { name: /Premium/ })).toHaveAttribute("aria-checked", "true");
+  await user.keyboard("{ArrowUp}");
+  expect(screen.getByRole("radio", { name: /Select/ })).toHaveAttribute("aria-checked", "true");
+  await user.keyboard("{ArrowDown}");
+  expect(screen.getByRole("radio", { name: /Premium/ })).toHaveAttribute("aria-checked", "true");
 });

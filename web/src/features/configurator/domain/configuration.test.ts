@@ -3,7 +3,7 @@ import {
   HouseConfigurationSchema,
   createDefaultConfiguration,
 } from "./configuration";
-import { THAI_PROVINCE_CODES } from "./provinces";
+import { THAI_PROVINCES, THAI_PROVINCE_CODES } from "./provinces";
 
 describe("HouseConfigurationSchema", () => {
   test("accepts the default new-house configuration and rejects renovation", () => {
@@ -41,6 +41,13 @@ describe("HouseConfigurationSchema", () => {
     ).toBe(false);
   });
 
+  test("rejects a target budget whose minimum exceeds its maximum", () => {
+    expect(HouseConfigurationSchema.safeParse({
+      ...createDefaultConfiguration(),
+      targetBudget: { min: 20_000_000, max: 10_000_000 },
+    }).success).toBe(false);
+  });
+
   test("accepts every Thai province code and rejects values outside the allowlist", () => {
     const defaults = createDefaultConfiguration();
 
@@ -58,6 +65,13 @@ describe("HouseConfigurationSchema", () => {
         provinceCode,
       ).toBe(false);
     }
+  });
+
+  test("provides one unique Thai name for every allowlisted province code", () => {
+    expect(THAI_PROVINCES).toHaveLength(77);
+    expect(new Set(THAI_PROVINCES.map((province) => province.code)).size).toBe(77);
+    expect(THAI_PROVINCES.map((province) => province.code)).toEqual(THAI_PROVINCE_CODES);
+    expect(THAI_PROVINCES.every((province) => province.name.trim().length > 0)).toBe(true);
   });
 
   test("has no contact fields and rejects attempts to add them", () => {

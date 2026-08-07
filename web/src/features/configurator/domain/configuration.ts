@@ -23,10 +23,7 @@ export const HouseConfigurationSchema = z
     provinceCode: z.enum(THAI_PROVINCE_CODES).nullable(),
     district: z.string().max(100).nullable(),
     siteAccess: z.enum(["normal", "restricted", "very-restricted"]),
-    targetBudget: z
-      .object({ min: z.number().positive(), max: z.number().positive() })
-      .strict()
-      .nullable(),
+    targetBudget: z.object({ min: z.number().positive(), max: z.number().positive() }).strict().nullable(),
     materialLevel: z.enum(["select", "premium", "signature"]),
     specialFeatures: z.array(
       z.enum([
@@ -41,7 +38,12 @@ export const HouseConfigurationSchema = z
     ),
     privateNotes: z.string().max(1000),
   })
-  .strict();
+  .strict()
+  .superRefine((configuration, context) => {
+    if (configuration.targetBudget && configuration.targetBudget.min > configuration.targetBudget.max) {
+      context.addIssue({ code: "custom", path: ["targetBudget", "max"], message: "งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น" });
+    }
+  });
 
 export type HouseConfiguration = z.infer<typeof HouseConfigurationSchema>;
 
