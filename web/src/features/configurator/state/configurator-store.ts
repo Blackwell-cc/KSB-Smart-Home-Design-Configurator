@@ -7,11 +7,19 @@ import {
 import type { DraftLoadResult, DraftStorage } from "./draft-storage";
 
 export const CONFIGURATOR_DRAFT_DEBOUNCE_MS = 300;
+export type DraftPersistenceStatus =
+  | "idle"
+  | "pending"
+  | "saved"
+  | "cleared"
+  | "invalid"
+  | "unavailable";
 
 export type ConfiguratorStoreState = {
   configuration: HouseConfiguration;
   currentStep: number;
   draftLoadStatus: DraftLoadResult["status"];
+  draftPersistenceStatus: DraftPersistenceStatus;
   setCurrentStep(currentStep: number): void;
   updateConfiguration(patch: Partial<HouseConfiguration>): void;
   clearDraftAfterPrivateProjectCreated(): void;
@@ -44,18 +52,25 @@ export function createConfiguratorStore(
 
   return createStore<ConfiguratorStoreState>((set, get) => {
     const scheduleDraftSave = () => {
-      if (pendingSave) clearTimeout(pendingSave);
+      if (pendingSave !== undefined) clearTimeout(pendingSave);
 
       pendingSave = setTimeout(() => {
         pendingSave = undefined;
         const { configuration, currentStep } = get();
-        draftStorage.save(currentStep, configuration);
+        try {
+          const result = draftStorage.save(currentStep, configuration);
+          set({ draftPersistenceStatus: result.status });
+        } catch {
+          set({ draftPersistenceStatus: "unavailable" });
+        }
       }, debounceMs);
+      set({ draftPersistenceStatus: "pending" });
     };
 
     return {
       ...initialState,
       draftLoadStatus: loadedDraft.status,
+      draftPersistenceStatus: "idle",
       setCurrentStep(currentStep) {
         set({ currentStep: validateCurrentStep(currentStep) });
         scheduleDraftSave();
@@ -69,10 +84,18 @@ export function createConfiguratorStore(
         scheduleDraftSave();
       },
       clearDraftAfterPrivateProjectCreated() {
-        if (pendingSave) clearTimeout(pendingSave);
+        if (pendingSave !== undefined) clearTimeout(pendingSave);
         pendingSave = undefined;
-        draftStorage.clear();
-        set({ draftLoadStatus: "none" });
+        try {
+          const result = draftStorage.clear();
+          if (result.status === "cleared") {
+            set({ draftLoadStatus: "none", draftPersistenceStatus: "cleared" });
+            return;
+          }
+        } catch {
+          // Treat a broken implementation like an unavailable browser storage boundary.
+        }
+        set({ draftPersistenceStatus: "unavailable" });
       },
     };
   });

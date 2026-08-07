@@ -75,4 +75,21 @@ describe("HouseConfigurationSchema", () => {
       }).success,
     ).toBe(false);
   });
+
+  test("rejects unknown and PII-shaped keys in nested configuration objects", () => {
+    const defaults = createDefaultConfiguration();
+
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...defaults,
+        functions: { ...defaults.functions, email: "champ@example.com" },
+      }).success,
+    ).toBe(false);
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...defaults,
+        targetBudget: { min: 1_000_000, max: 2_000_000, phone: "0919914592" },
+      }).success,
+    ).toBe(false);
+  });
 });

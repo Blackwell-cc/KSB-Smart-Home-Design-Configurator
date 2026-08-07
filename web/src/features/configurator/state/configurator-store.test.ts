@@ -1,18 +1,28 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { createDefaultConfiguration } from "../domain/configuration";
-import type { DraftStorage } from "./draft-storage";
+import type {
+  DraftClearResult,
+  DraftLoadResult,
+  DraftSaveResult,
+  DraftStorage,
+} from "./draft-storage";
+import { createDraftStorage } from "./draft-storage";
 import {
   CONFIGURATOR_DRAFT_DEBOUNCE_MS,
   createConfiguratorStore,
 } from "./configurator-store";
 
 function createDraftStorageSpy(
-  loadResult: ReturnType<DraftStorage["load"]> = { status: "none" },
+  loadResult: DraftLoadResult = { status: "none" },
+  results: { save?: DraftSaveResult; clear?: DraftClearResult } = {},
 ) {
+  const saveResult = results.save ?? { status: "saved" };
+  const clearResult = results.clear ?? { status: "cleared" };
+
   return {
     load: vi.fn(() => loadResult),
-    save: vi.fn(),
-    clear: vi.fn(),
+    save: vi.fn(() => saveResult),
+    clear: vi.fn(() => clearResult),
   } satisfies DraftStorage;
 }
 
@@ -47,6 +57,19 @@ describe("ConfiguratorStore", () => {
     });
   });
 
+  test("starts from a safe default and exposes an unavailable read status", () => {
+    const store = createConfiguratorStore(
+      createDraftStorageSpy({ status: "unavailable", operation: "read" }),
+    );
+
+    expect(store.getState()).toMatchObject({
+      configuration: createDefaultConfiguration(),
+      currentStep: 0,
+      draftLoadStatus: "unavailable",
+      draftPersistenceStatus: "idle",
+    });
+  });
+
   test("debounces draft persistence and saves the latest validated state", () => {
     vi.useFakeTimers();
     const drafts = createDraftStorageSpy();
@@ -64,6 +87,45 @@ describe("ConfiguratorStore", () => {
     expect(drafts.save).toHaveBeenCalledWith(2, {
       ...createDefaultConfiguration(),
       residents: 5,
+    });
+    expect(store.getState().draftPersistenceStatus).toBe("saved");
+  });
+
+  test("keeps configuration in memory and exposes an unavailable status when persistence fails", () => {
+    vi.useFakeTimers();
+    const drafts = createDraftStorageSpy(
+      { status: "none" },
+      { save: { status: "unavailable", operation: "write" } },
+    );
+    const store = createConfiguratorStore(drafts);
+
+    store.getState().updateConfiguration({ residents: 5 });
+    vi.runAllTimers();
+
+    expect(store.getState()).toMatchObject({
+      configuration: { ...createDefaultConfiguration(), residents: 5 },
+      draftPersistenceStatus: "unavailable",
+    });
+  });
+
+  test("maps a real local-storage write failure to a non-PII persistence status", () => {
+    vi.useFakeTimers();
+    const store = createConfiguratorStore(
+      createDraftStorage({
+        getItem: () => null,
+        setItem: () => {
+          throw new Error("storage write failed");
+        },
+        removeItem: () => undefined,
+      }),
+    );
+
+    store.getState().updateConfiguration({ residents: 5 });
+    vi.runAllTimers();
+
+    expect(store.getState()).toMatchObject({
+      configuration: { ...createDefaultConfiguration(), residents: 5 },
+      draftPersistenceStatus: "unavailable",
     });
   });
 
@@ -92,5 +154,60 @@ describe("ConfiguratorStore", () => {
 
     expect(drafts.clear).toHaveBeenCalledTimes(1);
     expect(drafts.save).not.toHaveBeenCalled();
+    expect(store.getState()).toMatchObject({
+      configuration: createDefaultConfiguration(),
+      draftLoadStatus: "none",
+      draftPersistenceStatus: "cleared",
+    });
+  });
+
+  test("cancels persistence and never claims a draft was cleared when physical removal fails", () => {
+    vi.useFakeTimers();
+    const configuration = { ...createDefaultConfiguration(), residents: 5 };
+    const drafts = createDraftStorageSpy(
+      {
+        status: "valid",
+        draft: { draftVersion: 1, currentStep: 1, configuration },
+      },
+      { clear: { status: "unavailable", operation: "clear" } },
+    );
+    const store = createConfiguratorStore(drafts);
+
+    store.getState().setCurrentStep(2);
+    store.getState().clearDraftAfterPrivateProjectCreated();
+    vi.runAllTimers();
+
+    expect(drafts.clear).toHaveBeenCalledTimes(1);
+    expect(drafts.save).not.toHaveBeenCalled();
+    expect(store.getState()).toMatchObject({
+      configuration,
+      draftLoadStatus: "valid",
+      draftPersistenceStatus: "unavailable",
+    });
+  });
+
+  test("maps a real local-storage removal failure without discarding the restored configuration", () => {
+    vi.useFakeTimers();
+    const configuration = { ...createDefaultConfiguration(), residents: 5 };
+    const store = createConfiguratorStore(
+      createDraftStorage({
+        getItem: () =>
+          JSON.stringify({ draftVersion: 1, currentStep: 1, configuration }),
+        setItem: () => undefined,
+        removeItem: () => {
+          throw new Error("storage clear failed");
+        },
+      }),
+    );
+
+    store.getState().setCurrentStep(2);
+    store.getState().clearDraftAfterPrivateProjectCreated();
+    vi.runAllTimers();
+
+    expect(store.getState()).toMatchObject({
+      configuration,
+      draftLoadStatus: "valid",
+      draftPersistenceStatus: "unavailable",
+    });
   });
 });

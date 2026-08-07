@@ -18,12 +18,20 @@ export type DraftEnvelope = z.infer<typeof DraftEnvelopeSchema>;
 export type DraftLoadResult =
   | { status: "none" }
   | { status: "valid"; draft: DraftEnvelope }
-  | { status: "incompatible" };
+  | { status: "incompatible" }
+  | { status: "unavailable"; operation: "read" };
+export type DraftSaveResult =
+  | { status: "saved" }
+  | { status: "invalid" }
+  | { status: "unavailable"; operation: "write" };
+export type DraftClearResult =
+  | { status: "cleared" }
+  | { status: "unavailable"; operation: "clear" };
 
 export type DraftStorage = {
   load(): DraftLoadResult;
-  save(currentStep: number, configuration: HouseConfiguration): void;
-  clear(): void;
+  save(currentStep: number, configuration: HouseConfiguration): DraftSaveResult;
+  clear(): DraftClearResult;
 };
 
 type KeyValueStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
@@ -31,8 +39,13 @@ type KeyValueStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 export function createDraftStorage(storage: KeyValueStorage): DraftStorage {
   return {
     load(): DraftLoadResult {
-      const raw = storage.getItem(STORAGE_KEY);
-      if (!raw) return { status: "none" };
+      let raw: string | null;
+      try {
+        raw = storage.getItem(STORAGE_KEY);
+      } catch {
+        return { status: "unavailable", operation: "read" };
+      }
+      if (raw === null) return { status: "none" };
 
       try {
         const parsed = DraftEnvelopeSchema.safeParse(JSON.parse(raw));
@@ -43,16 +56,28 @@ export function createDraftStorage(storage: KeyValueStorage): DraftStorage {
         return { status: "incompatible" };
       }
     },
-    save(currentStep: number, configuration: HouseConfiguration): void {
-      const draft = DraftEnvelopeSchema.parse({
+    save(currentStep: number, configuration: HouseConfiguration): DraftSaveResult {
+      const parsed = DraftEnvelopeSchema.safeParse({
         draftVersion: 1,
         currentStep,
         configuration,
       });
-      storage.setItem(STORAGE_KEY, JSON.stringify(draft));
+      if (!parsed.success) return { status: "invalid" };
+
+      try {
+        storage.setItem(STORAGE_KEY, JSON.stringify(parsed.data));
+        return { status: "saved" };
+      } catch {
+        return { status: "unavailable", operation: "write" };
+      }
     },
-    clear(): void {
-      storage.removeItem(STORAGE_KEY);
+    clear(): DraftClearResult {
+      try {
+        storage.removeItem(STORAGE_KEY);
+        return { status: "cleared" };
+      } catch {
+        return { status: "unavailable", operation: "clear" };
+      }
     },
   };
 }
