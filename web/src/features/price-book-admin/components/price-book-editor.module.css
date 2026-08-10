@@ -1,0 +1,21 @@
+.panel { border: 1px solid #d5d0c5; background: #f8f7f3; }
+.header { display: flex; justify-content: space-between; gap: 2rem; padding: 2rem; border-bottom: 1px solid #d5d0c5; }
+.header p { margin: 0 0 .5rem; color: #8b6a2f; font-size: .7rem; font-weight: 700; letter-spacing: .16em; }
+.header h2 { margin: 0; font-size: clamp(1.8rem, 4vw, 3.4rem); font-weight: 450; letter-spacing: -.035em; }
+.header dl { display: flex; gap: 2rem; margin: 0; }
+.header dl div { min-width: 6.5rem; }
+.header dt { color: #716b61; font-size: .72rem; }
+.header dd { margin: .25rem 0 0; font-weight: 700; }
+.tableWrap { overflow-x: auto; }
+.tableWrap table { width: 100%; border-collapse: collapse; }
+.tableWrap caption { padding: 1.25rem 2rem; text-align: left; font-weight: 700; }
+.tableWrap th, .tableWrap td { padding: .9rem 2rem; border-top: 1px solid #e1ddd4; text-align: right; white-space: nowrap; }
+.tableWrap th:first-child { text-align: left; }
+.up { color: #8a4b2c; font-weight: 700; }
+.down { color: #32624a; font-weight: 700; }
+.confirm { display: flex; gap: .75rem; align-items: flex-start; margin: 1.5rem 2rem; line-height: 1.55; }
+.confirm input { width: 1.1rem; height: 1.1rem; margin-top: .15rem; accent-color: #8b6a2f; }
+.publish { margin: 0 2rem 2rem; padding: .9rem 1.2rem; border: 0; color: #fff; background: #25231f; font-weight: 700; }
+.publish:disabled { cursor: not-allowed; opacity: .45; }
+.publish:focus-visible { outline: 3px solid #c49c51; outline-offset: 3px; }
+@media (max-width: 720px) { .header { flex-direction: column; } .header dl { flex-wrap: wrap; } .tableWrap th, .tableWrap td { padding: .8rem 1rem; } }

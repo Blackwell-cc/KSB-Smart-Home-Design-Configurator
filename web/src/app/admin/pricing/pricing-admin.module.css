@@ -1,0 +1,11 @@
+.page, .status { min-height: 100vh; padding: clamp(1.25rem, 4vw, 4rem); color: #211f1b; background: #ece9e2; }
+.page > header, .page > section { max-width: 1180px; margin-inline: auto; }
+.page > header { display: grid; grid-template-columns: 1fr minmax(18rem, .65fr); gap: 1.5rem 4rem; padding: 1rem 0 3rem; border-top: 1px solid #292722; }
+.page > header p { grid-column: 1 / -1; margin: 0; color: #8b6a2f; font-size: .7rem; font-weight: 700; letter-spacing: .16em; }
+.page > header h1 { margin: 0; max-width: 12ch; font-size: clamp(2.5rem, 6vw, 5.8rem); font-weight: 420; line-height: .98; letter-spacing: -.05em; }
+.page > header span { align-self: end; color: #5f5a52; line-height: 1.75; }
+.empty { padding: 3rem; border: 1px solid #cbc5b9; background: #f8f7f3; }
+.empty h2 { margin-top: 0; font-size: 1.6rem; }
+.status { display: grid; place-content: center; text-align: center; }
+.status h1 { margin-bottom: .5rem; }
+@media (max-width: 720px) { .page > header { grid-template-columns: 1fr; } }
