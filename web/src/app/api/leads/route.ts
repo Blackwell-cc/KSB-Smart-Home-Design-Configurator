@@ -2,6 +2,7 @@ import { LeadSubmissionSchema, type LeadSubmissionInput } from "@/features/leads
 import { createDeterministicAccessToken, ProjectAccessTokenSecretError, submitLead } from "@/features/leads/application/submit-lead";
 import { createSupabaseLeadRepositoryFromEnvironment } from "@/features/leads/infrastructure/supabase-lead-repository";
 import { createSupabasePriceBookRepositoryFromEnvironment } from "@/features/pricing/infrastructure/supabase-price-book-repository";
+import { createWebhookLeadNotifierFromEnvironment } from "@/features/leads/infrastructure/webhook-lead-notifier";
 
 const MAX_BODY_BYTES = 32 * 1024;
 type Submit = (input: LeadSubmissionInput) => Promise<{ leadId: string; projectId: string; reportUrl: string }>;
@@ -30,4 +31,5 @@ export function createLeadPostHandler({ submit }: { submit: Submit }) {
 }
 
 const secret = process.env.PROJECT_ACCESS_TOKEN_SECRET ?? "";
-export const POST = createLeadPostHandler({ submit: (input) => submitLead(input, { repository: createSupabaseLeadRepositoryFromEnvironment(), priceBookRepository: createSupabasePriceBookRepositoryFromEnvironment(), createAccessToken: (key) => createDeterministicAccessToken(key, secret), now: () => new Date() }) });
+function optionalNotifier() { try { return createWebhookLeadNotifierFromEnvironment(); } catch { return undefined; } }
+export const POST = createLeadPostHandler({ submit: (input) => submitLead(input, { repository: createSupabaseLeadRepositoryFromEnvironment(), priceBookRepository: createSupabasePriceBookRepositoryFromEnvironment(), createAccessToken: (key) => createDeterministicAccessToken(key, secret), now: () => new Date(), notifier: optionalNotifier() }) });

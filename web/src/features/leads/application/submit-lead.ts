@@ -6,6 +6,7 @@ import { toCalculationConfiguration } from "@/features/pricing/application/estim
 import { LeadSubmissionSchema, type LeadSubmissionResult } from "../domain/lead";
 import { buildPrivateAccessExchangeUrl } from "../domain/private-access";
 import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
+import type { LeadNotifier } from "../infrastructure/webhook-lead-notifier";
 
 export type LeadRepository = {
   submitOnce(input: {
@@ -31,6 +32,7 @@ export type SubmitLeadDependencies = {
   priceBookRepository: PriceBookRepository;
   createAccessToken: (idempotencyKey: string) => { plainText: string; hash: string };
   now: () => Date;
+  notifier?: LeadNotifier;
 };
 
 export async function submitLead(rawInput: unknown, dependencies: SubmitLeadDependencies): Promise<LeadSubmissionResult> {
@@ -51,5 +53,10 @@ export async function submitLead(rawInput: unknown, dependencies: SubmitLeadDepe
     ...(input.preferredContactMethod === "phone" ? { phone: input.phone } : input.preferredContactMethod === "email" ? { email: input.email } : { lineId: input.lineId }),
     consentVersion: input.consentVersion, tokenHash: access.hash, expiresAt,
   });
+  if (dependencies.notifier) {
+    const contact = input.preferredContactMethod === "phone" ? input.phone : input.preferredContactMethod === "email" ? input.email : input.lineId;
+    try { await dependencies.notifier.notify({ eventType: "lead_submitted", leadId: row.leadId, projectId: row.projectId, name: input.name, preferredContactMethod: input.preferredContactMethod, contact }); }
+    catch { /* Notification recovery is independent from the committed Lead transaction. */ }
+  }
   return { ...row, privateToken: access.plainText, reportUrl: buildPrivateAccessExchangeUrl({ projectId: row.projectId, token: access.plainText }) };
 }

@@ -66,4 +66,11 @@ describe("submitLead", () => {
     const second = await submitLead({ ...validInput, configurationId: "33333333-3333-4333-8333-333333333333", idempotencyKey: "44444444-4444-4444-8444-444444444444" }, deps);
     expect(second.projectId).not.toBe(first.projectId);
   });
+
+  test("keeps a stored lead successful when the independent webhook notification fails", async () => {
+    const { dependencies: deps, repository } = dependencies(); const notify = vi.fn().mockRejectedValue(new Error("WEBHOOK_DOWN"));
+    const result = await submitLead(validInput, { ...deps, notifier: { notify } });
+    expect(result.leadId).toBeDefined(); expect(repository.insertCount).toBe(1);
+    expect(notify).toHaveBeenCalledWith(expect.objectContaining({ eventType: "lead_submitted", leadId: result.leadId, projectId: result.projectId, contact: "owner@example.test" }));
+  });
 });
