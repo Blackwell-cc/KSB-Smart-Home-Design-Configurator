@@ -228,11 +228,12 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             <h2>{livePreview.concept.thaiLabel}</h2>
             <span className={styles.previewEnglish}>{livePreview.concept.englishLabel}</span>
             <span className={styles.previewDescription}>{livePreview.concept.description}</span>
-            {areaError ? <span>พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง</span> : <dl className={styles.metricList}>{livePreview.metricRows.map((metric) => {
+            {areaError ? <span>พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง</span> : <dl className={styles.metricList}>{livePreview.metricRows.map((metric, metricIndex) => {
               const label = metric.id === "construction-floor-area" ? "CFA" : metric.label;
               const value = `${metric.value}${metric.id === "usable-area" ? state.configuration.usableAreaOverrideM2 ? " (กำหนดเอง)" : " (แนะนำ)" : ""}`;
               const isMobileOptional = !["floors", "bedrooms", "bathrooms", "usable-area"].includes(metric.id);
-              return <div className={isMobileOptional ? styles.mobileOptionalMetric : undefined} data-live-metric={metric.id} key={metric.id}><dt>{label}</dt><dd className="tabularNumbers">{value}<span aria-hidden="true" className={styles.metricSummary}>{label} {value}</span></dd></div>;
+              const columnClass = metricIndex % 2 === 0 ? styles.metricColumnLeft : styles.metricColumnRight;
+              return <div className={`${columnClass}${isMobileOptional ? ` ${styles.mobileOptionalMetric}` : ""}`} data-live-metric={metric.id} key={metric.id}><dt>{label}</dt><dd className="tabularNumbers">{value}<span aria-hidden="true" className={styles.metricSummary}>{label} {value}</span></dd></div>;
             })}</dl>}
             <span className={styles.previewMaterialLevel}>ระดับวัสดุ {livePreview.material.label}</span>
             <span className={styles.previewMaterialDescription}>{livePreview.material.description}</span>

@@ -116,8 +116,8 @@
   border-bottom: 1px solid var(--line);
 }
 
-.metricList > div { padding-right: 12px; }
-.metricList > div + div { padding-left: 12px; border-left: 1px solid var(--line); }
+.metricColumnLeft { padding-right: 12px; }
+.metricColumnRight { padding-left: 12px; border-left: 1px solid var(--line); }
 .metricList dt { color: var(--muted); font-size: 0.8rem; }
 .metricList dd { margin: 0; color: var(--ivory); font-size: 0.74rem; white-space: nowrap; }
 .metricSummary { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
@@ -269,7 +269,7 @@
   .preview { position: static; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 12px; padding: 9px; }
   .previewCopy { align-content: start; padding: 1px 2px 1px 10px; }
   .previewDescription, .previewMaterialDescription, .materialPalette, .previewFeatures, .mobileOptionalMetric { display: none; }
-  .metricList { margin-top: 4px; }.metricList > div { padding: 5px 8px 5px 0; }.metricList > div + div { padding-left: 8px; }
+  .metricList { margin-top: 4px; }.metricList > div { padding-top: 5px; padding-bottom: 5px; }.metricColumnLeft { padding-right: 8px; }.metricColumnRight { padding-left: 8px; }
   .metricList dt { font-size: 0.7rem; }.metricList dd { font-size: 0.66rem; }
   .stepContent { margin-top: 25px; }
   .counterGrid, .checkboxGrid, .budgetGrid, .materialGrid, .conceptGrid { grid-template-columns: 1fr; }
@@ -285,6 +285,7 @@
   .conceptOption { grid-template-columns: minmax(0, 42fr) minmax(0, 58fr); min-height: 136px; }
   .conceptCopy { padding: 12px 11px 10px 0; }.conceptDescription { font-size: 0.73rem; }
   .checkChoice { min-height: 58px; }
+  .formPanel { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   .actions { position: sticky; bottom: 0; z-index: 2; margin-top: 28px; padding: 14px 0 calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(var(--obsidian) 75%, transparent); }
 }
 
