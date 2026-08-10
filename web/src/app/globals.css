@@ -8,7 +8,7 @@
   --sage: #9cb091;
   --line: rgba(216, 177, 105, 0.26);
   --focus: #f7e1b6;
-  --font-thai: var(--font-prompt), "Prompt", sans-serif;
+  --font-thai: "Prompt", "Prompt Fallback", sans-serif;
   --font-data: ui-monospace, "SFMono-Regular", Consolas, monospace;
 }
 
