@@ -1,7 +1,8 @@
-import { Noto_Sans_Thai } from "next/font/google";
+import { Prompt } from "next/font/google";
 
-export const thaiFont = Noto_Sans_Thai({
+export const thaiFont = Prompt({
   subsets: ["thai", "latin"],
-  variable: "--font-noto-thai",
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-prompt",
   display: "swap",
 });
