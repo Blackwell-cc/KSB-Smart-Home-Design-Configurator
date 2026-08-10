@@ -7,7 +7,7 @@ walkthrough at desktop (`1280x720`) and mobile (`390x844`) sizes.
 
 | Journey check | Automated evidence |
 | --- | --- |
-| Image-backed style choices | The focused Playwright journey requires four style cards, four images, and the approved Contemporary image source. |
+| Image-backed style choices | The focused Playwright journey requires four style cards, four images, and the expected Contemporary catalog filename. |
 | Live preview responds to choices | The journey changes the style with keyboard `Space`, then increases bedrooms and asserts that the live preview shows four bedrooms. |
 | Preview before lead capture | The journey reaches the project summary and estimate before the full-project-summary CTA; it asserts no phone, email, or LINE ID input is present first. |
 | Development estimate disclosure | Both focused journeys assert the visible Thai label `ข้อมูลทดสอบเพื่อพัฒนาระบบ`. |
@@ -37,15 +37,16 @@ keep the fallback stack).
 
 ## Visual browser review
 
-- Desktop 1280x720: verified the 48/52 decision-canvas and live-preview split,
+- [Desktop 1280x720 screenshot](screenshots/configurator-desktop-1280x720.png): verified the 48/52 decision-canvas and live-preview split,
   2x2 image-backed style choices, readable hierarchy, selected-state treatment,
   and the Obsidian / Ivory / Champagne Gold luxury direction.
-- Mobile 390x844: verified the compact preview-first layout, one-column choice
+- [Configurator mobile 390x844 screenshot](screenshots/configurator-mobile-390x844.png): verified the compact preview-first layout, one-column choice
   flow, current-step visibility, sticky actions with bottom clearance, and no
-  horizontal document overflow (`scrollWidth` stayed within the viewport).
-- Preview result: verified the concept image, project facts, wide budget range,
-  visible development-data disclosure, design-fee separation, supervision
-  exclusion, and the value-first Full Report CTA before contact fields appear.
+  horizontal document overflow (`innerWidth: 390`, `scrollWidth: 375`).
+- [Preview mobile 390x844 screenshot](screenshots/preview-mobile-390x844.png): verified the concept image and project facts after the caption-containment fix.
+- [Separated budget mobile 390x844 screenshot](screenshots/preview-budget-mobile-390x844.png): verified the construction range, design/professional-fee range, aggregate range,
+  visible development-data disclosure, supervision exclusion, and the
+  value-first Full Report CTA before contact fields appear.
 - A browser pass exposed the mobile concept caption escaping its image panel and
   overlapping the facts. The panel is now a positioned containing block on
   mobile; a regression test was added and the 390x844 browser view was checked
