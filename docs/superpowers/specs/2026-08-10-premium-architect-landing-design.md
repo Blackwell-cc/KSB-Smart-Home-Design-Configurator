@@ -1,204 +1,128 @@
-# Premium Architect Landing Page — Design Specification
+# Premium Architect Single-Hero Landing — Design Specification
 
 - วันที่: 2026-08-10
-- สถานะ: ทิศทาง A ได้รับอนุมัติจากเจ้าของผลิตภัณฑ์แล้วเมื่อ 2026-08-10; รอการตรวจ Written Spec ก่อนจัดทำ Implementation Plan
-- ผลิตภัณฑ์: KSB Architect Smart Home Design Configurator
+- สถานะ: อนุมัติให้แก้ไขและดำเนินการต่อเมื่อ 2026-08-10
+- เจ้าของผลิตภัณฑ์: KSB Architect
 
-## 1. ปัญหาที่ต้องแก้
+## 1. เป้าหมาย
 
-หน้า `/` ปัจจุบันแสดงเพียง `<main>`, ข้อความ และลิงก์โดยไม่มี class หรือ layout เฉพาะหน้า จึงเห็นเนื้อหาดิบชิดมุมซ้าย แม้ `globals.css` และหน้า `/configurator` จะทำงานตามปกติ ปัญหานี้เป็นช่องว่างของ Landing Page ไม่ใช่ CSS build failure หรือปัญหาการทำงานของ Configurator
+ปรับหน้า `/` ให้เปิดมาแล้วน่าสนใจในทันที มีเพียง Hero section เดียว อ่านง่าย ดูเรียบหรู และพาผู้ใช้ไปเริ่มวางแผนบ้านได้โดยไม่ต้องเลื่อนผ่านเนื้อหาซ้ำหลายส่วน
 
-## 2. เป้าหมายและงานหลักของหน้า
+หน้าแรกมีหน้าที่เดียว: อธิบายคุณค่าของ Smart Home Design Configurator และพาผู้ใช้กด `เริ่มวางแผนบ้าน`
 
-สร้างหน้าเริ่มต้นที่ทำให้เจ้าของบ้านซึ่งมีงบสร้างบ้านจริงเข้าใจภายในช่วงแรกของหน้าว่าเครื่องมือนี้ช่วยวางกรอบพื้นที่และงบประมาณเบื้องต้นก่อนคุยกับสถาปนิกได้ โดยผู้ใช้ต้องเริ่ม Configurator ได้ทันทีและมั่นใจว่า Preview แรกไม่ขอข้อมูลส่วนตัว
+## 2. ทิศทางที่เลือก
 
-หน้า Landing ต้องสื่อสารอย่างสงบ เป็นมืออาชีพ และไม่ทำให้ KSB ดูเป็นเว็บไซต์ขายบ้านราคาถูกหรือเครื่องคำนวณราคาที่ให้ความแม่นยำเกินจริง
+ใช้แนวทาง `Editorial Split Hero`:
 
-## 3. ขอบเขต
+- Navbar กว้างเต็ม viewport ไม่ถูกครอบด้วย max-width
+- โลโก้จริงอยู่ซ้ายสุดภายใน safe padding ของจอ
+- Hero แบ่งข้อความด้านซ้ายและภาพบ้านด้านขวา
+- เส้นแนวนอนสีทองบางเชื่อมสองฝั่ง เป็น `Architectural Horizon` และเป็น signature element เพียงจุดเดียว
+- ตัด value rail, process section, final CTA และ footer ออกจากหน้าแรก
+- คงความรู้สึกสงบ มั่นใจ และเป็นมืออาชีพ ไม่ใช้เอฟเฟกต์หรือกราฟิกตกแต่งเกินจำเป็น
 
-### รวมในงานนี้
+แนวทางนี้ถูกเลือกแทนภาพเต็มจอพร้อมข้อความทับ เพราะคุมความอ่านง่ายของภาษาไทยได้ดีกว่า และถูกเลือกแทน layout กึ่งกลางทั่วไปเพราะสื่อบุคลิกสตูดิโอสถาปัตย์ได้ชัดกว่า
 
-- Header ของ KSB พร้อมชื่อผลิตภัณฑ์และช่องทางติดต่อ
-- Premium hero แบบสองคอลัมน์บน Desktop และคอลัมน์เดียวบน Mobile
-- ภาพบ้าน `contemporary-warm-luxury.png` ที่อยู่ในคลัง Concept ปัจจุบัน
-- Primary CTA ไปที่ `/configurator`
-- Secondary CTA แบบ anchor ไปยังส่วนอธิบายขั้นตอนในหน้าเดียวกัน
-- แถบยืนยันคุณค่าหลัก 3 ข้อ
-- ขั้นตอนการใช้งานจริง 3 ขั้น
-- ข้อความกำกับขอบเขตของผลลัพธ์และ Final CTA
-- Responsive, keyboard focus, reduced-motion และ semantic landmarks
-- Unit, end-to-end และ accessibility regression coverage สำหรับพฤติกรรมหลัก
-
-### ไม่รวมในงานนี้
-
-- ระบบบัญชีผู้ใช้หรือหน้าเข้าสู่ระบบ
-- Portfolio, testimonial, CMS หรือข้อมูลผลงานโครงการจริง
-- การเพิ่ม API, database schema หรือ pricing logic
-- Animation library, WebGL หรือ dependency ใหม่
-- การเปลี่ยน UI ภายใน Configurator, Preview, Report หรือ Admin
-
-## 4. Information Architecture และข้อความหลัก
-
-### 4.1 Header
-
-- Brand lockup: `KSB ARCHITECT`
-- Product label: `HOME PLANNING STUDIO`
-- Contact link: `ปรึกษาสถาปนิก 091 991 4592` โดยใช้ `tel:0919914592`
-- Header ต้องโปร่งและวางอยู่ในกรอบความกว้างเดียวกับเนื้อหาหลัก ไม่ใช้ navigation หลายรายการที่ยังไม่มีปลายทางจริง
-
-### 4.2 Hero
-
-- Eyebrow: `บริการวางแผนบ้านโดยสถาปนิก`
-- H1: `รู้พื้นที่และงบประมาณบ้านก่อนเริ่มสร้าง`
-- Supporting statement: `บ้านหรูไม่ได้เริ่มจากวัสดุแพง แต่เริ่มจากการวางแผนพื้นที่ ฟังก์ชัน และกรอบงบประมาณให้สอดคล้องกัน`
-- Description: `เลือกความต้องการทีละขั้น เพื่อดู Concept Preview พื้นที่ใช้สอยที่แนะนำ และกรอบงบประมาณเบื้องต้นได้ก่อนให้ข้อมูลติดต่อ`
-- Primary CTA: `เริ่มวางแผนบ้าน` → `/configurator`
-- Secondary CTA: `ดูขั้นตอนการใช้งาน` → `#process`
-- Helper copy ใต้ CTA: `ใช้เวลาประมาณ 3–5 นาที · Preview แรกไม่ต้องกรอกข้อมูลส่วนตัว`
-
-ภาพ Hero ใช้ `/concepts/contemporary-warm-luxury.png` พร้อม alt text ภาษาไทยที่อธิบายว่าเป็นภาพแนวคิดบ้าน Contemporary Warm Luxury ไม่อ้างว่าเป็นผลงานก่อสร้างจริงของ KSB
-
-### 4.3 Value Rail
-
-แสดง 3 คุณค่าที่ตรวจสอบได้จากระบบปัจจุบัน:
-
-1. `01 / กำหนดความต้องการ` — เลือกสไตล์ จำนวนห้อง ทำเล และระดับวัสดุ
-2. `02 / เห็นกรอบโครงการ` — ดูพื้นที่ใช้สอย พื้นที่ก่อสร้าง และช่วงงบประมาณเบื้องต้น
-3. `03 / คุยกับสถาปนิกต่อได้` — ใช้ข้อมูลสรุปเป็นจุดเริ่มต้นของการปรึกษาอย่างเป็นระบบ
-
-ลำดับเลขใช้เพราะเป็นลำดับกระบวนการจริง ไม่ใช้เป็นของตกแต่ง
-
-### 4.4 Process Section
-
-Section id คือ `process` และใช้หัวข้อ `จากความต้องการ สู่กรอบโครงการที่คุยกับสถาปนิกได้`
-
-- ขั้นที่ 1 `เลือกตามภาพและการใช้งานจริง`
-- ขั้นที่ 2 `ระบบสรุปพื้นที่และกรอบงบประมาณ`
-- ขั้นที่ 3 `ดู Preview ก่อนตัดสินใจปรึกษาต่อ`
-
-ข้อความต้องใช้ภาษาคนทั่วไป หลีกเลี่ยงศัพท์ระบบ และระบุชัดว่าผู้ใช้ยังแก้ความต้องการย้อนหลังได้จาก Flow ปัจจุบัน
-
-### 4.5 Scope Note และ Final CTA
-
-- Scope note: `ผลลัพธ์เป็นการประเมินเบื้องต้นเพื่อช่วยวางแผน ไม่ใช่แบบก่อสร้าง ใบเสนอราคา หรือราคาผูกพัน`
-- Final heading: `บ้านที่อยู่ได้จริง เริ่มจาก Brief ที่ชัดเจน`
-- Final CTA: `เริ่มวางแผนบ้าน` → `/configurator`
-- Contact CTA: `ปรึกษาฟรี 091 991 4592` → `tel:0919914592`
-
-## 5. Visual Direction
-
-### 5.1 Aesthetic
-
-ใช้แนวทาง `Adaptive Obsidian Luxury` ที่มีอยู่ แต่ตีความผ่านภาษาของสตูดิโอสถาปัตยกรรม: กริดที่แม่นยำ เส้นอ้างอิงบาง ป้ายกำกับแบบ title block และพื้นที่ว่างที่สงบ ภาพรวมต้องดูเหมือน KSB กำลังเริ่มทำ Project Brief ให้ลูกค้า ไม่ใช่ Landing Page สำเร็จรูปของ SaaS
-
-### 5.2 Color Tokens
-
-- Obsidian Canvas: `#090807`
-- Architect Surface: `#15120F`
-- Warm Ivory: `#F3EEE5`
-- Champagne Gold: `#D9B26D`
-- Drawing Line: `rgba(217, 178, 109, 0.26)`
-- Warm Gray Copy: `#AA9F91`
-
-ใช้สีทองกับเส้นอ้างอิง สถานะ และ CTA เท่าที่จำเป็น หลีกเลี่ยง glow, gradient สีฉูดฉาด และเงาหนัก
-
-### 5.3 Typography
-
-- Display role: `Noto Sans Thai` น้ำหนัก 300–400 ขนาดใหญ่และ line-height แน่น เพื่อให้ภาษาไทยดูร่วมสมัยและสงบ
-- Body role: `Noto Sans Thai` น้ำหนัก 400–500 เพื่อความอ่านง่ายและไม่เพิ่ม webfont ใหม่
-- Utility role: Latin uppercase จากฟอนต์เดียวกัน น้ำหนัก 600–700 พร้อม letter spacing สำหรับ `KSB ARCHITECT`, project labels และตัวเลขลำดับ
-
-การเลือก family เดียวหลายบทบาทเป็นข้อจำกัดโดยตั้งใจ เพื่อไม่เพิ่ม network/font dependency และรักษาความสอดคล้องกับ Configurator ปัจจุบัน ความแตกต่างสร้างด้วยน้ำหนัก ขนาด ระยะห่าง และโครงสร้าง ไม่ใช้ฟอนต์ตกแต่ง
-
-### 5.4 Layout
-
-Desktop ใช้กริด 12 คอลัมน์ภายในความกว้างสูงสุด 1440px: copy 5 คอลัมน์, ช่องว่าง 1 คอลัมน์ และภาพ 6 คอลัมน์ Hero ต้องเห็น H1, CTA, helper copy และส่วนสำคัญของภาพโดยไม่ต้องเลื่อนบน viewport 1366×768
+## 3. โครงสร้างหน้า
 
 ```text
-┌────────────────────────────────────────────────────────────┐
-│ KSB ARCHITECT / HOME PLANNING STUDIO        CONTACT        │
-├───────────────────────────────┬────────────────────────────┤
-│ EYEBROW                       │ PROJECT BRIEF / 01         │
-│ H1                            │                            │
-│ Supporting copy               │      CONCEPT IMAGE         │
-│ [PRIMARY]  [SECONDARY]        │                            │
-│ helper copy                   │  style / planning labels   │
-├───────────────────────────────┴────────────────────────────┤
-│ 01 requirement   02 project frame   03 architect handoff  │
-├────────────────────────────────────────────────────────────┤
-│ PROCESS: three ordered steps                               │
-├────────────────────────────────────────────────────────────┤
-│ SCOPE NOTE + FINAL CTA                                     │
-└────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│ [KSB LOGO]                                  ปรึกษาสถาปนิก  เบอร์โทร │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  บริการวางแผนบ้านโดยสถาปนิก        ┌─────────────────────────────┐ │
+│  รู้พื้นที่และงบประมาณบ้าน           │                             │ │
+│  ก่อนเริ่มสร้าง                      │       CONCEPT IMAGE         │ │
+│  supporting copy                    │                             │ │
+│  [เริ่มวางแผนบ้าน ↗] [ปรึกษาฟรี]   │   concise project caption   │ │
+│  helper / trust note                └─────────────────────────────┘ │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
-Mobile เรียง Header → Hero copy → CTA → image → value rail → process → final CTA ปุ่มหลักกว้างเต็มพื้นที่ที่เหมาะสม ไม่มี horizontal scroll และ touch target สูงอย่างน้อย 44px
+Semantic structure มี `<header>` หนึ่งส่วน และ `<main>` ที่มี `<section>` เพียงหนึ่ง section เท่านั้น ไม่มี footer บนหน้าแรก
 
-### 5.5 Signature Element
+## 4. เนื้อหา
 
-จุดจดจำของหน้าคือ `Architect's Briefing Plate`: กรอบภาพ Hero จะมีเส้น crosshair บางและ title block ที่มุมล่าง ระบุ `PROJECT BRIEF / 01`, `CONCEPT STUDY` และ `PRELIMINARY` องค์ประกอบนี้เชื่อมหน้ากับเอกสารสถาปัตยกรรมโดยตรง ใช้เพียงบริเวณ Hero และไม่ทำซ้ำเป็น decoration ทั่วหน้า
+- Eyebrow: `บริการวางแผนบ้านโดยสถาปนิก`
+- H1: `รู้พื้นที่และงบประมาณบ้าน ก่อนเริ่มสร้าง`
+- Supporting statement: `บ้านหรูไม่ได้เริ่มจากวัสดุแพง แต่เริ่มจากการวางแผนพื้นที่ ฟังก์ชัน และกรอบงบประมาณให้สอดคล้องกัน`
+- Primary CTA: `เริ่มวางแผนบ้าน` ไป `/configurator`
+- Secondary CTA: `ปรึกษาฟรี` ไป `tel:0919914592`
+- Helper: `ใช้เวลาประมาณ 3–5 นาที · Preview แรกไม่ต้องกรอกข้อมูลส่วนตัว`
+- Contact ใน Navbar: `ปรึกษาสถาปนิก` และ `091 991 4592`
 
-## 6. Component และ File Boundaries
+ตัดข้อความกระบวนการและ CTA ที่ซ้ำกันออก ไม่เพิ่มคำรับประกันราคา ระยะเวลาออกแบบ หรือข้อความขายเกินจริง
 
-- `web/src/app/page.tsx` เป็น semantic page structure และเชื่อม `Link`/`Image`; ไม่มี client state จึงคงเป็น Server Component
-- `web/src/app/landing-content.ts` เก็บข้อความภาษาไทยทั้งหมดที่อาจต้องปรับหรือรองรับ locale ในอนาคต
-- `web/src/app/landing-page.module.css` เก็บ style เฉพาะ Landing เพื่อไม่ให้ selector รั่วไปยัง Configurator
-- `web/src/app/home-page.test.tsx` ตรวจ heading, CTA destinations, trust copy, contact link และ semantic sections
-- `web/src/e2e/home-page.e2e.ts` ตรวจเส้นทางเริ่มต้น, critical content และพฤติกรรมบน viewport หลัก
+## 5. ระบบภาพ
 
-ไม่สร้าง component abstraction เพิ่มหากถูกใช้เพียงหน้าเดียว เพื่อหลีกเลี่ยงโครงสร้างเกินจำเป็น
+### 5.1 สี
 
-## 7. Interaction และ Data Flow
+- Obsidian: `#080807` — พื้นหลังหลัก
+- Charcoal: `#151310` — ผิวรองและ caption overlay
+- Architectural Gold: `#CBAA6A` — CTA และเส้น horizon
+- Soft Gold: `#E8D2A4` — eyebrow และข้อมูลสำคัญ
+- Warm Ivory: `#F4F0E8` — หัวเรื่อง
+- Stone: `#AAA198` — ข้อความรอง
 
-Landing ไม่มี API call และไม่มี client-side state:
+### 5.2 Typography
 
-1. Server render ข้อความจาก `getLandingContent()`
-2. `next/image` ส่งภาพตามขนาด viewport
-3. Primary CTA เปิด `/configurator`
-4. Secondary CTA เลื่อนไป `#process` ด้วย native anchor behavior
-5. Contact CTA เปิด dialer ผ่าน `tel:`
+ใช้ Google Font `Prompt` เป็นฟอนต์หลักใหม่ทั้งภาษาไทยและข้อความ Latin เพื่อให้หน้า Landing และ Configurator ต่อเนื่องกัน
 
-เมื่อ JavaScript โหลดไม่สำเร็จ ลิงก์และเนื้อหาหลักยังต้องใช้งานได้
+- H1: Prompt 400, responsive `clamp(3rem, 5vw, 5.5rem)`, line-height ประมาณ `1.08`
+- Supporting statement: Prompt 400–500, line-height `1.7`
+- Body/helper: Prompt 300–400, line-heightอย่างน้อย `1.6`
+- Labels: Prompt 500–600 ใช้ letter spacing อย่างระมัดระวัง ไม่บีบตัวอักษรไทย
 
-## 8. Responsive, Accessibility และ Performance
+### 5.3 โลโก้
 
-- ใช้ `<header>`, `<main>`, `<section>`, heading order และ `<footer>` อย่างมีความหมาย
-- ทุกลิงก์มี accessible name ที่ตรงกับผลของการกด
-- `:focus-visible` ต้องเห็นชัดบนพื้นดำ
-- สีข้อความและ CTA ต้องผ่าน WCAG AA; ไม่ใช้สีเพียงอย่างเดียวสื่อข้อมูล
-- เคารพ `prefers-reduced-motion`; ไม่เพิ่ม animation ที่จำเป็นต่อความเข้าใจ
-- ภาพ Hero ใช้ `next/image`, `sizes`, responsive crop และ preload เฉพาะภาพ above-the-fold
-- ที่ 360px ต้องไม่มี horizontal overflow และเนื้อหา/ปุ่มไม่ถูกตัด
-- ที่ 1366×768 ต้องเห็น CTA หลักโดยไม่ต้องเลื่อน
+- Source: `D:\KSB Smart Home Design Configurator\LOGO.png`
+- ส่งสำเนาเข้า `web/public/brand/ksb-architect-logo.png`
+- แสดงด้วย `next/image` โดยคงสัดส่วน ไม่บิดภาพ
+- Navbar desktop ให้โลโก้มี visual width ประมาณ `132–160px`; mobile ประมาณ `104–124px`
+- เนื่องจาก source มีพื้นที่โปร่งรอบตราสัญลักษณ์ ให้ใช้ wrapper ที่ clip อย่างควบคุมและ scale ภาพภายในเพื่อให้ตราสัญลักษณ์มีขนาดพอดี โดยไม่แก้รูปทรงหรือสีของโลโก้
 
-## 9. Error Handling และ Fallback
+### 5.4 ภาพ Hero
 
-- หากภาพโหลดไม่ได้ เนื้อหาและ CTA ยังอยู่ใน DOM และ alt text บอกบริบทได้
-- หากโทรศัพท์ไม่รองรับ `tel:` ลิงก์ยังแสดงหมายเลขให้คัดลอกได้
-- ไม่ซ่อน CTA ด้วย JavaScript, animation หรือ viewport detection
-- ไม่เพิ่มข้อความรับประกันราคา ระยะเวลาติดต่อ หรือข้อมูลผลงานที่ยังไม่ได้รับการยืนยัน
+ใช้ `/concepts/contemporary-warm-luxury.png` เป็นภาพหลัก แสดงแบบ cover และรักษาบริเวณตัวบ้านเป็น focal point มี gradient มืดเฉพาะส่วนล่างเพื่อรองรับ caption สั้น ห้ามใช้ title block หรือ crosshair จำนวนมากแบบเวอร์ชันเดิม
 
-## 10. Testing และ Acceptance Criteria
+## 6. Responsive
 
-### Automated Tests
+- Desktop `>= 900px`: Hero สูงอย่างน้อย `calc(100svh - navbar)` แบ่ง copy ประมาณ 43% และภาพ 57%
+- Navbar เต็มจอ ใช้ safe padding `clamp(20px, 3vw, 56px)` ไม่ใช้ container กึ่งกลาง
+- ที่ viewport `1366×768` ต้องเห็น H1, CTA, helper และส่วนสำคัญของภาพโดยไม่ต้องเลื่อน
+- Mobile `< 900px`: เรียง copy ก่อนภาพภายใน section เดียว ปุ่มเต็มความกว้างเมื่อจอแคบ และไม่เกิด horizontal overflow
+- Touch target ทุกปุ่ม/ลิงก์สำคัญสูงอย่างน้อย `44px`
 
-- Unit test ยืนยัน H1, primary CTA `/configurator`, secondary anchor `#process`, contact `tel:0919914592`, Preview-without-PII copy และ scope note
-- E2E test ยืนยันหน้าไทยแสดง critical content และ primary CTA นำไป `/configurator`
-- E2E responsive assertion ยืนยัน `document.documentElement.scrollWidth <= document.documentElement.clientWidth` ที่ viewport 360×800
-- Accessibility scan ของ Landing ต้องไม่มี serious หรือ critical violations
-- Typecheck, lint และ production build ต้องผ่าน
+## 7. Interaction และ Accessibility
 
-### Visual QA
+- หน้าเป็น Server Component และไม่มี API call/client state
+- Primary CTA ไป `/configurator`; secondary และ Navbar contact ใช้ `tel:0919914592`
+- โลโก้ลิงก์กลับ `/` และมี accessible name `KSB Architect หน้าแรก`
+- ภาพแนวคิดมี alt text ภาษาไทยที่สื่อบริบท
+- `:focus-visible` เห็นชัดบนพื้นมืด
+- เคารพ `prefers-reduced-motion`
+- สีข้อความและปุ่มต้องผ่าน WCAG AA
 
-- Desktop: 1366×768 และ 1920×1080
-- Mobile: 360×800 และ 390×844
-- ตรวจ Thai wrapping, crop ของภาพ, contrast, keyboard focus และ CTA above the fold
+## 8. File Boundaries
 
-### Definition of Done
+- `web/src/app/page.tsx`: semantic structure ของ Navbar และ Hero เดียว
+- `web/src/app/landing-content.ts`: copy ที่ใช้จริงบนหน้าแรกเท่านั้น
+- `web/src/app/landing-page.module.css`: layout และ visual tokens เฉพาะ Landing
+- `web/src/app/fonts.ts`: โหลด Prompt ผ่าน `next/font/google`
+- `web/src/app/globals.css`: ผูกตัวแปร global font ใหม่
+- `web/public/brand/ksb-architect-logo.png`: สำเนาโลโก้สำหรับเว็บ
+- `web/src/app/home-page.test.tsx`: unit acceptance ของ single section, logo และ CTA
+- `web/src/e2e/home-page.e2e.ts`: navigation, responsive และ above-the-fold acceptance
 
-- หน้า `/` ไม่ปรากฏเป็นข้อความดิบชิดมุมอีกต่อไป
-- ผู้ใช้เข้าใจสิ่งที่จะได้รับ ขอบเขตผลลัพธ์ และเงื่อนไขไม่ขอข้อมูลก่อน Preview ภายใน Hero
-- Primary CTA ไปถึง Configurator และใช้งานได้ด้วย mouse, keyboard และ touch
-- ดีไซน์ต่อเนื่องกับหน้า Configurator แต่มี Hero ที่โดดเด่นแบบ Architect's Briefing Plate
-- Automated verification และ Visual QA ตามรายการข้างต้นผ่านโดยไม่มี regression ที่เกี่ยวข้อง
+## 9. Testing และ Definition of Done
+
+- Unit test ยืนยันว่ามี section เดียว, โลโก้จริง, H1, CTA `/configurator`, contact `tel:` และ trust note
+- Unit test ยืนยันว่าไม่มี process/final CTA ที่ซ้ำจากเวอร์ชันเดิม
+- E2E desktop ยืนยัน CTA หลักอยู่ใน viewport ที่ `1366×768`
+- E2E mobile ยืนยันไม่มี horizontal overflow และ CTA สูงอย่างน้อย `44px`
+- Typecheck, lint, unit tests และ production build ผ่าน
+- Visual QA ที่ `1366×768`, `1920×1080`, `390×844` และ `360×800`
+- โลโก้ไม่ยืด ไม่เล็กจนอ่านไม่ออก และชิดซ้ายตาม safe padding
+- หน้าแรกมี Hero section เดียว อ่านง่าย และยังเข้าถึง Configurator/โทรปรึกษาได้ด้วย mouse, keyboard และ touch
 
