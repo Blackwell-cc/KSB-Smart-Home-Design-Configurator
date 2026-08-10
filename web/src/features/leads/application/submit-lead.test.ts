@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { createDeterministicAccessToken, ProjectAccessTokenSecretError, submitLead } from "./submit-lead";
 
 const configuration = {
@@ -51,6 +51,13 @@ describe("submitLead", () => {
     expect(second).toEqual(first);
     expect(first.reportUrl).toBe(`/report/access#project=${first.projectId}&token=token-${validInput.idempotencyKey}`);
     expect(repository.insertCount).toBe(1);
+  });
+
+  test("persists curated concept presentation metadata inside the immutable saved snapshot", async () => {
+    const { dependencies: deps } = dependencies();
+    const captured = vi.fn(deps.repository.submitOnce); deps.repository.submitOnce = captured;
+    await submitLead(validInput, deps);
+    expect((captured.mock.calls[0]?.[0] as unknown as { calculationSnapshot: { concept: unknown } }).calculationSnapshot.concept).toEqual({ id: "contemporary-warm-luxury", label: "Contemporary Warm Luxury", imageSrc: "/concepts/contemporary-warm-luxury.png" });
   });
 
   test("allows the same contact to create another project with a different idempotency key", async () => {

@@ -71,6 +71,13 @@ test("exports the project summary as a local PNG without uploading it", async ()
   expect(revokeObjectUrl).toHaveBeenCalledWith("blob:summary");
 });
 
+test("always cleans the temporary anchor and object URL when a PNG download click fails", async () => {
+  const user = userEvent.setup(); const revoke = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined); const remove = vi.spyOn(HTMLAnchorElement.prototype, "remove");
+  vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:failure"); vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => { throw new Error("DOWNLOAD_FAILED"); });
+  render(<FullReport report={report} />); await user.click(screen.getByRole("button", { name: "บันทึกภาพสรุปโครงการ" }));
+  await waitFor(() => expect(revoke).toHaveBeenCalledWith("blob:failure")); expect(remove).toHaveBeenCalled();
+});
+
 test("hands a consultation request to the host after its server-confirmed success", async () => {
   const user = userEvent.setup();
   const onRequestConsultation = vi.fn().mockResolvedValue(undefined);

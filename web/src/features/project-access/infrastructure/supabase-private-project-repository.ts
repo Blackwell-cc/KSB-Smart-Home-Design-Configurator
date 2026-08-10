@@ -1,12 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import type { ActiveProjectAccess, PrivateProjectRecord, PrivateProjectRepository } from "../application/resolve-private-project";
 
-type Query = { select(columns: string): Query; eq(column: string, value: unknown): Query; is(column: string, value: null): Query; update(values: Record<string, unknown>): Query; maybeSingle(): Promise<{ data: unknown; error: unknown }>; };
-type QueryClient = { from(table: string): Query };
+type Query = { select(columns: string): Query; eq(column: string, value: unknown): Query; maybeSingle(): Promise<{ data: unknown; error: unknown }>; };
+type QueryClient = { from(table: string): Query; rpc(name: "request_consultation_once", args: { p_project_id: string }): Promise<{ data: unknown; error: unknown }> };
 const asRecord = (value: unknown): Record<string, unknown> | null => typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null;
 
 export class SupabasePrivateProjectRepository implements PrivateProjectRepository {
-  constructor(private readonly client: QueryClient, private readonly now: () => Date = () => new Date()) {}
+  constructor(private readonly client: QueryClient) {}
 
   async findAccessByTokenHash(tokenHash: string): Promise<ActiveProjectAccess | null> {
     const { data, error } = await this.client.from("project_access_tokens").select("project_id, token_hash, expires_at, revoked_at").eq("token_hash", `\\x${tokenHash}`).maybeSingle();
@@ -30,13 +30,12 @@ export class SupabasePrivateProjectRepository implements PrivateProjectRepositor
   }
 
   async requestConsultation(projectId: string): Promise<Date> {
-    const requestedAt = this.now().toISOString();
-    const updated = await this.client.from("projects").update({ consultation_requested_at: requestedAt }).eq("id", projectId).is("consultation_requested_at", null).select("consultation_requested_at").maybeSingle();
-    const updatedRow = asRecord(updated.data);
-    if (!updated.error && updatedRow && typeof updatedRow.consultation_requested_at === "string") return new Date(updatedRow.consultation_requested_at);
-    const current = await this.client.from("projects").select("consultation_requested_at").eq("id", projectId).maybeSingle(); const currentRow = asRecord(current.data);
-    if (current.error || !currentRow || typeof currentRow.consultation_requested_at !== "string") throw new Error("CONSULTATION_UNAVAILABLE");
-    return new Date(currentRow.consultation_requested_at);
+    const result = await this.client.rpc("request_consultation_once", { p_project_id: projectId });
+    const row = Array.isArray(result.data) ? asRecord(result.data[0]) : null;
+    if (result.error || !row || typeof row.consultation_requested_at !== "string") throw new Error("CONSULTATION_UNAVAILABLE");
+    const requestedAt = new Date(row.consultation_requested_at);
+    if (!Number.isFinite(requestedAt.getTime())) throw new Error("CONSULTATION_UNAVAILABLE");
+    return requestedAt;
   }
 }
 

@@ -3,6 +3,7 @@ import { buildFullReport } from "./build-full-report";
 
 const snapshot = {
   id: "11111111-1111-4111-8111-111111111111",
+  concept: { id: "contemporary-warm-luxury", label: "Saved concept", imageSrc: "/concepts/contemporary-warm-luxury.png" },
   pricingVersion: "TH-2026Q2-QA-0.1", referenceDate: "2026-06-30", confidence: "B" as const,
   configuration: { styleId: "contemporary-warm-luxury", floors: 2, bedrooms: 3, bathrooms: 3, parkingSpaces: 2, materialLevel: "premium", specialFeatures: ["pool"] },
   area: { usableAreaM2: 164, constructionFloorAreaM2: 198 },
@@ -29,6 +30,7 @@ test("builds one immutable five-line view model from the saved snapshot", () => 
   expect(report.excludedItems).toContain("ค่าควบคุมงานก่อสร้าง");
   expect(Object.isFrozen(report)).toBe(true);
   expect(Object.isFrozen(report.concept)).toBe(true);
+  expect(Object.isFrozen(report.configuration.specialFeatures)).toBe(true);
 });
 
 test("compares an optional target budget without changing the saved estimate", () => {
@@ -36,8 +38,10 @@ test("compares an optional target budget without changing the saved estimate", (
 
   expect(report.budgetComparison.status).toBe("above-target");
   expect(report.total).toEqual(snapshot.estimate.total);
+  expect(Object.isFrozen(report.budgetComparison.target)).toBe(true);
 });
 
 test("rejects malformed snapshots instead of returning a partial report", () => {
   expect(() => buildFullReport({ id: "22222222-2222-4222-8222-222222222222", targetBudget: null }, { ...snapshot, estimate: { ...snapshot.estimate, lines: [] } })).toThrow("INVALID_SAVED_SNAPSHOT");
+  expect(() => buildFullReport({ id: "22222222-2222-4222-8222-222222222222", targetBudget: null }, { ...snapshot, concept: { id: "forged", label: "Forged", imageSrc: "https://outside.test/image.png" } })).toThrow("INVALID_SAVED_SNAPSHOT");
 });

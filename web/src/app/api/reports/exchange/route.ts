@@ -16,6 +16,7 @@ async function readJson(request: Request): Promise<unknown | Response> {
 }
 export function createPrivateAccessExchangeHandler({ resolve, secret, now }: HandlerDependencies) {
   return async (request: Request): Promise<Response> => {
+    if (request.headers.get("origin") !== new URL(request.url).origin) return error(403, "PROJECT_LINK_INVALID");
     const raw = await readJson(request); if (raw instanceof Response) return raw;
     const input = ExchangeSchema.safeParse(raw); if (!input.success) return error(400, "PROJECT_LINK_INVALID");
     try {

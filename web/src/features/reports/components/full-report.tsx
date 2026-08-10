@@ -44,23 +44,26 @@ export function FullReport({ report, onRequestConsultation, onConsultationReques
   async function exportSummary() {
     if (!summaryRef.current || exportState === "exporting") return;
     setExportState("exporting");
+    let objectUrl: string | null = null;
+    let download: HTMLAnchorElement | null = null;
     try {
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(summaryRef.current, { cacheBust: true, pixelRatio: 2 });
       const encoded = dataUrl.split(",", 2)[1];
       if (!encoded) throw new Error("INVALID_PNG");
       const binary = atob(encoded);
-      const objectUrl = URL.createObjectURL(new Blob([Uint8Array.from(binary, (character) => character.charCodeAt(0))], { type: "image/png" }));
-      const download = document.createElement("a");
+      objectUrl = URL.createObjectURL(new Blob([Uint8Array.from(binary, (character) => character.charCodeAt(0))], { type: "image/png" }));
+      download = document.createElement("a");
       download.href = objectUrl;
       download.download = "ksb-project-summary.png";
       document.body.appendChild(download);
       download.click();
-      download.remove();
-      URL.revokeObjectURL(objectUrl);
       setExportState("idle");
     } catch {
       setExportState("error");
+    } finally {
+      download?.remove();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     }
   }
 

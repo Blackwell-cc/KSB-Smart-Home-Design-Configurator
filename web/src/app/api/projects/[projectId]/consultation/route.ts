@@ -6,7 +6,7 @@ type Context = { params: Promise<{ projectId: string }> };
 type Dependencies = { authorize: (request: Request, projectId: string) => Promise<void>; requestConsultation: (projectId: string) => Promise<Date> };
 const noStore = { "cache-control": "no-store" };
 const invalid = () => Response.json({ error: { code: "PROJECT_LINK_INVALID" } }, { status: 404, headers: noStore });
-function sameOrigin(request: Request) { const origin = request.headers.get("origin"); return !origin || origin === new URL(request.url).origin; }
+function sameOrigin(request: Request) { return request.headers.get("origin") === new URL(request.url).origin; }
 export function createConsultationPostHandler({ authorize, requestConsultation }: Dependencies) {
   return async (request: Request, context: Context): Promise<Response> => {
     const { projectId } = await context.params; if (!sameOrigin(request)) return invalid();

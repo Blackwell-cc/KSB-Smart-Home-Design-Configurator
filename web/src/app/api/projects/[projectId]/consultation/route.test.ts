@@ -14,8 +14,17 @@ test("sets consultation idempotently only after authenticated project access", a
 
 test("does not store a consultation request when authorization fails", async () => {
   const requestConsultation = vi.fn();
-  const response = await createConsultationPostHandler({ authorize: vi.fn().mockRejectedValue(new Error("invalid")), requestConsultation })(new NextRequest("https://ksb.test/api/projects/11111111-1111-4111-8111-111111111111/consultation", { method: "POST" }), { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) });
+  const response = await createConsultationPostHandler({ authorize: vi.fn().mockRejectedValue(new Error("invalid")), requestConsultation })(new NextRequest("https://ksb.test/api/projects/11111111-1111-4111-8111-111111111111/consultation", { method: "POST", headers: { origin: "https://ksb.test" } }), { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) });
 
   expect(response.status).toBe(404);
   expect(requestConsultation).not.toHaveBeenCalled();
+});
+
+test("fails closed before authorization when Origin is absent or cross-site", async () => {
+  const authorize = vi.fn(); const requestConsultation = vi.fn();
+  const handler = createConsultationPostHandler({ authorize, requestConsultation });
+  const context = { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) };
+  expect((await handler(new NextRequest("https://ksb.test/api/projects/11111111-1111-4111-8111-111111111111/consultation", { method: "POST" }), context)).status).toBe(404);
+  expect((await handler(new NextRequest("https://ksb.test/api/projects/11111111-1111-4111-8111-111111111111/consultation", { method: "POST", headers: { origin: "https://attacker.test" } }), context)).status).toBe(404);
+  expect(authorize).not.toHaveBeenCalled(); expect(requestConsultation).not.toHaveBeenCalled();
 });
