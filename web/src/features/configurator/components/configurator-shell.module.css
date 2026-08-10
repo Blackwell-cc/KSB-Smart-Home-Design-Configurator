@@ -71,6 +71,33 @@
   color: var(--muted);
 }
 
+.materialPalette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 2px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.materialSwatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  color: var(--ivory);
+  font-size: 0.875rem;
+  border: 1px solid var(--line);
+}
+
+.materialSwatchColor {
+  width: 14px;
+  height: 14px;
+  background: var(--swatch-color);
+  border: 1px solid rgba(243, 238, 229, 0.45);
+  border-radius: 50%;
+}
+
 .formPanel {
   grid-area: form;
   min-width: 0;

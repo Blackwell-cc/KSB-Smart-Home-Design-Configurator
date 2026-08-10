@@ -1,6 +1,7 @@
 import type { AreaRecommendation } from "@/features/area-planning/domain/calculate-area";
 import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import type { HouseConfiguration } from "../domain/configuration";
+import { THAI_PROVINCES } from "../domain/provinces";
 
 type MaterialSwatch = {
   label: string;
@@ -68,6 +69,7 @@ export type LivePreviewModel = {
 export function buildLivePreview(configuration: HouseConfiguration, area: AreaRecommendation): LivePreviewModel {
   const concept = CONCEPT_CATALOG.find((item) => item.id === configuration.styleId) ?? CONCEPT_CATALOG[0];
   const material = MATERIAL_BOARDS[configuration.materialLevel];
+  const provinceName = THAI_PROVINCES.find((province) => province.code === configuration.provinceCode)?.name ?? "ยังไม่ได้เลือกจังหวัด";
 
   return {
     concept,
@@ -79,6 +81,7 @@ export function buildLivePreview(configuration: HouseConfiguration, area: AreaRe
       { id: "parking-spaces", label: "ที่จอดรถ", value: `${configuration.parkingSpaces} คัน` },
       { id: "usable-area", label: "พื้นที่ใช้สอย", value: `${area.usableAreaM2} ตร.ม.` },
       { id: "construction-floor-area", label: "พื้นที่ก่อสร้างรวม (CFA)", value: `${area.constructionFloorAreaM2} ตร.ม.` },
+      { id: "province", label: "จังหวัด", value: provinceName },
     ],
     activeFeatures: configuration.specialFeatures.map((code) => ({ code, label: SPECIAL_FEATURE_LABELS[code] })),
   };

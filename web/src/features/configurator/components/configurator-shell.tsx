@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { type CSSProperties, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { ProgressStepper } from "@/components/ui/progress-stepper";
@@ -211,6 +211,14 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             {areaError ? <span>พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง</span> : livePreview.metricRows.map((metric) => <span key={metric.id}>{metric.id === "construction-floor-area" ? "CFA" : metric.label} {metric.value}{metric.id === "usable-area" ? state.configuration.usableAreaOverrideM2 ? " (กำหนดเอง)" : " (แนะนำ)" : ""}</span>)}
             <span>ระดับวัสดุ {livePreview.material.label}</span>
             <span>{livePreview.material.description}</span>
+            <ul aria-label={`ตัวอย่างวัสดุระดับ ${livePreview.material.label}`} className={styles.materialPalette}>
+              {livePreview.material.swatches.map((swatch) => (
+                <li className={styles.materialSwatch} key={swatch.label} style={{ "--swatch-color": swatch.color } as CSSProperties}>
+                  <span aria-hidden="true" className={styles.materialSwatchColor} />
+                  <span>{swatch.label}</span>
+                </li>
+              ))}
+            </ul>
             {livePreview.activeFeatures.length > 0 ? <span>ส่วนพิเศษ {livePreview.activeFeatures.map((feature) => feature.label).join(" · ")}</span> : null}
             <span>ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง</span>
           </div>

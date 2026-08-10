@@ -54,3 +54,22 @@ test("uses the chosen material board and labels only the active special features
     { code: "ev-charger", label: "ที่ชาร์จรถ EV" },
   ]);
 });
+
+test("uses canonical province names and a polite fallback in the live metrics", () => {
+  const selectedProvince = {
+    ...createDefaultConfiguration(),
+    provinceCode: "50",
+  } satisfies HouseConfiguration;
+  const unselectedProvince = createDefaultConfiguration();
+
+  expect(buildLivePreview(selectedProvince, calculateArea(selectedProvince, QA_AREA_CATALOG)).metricRows).toContainEqual({
+    id: "province",
+    label: "จังหวัด",
+    value: "เชียงใหม่",
+  });
+  expect(buildLivePreview(unselectedProvince, calculateArea(unselectedProvince, QA_AREA_CATALOG)).metricRows).toContainEqual({
+    id: "province",
+    label: "จังหวัด",
+    value: "ยังไม่ได้เลือกจังหวัด",
+  });
+});

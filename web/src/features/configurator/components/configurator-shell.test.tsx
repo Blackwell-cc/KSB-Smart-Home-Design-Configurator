@@ -113,7 +113,11 @@ test("renders the live architect material board from the current configuration",
   expect(within(preview).getByText("โมเดิร์น ทรอปิคอล รีสอร์ต")).toBeInTheDocument();
   expect(within(preview).getByText("จำนวนชั้น 2 ชั้น")).toBeInTheDocument();
   expect(within(preview).getByText(/CFA 198/)).toBeInTheDocument();
+  expect(within(preview).getByText("จังหวัด ยังไม่ได้เลือกจังหวัด")).toBeInTheDocument();
   expect(within(preview).getByText("ระดับวัสดุ Premium")).toBeInTheDocument();
+  const palette = within(preview).getByRole("list", { name: "ตัวอย่างวัสดุระดับ Premium" });
+  expect(within(palette).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["ผนัง", "ไม้", "โลหะและกระจก"]);
+  expect(within(palette).getByText("ผนัง").parentElement).toHaveStyle("--swatch-color: #E5DDD1");
   expect(within(preview).getByText("ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง")).toBeInTheDocument();
 });
 
