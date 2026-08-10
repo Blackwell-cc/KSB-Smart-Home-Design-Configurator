@@ -346,3 +346,39 @@ test("marks preview data, material boards, and mobile-safe landmarks for the act
   expect(within(premium).getByText("ไม้")).toBeInTheDocument();
   expect(within(premium).getByText("โลหะและกระจก")).toBeInTheDocument();
 });
+
+test("keeps the mobile 2-up style contract and the construction-image disclaimer visible", () => {
+  renderConfigurator();
+
+  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
+  const form = screen.getByRole("region", { name: "เลือกสไตล์บ้าน" });
+  expect(screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" })).toHaveAttribute("data-style-layout", "two-columns-until-mobile");
+  expect(screen.getByText("ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง")).toHaveAttribute("data-preview-disclaimer", "always-visible");
+  expect(form.compareDocumentPosition(preview) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+
+test("updates the preview tone contract when the material level changes", async () => {
+  const { store } = renderConfigurator();
+  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
+
+  await act(async () => {
+    store.getState().updateConfiguration({ materialLevel: "signature" });
+  });
+
+  expect(preview).toHaveAttribute("data-preview-material", "signature");
+  expect(within(preview).getByRole("img", { name: /Contemporary Warm Luxury/i }).parentElement).toHaveAttribute("data-preview-tone", "signature");
+});
+
+test("explains how function and special-feature choices affect the planning brief without showing prices", async () => {
+  const { store } = renderConfigurator();
+
+  await act(async () => {
+    store.getState().setCurrentStep(1);
+  });
+  expect(screen.getByText("มีผลต่อพื้นที่ใช้สอยที่แนะนำ")).toBeInTheDocument();
+
+  await act(async () => {
+    store.getState().setCurrentStep(3);
+  });
+  expect(screen.getByText("มีผลต่อ allowance และหมวดงบประมาณ")).toBeInTheDocument();
+});

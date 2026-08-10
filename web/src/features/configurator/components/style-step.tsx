@@ -13,7 +13,7 @@ export function StyleStep({ error, errorId, selectedStyleId, onChange }: StyleSt
   return (
     <fieldset aria-describedby={error ? errorId : undefined} className={styles.choiceFieldset}>
       <legend>เลือกรูปแบบที่ใกล้กับบ้านของคุณที่สุด</legend>
-      <div aria-describedby={error ? errorId : undefined} aria-label="เลือกสไตล์บ้าน" className={styles.conceptGrid} role="radiogroup">
+      <div aria-describedby={error ? errorId : undefined} aria-label="เลือกสไตล์บ้าน" className={styles.conceptGrid} data-style-layout="two-columns-until-mobile" role="radiogroup">
         {CONCEPT_CATALOG.map((concept) => (
           <label className={styles.conceptOption} data-selected={selectedStyleId === concept.id} data-style-card="true" key={concept.id}>
             <input

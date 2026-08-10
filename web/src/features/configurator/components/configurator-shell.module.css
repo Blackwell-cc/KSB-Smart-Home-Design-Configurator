@@ -63,6 +63,18 @@
   background: linear-gradient(125deg, rgba(9, 8, 7, 0.12), transparent 42%, rgba(217, 178, 109, 0.09));
 }
 
+.preview[data-preview-material="select"] .imageFrame::after {
+  background: linear-gradient(125deg, rgba(54, 49, 43, 0.38), transparent 48%, rgba(215, 207, 194, 0.08));
+}
+
+.preview[data-preview-material="premium"] .imageFrame::after {
+  background: linear-gradient(125deg, rgba(9, 8, 7, 0.12), transparent 42%, rgba(229, 221, 209, 0.1));
+}
+
+.preview[data-preview-material="signature"] .imageFrame::after {
+  background: linear-gradient(125deg, rgba(43, 27, 18, 0.3), transparent 45%, rgba(169, 133, 80, 0.18));
+}
+
 .imageFrame img {
   object-fit: cover;
   animation: conceptCrossfade 250ms ease-out both;
@@ -104,8 +116,8 @@
   border-bottom: 1px solid var(--line);
 }
 
-.metricList > div:nth-child(odd) { padding-right: 12px; }
-.metricList > div:nth-child(even) { padding-left: 12px; border-left: 1px solid var(--line); }
+.metricList > div { padding-right: 12px; }
+.metricList > div + div { padding-left: 12px; border-left: 1px solid var(--line); }
 .metricList dt { color: var(--muted); font-size: 0.8rem; }
 .metricList dd { margin: 0; color: var(--ivory); font-size: 0.74rem; white-space: nowrap; }
 .metricSummary { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
@@ -215,6 +227,7 @@
 
 .counterGrid, .checkboxGrid, .budgetGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .checkboxGrid { gap: 10px; }
+.choiceImpact { color: var(--gold-light); font-size: 0.82rem; }
 .field { display: grid; gap: 8px; }
 .field > label, .budgetGrid label { color: var(--ivory); font-weight: 700; }
 .field input, .field select, .budgetGrid input { min-height: 48px; padding: 0 14px; color: var(--ivory); font: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 0; }
@@ -229,6 +242,8 @@
 .checkChoice[data-selected="true"] { background: rgba(217, 178, 109, 0.1); border-color: var(--gold); }
 .checkChoice input { width: 18px; height: 18px; margin: 0; accent-color: var(--gold); }
 .featureLabel { min-width: 0; font-weight: 700; }
+.featureCopy { display: grid; gap: 2px; min-width: 0; }
+.featureImpact { color: var(--muted); font-size: 0.7rem; line-height: 1.25; }
 .featureState { color: var(--muted); font-size: 0.75rem; white-space: nowrap; }
 .checkChoice[data-selected="true"] .featureState { color: var(--gold-light); }
 
@@ -241,8 +256,10 @@
 @keyframes selectedSheen { from { transform: rotate(22deg) translateX(-180%); } to { transform: rotate(22deg) translateX(670%); } }
 
 @media (max-width: 1050px) {
-  .conceptGrid, .materialGrid { grid-template-columns: 1fr; }
-  .conceptOption { grid-template-columns: minmax(140px, 0.72fr) minmax(0, 1.28fr); }
+  .materialGrid { grid-template-columns: 1fr; }
+  .conceptOption { grid-template-columns: minmax(86px, 0.66fr) minmax(0, 1.34fr); min-height: 136px; }
+  .conceptCopy { padding-top: 12px; }
+  .conceptDescription { font-size: 0.73rem; }
 }
 
 @media (max-width: 899px) {
@@ -251,8 +268,8 @@
   .shell { grid-template-areas: "preview" "form"; grid-template-columns: minmax(0, 1fr); gap: 30px; padding-top: 22px; }
   .preview { position: static; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 12px; padding: 9px; }
   .previewCopy { align-content: start; padding: 1px 2px 1px 10px; }
-  .previewCopy > span:nth-of-type(n+3), .previewCopy .materialPalette, .previewCopy .metricList > div:nth-child(n+5) { display: none; }
-  .metricList { margin-top: 4px; }.metricList > div { padding: 5px 0; }.metricList > div:nth-child(odd) { padding-right: 8px; }.metricList > div:nth-child(even) { padding-left: 8px; }
+  .previewDescription, .previewMaterialDescription, .materialPalette, .previewFeatures, .mobileOptionalMetric { display: none; }
+  .metricList { margin-top: 4px; }.metricList > div { padding: 5px 8px 5px 0; }.metricList > div + div { padding-left: 8px; }
   .metricList dt { font-size: 0.7rem; }.metricList dd { font-size: 0.66rem; }
   .stepContent { margin-top: 25px; }
   .counterGrid, .checkboxGrid, .budgetGrid, .materialGrid, .conceptGrid { grid-template-columns: 1fr; }
@@ -264,9 +281,8 @@
   .imageFrame { aspect-ratio: 16 / 10; }
   .previewCopy { padding-left: 10px; }
   .previewCopy h2 { font-size: 1.25rem; }
-  .previewCopy > span:nth-of-type(n+3), .previewCopy .materialPalette { display: none; }
   .metricList { grid-template-columns: repeat(2, minmax(0, 1fr)); }.metricList > div { display: grid; }
-  .conceptOption { grid-template-columns: 42% 58%; min-height: 136px; }
+  .conceptOption { grid-template-columns: minmax(0, 42fr) minmax(0, 58fr); min-height: 136px; }
   .conceptCopy { padding: 12px 11px 10px 0; }.conceptDescription { font-size: 0.73rem; }
   .checkChoice { min-height: 58px; }
   .actions { position: sticky; bottom: 0; z-index: 2; margin-top: 28px; padding: 14px 0 calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(var(--obsidian) 75%, transparent); }

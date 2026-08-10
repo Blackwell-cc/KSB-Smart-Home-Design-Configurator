@@ -12,10 +12,10 @@ type FunctionsStepProps = {
 };
 
 const FUNCTION_CHOICES = [
-  ["office", "ห้องทำงาน"],
-  ["elderlyRoom", "ห้องผู้สูงอายุ"],
-  ["thaiKitchen", "ครัวไทย"],
-  ["multipurposeRoom", "ห้องอเนกประสงค์"],
+  ["office", "ห้องทำงาน", "เพิ่มเงื่อนไขพื้นที่ใช้งาน"],
+  ["elderlyRoom", "ห้องผู้สูงอายุ", "เพิ่มเงื่อนไขพื้นที่ใช้งาน"],
+  ["thaiKitchen", "ครัวไทย", "เพิ่มเงื่อนไขพื้นที่ใช้งาน"],
+  ["multipurposeRoom", "ห้องอเนกประสงค์", "เพิ่มเงื่อนไขพื้นที่ใช้งาน"],
 ] as const;
 
 export function FunctionsStep({ areaDraft, areaError, configuration, onAreaChange, onChange }: FunctionsStepProps) {
@@ -39,15 +39,16 @@ export function FunctionsStep({ areaDraft, areaError, configuration, onAreaChang
       </div>
       <fieldset className={styles.choiceFieldset}>
         <legend>ฟังก์ชันเพิ่มเติม</legend>
+        <p className={styles.choiceImpact}>มีผลต่อพื้นที่ใช้สอยที่แนะนำ</p>
         <div className={styles.checkboxGrid}>
-          {FUNCTION_CHOICES.map(([key, label]) => (
+          {FUNCTION_CHOICES.map(([key, label, impact]) => (
             <label className={styles.checkChoice} data-selected={configuration.functions[key]} key={key}>
               <input
                 checked={configuration.functions[key]}
                 onChange={(event) => onChange({ functions: { ...configuration.functions, [key]: event.target.checked } })}
                 type="checkbox"
               />
-              <span className={styles.featureLabel}>{label}</span>
+              <span className={styles.featureCopy}><span className={styles.featureLabel}>{label}</span><span aria-hidden="true" className={styles.featureImpact}>{impact}</span></span>
               <span aria-hidden="true" className={styles.featureState}>{configuration.functions[key] ? "เลือกแล้ว" : "เพิ่มในโจทย์"}</span>
             </label>
           ))}

@@ -14,13 +14,13 @@ const MATERIALS = [
 ] as const;
 
 const SPECIAL_FEATURES = [
-  ["pool", "สระว่ายน้ำ"],
-  ["lift", "ลิฟต์"],
-  ["smart-home", "ระบบ Smart Home"],
-  ["solar", "โซลาร์เซลล์"],
-  ["ev-charger", "ที่ชาร์จรถ EV"],
-  ["double-volume", "โถง Double Volume"],
-  ["large-glazing", "ผนังกระจกขนาดใหญ่"],
+  ["pool", "สระว่ายน้ำ", "พิจารณา allowance และหมวดงบ"],
+  ["lift", "ลิฟต์", "พิจารณา allowance และหมวดงบ"],
+  ["smart-home", "ระบบ Smart Home", "พิจารณา allowance และหมวดงบ"],
+  ["solar", "โซลาร์เซลล์", "พิจารณา allowance และหมวดงบ"],
+  ["ev-charger", "ที่ชาร์จรถ EV", "พิจารณา allowance และหมวดงบ"],
+  ["double-volume", "โถง Double Volume", "พิจารณา allowance และหมวดงบ"],
+  ["large-glazing", "ผนังกระจกขนาดใหญ่", "พิจารณา allowance และหมวดงบ"],
 ] as const;
 
 export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeaturesStepProps) {
@@ -63,11 +63,12 @@ export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeatur
       </div>
       <fieldset className={styles.choiceFieldset}>
         <legend>ส่วนพิเศษที่อยากพิจารณา</legend>
+        <p className={styles.choiceImpact}>มีผลต่อ allowance และหมวดงบประมาณ</p>
         <div className={styles.checkboxGrid}>
-          {SPECIAL_FEATURES.map(([id, label]) => (
+          {SPECIAL_FEATURES.map(([id, label, impact]) => (
             <label className={styles.checkChoice} data-selected={configuration.specialFeatures.includes(id)} key={id}>
               <input checked={configuration.specialFeatures.includes(id)} onChange={() => toggleFeature(id)} type="checkbox" />
-              <span className={styles.featureLabel}>{label}</span>
+              <span className={styles.featureCopy}><span className={styles.featureLabel}>{label}</span><span aria-hidden="true" className={styles.featureImpact}>{impact}</span></span>
               <span aria-hidden="true" className={styles.featureState}>{configuration.specialFeatures.includes(id) ? "เลือกแล้ว" : "เพิ่มในโจทย์"}</span>
             </label>
           ))}
