@@ -49,7 +49,7 @@ describe("submitLead", () => {
     const { dependencies: deps, repository } = dependencies();
     const [first, second] = await Promise.all([submitLead(validInput, deps), submitLead(validInput, deps)]);
     expect(second).toEqual(first);
-    expect(first.reportUrl).toContain("#access=token-");
+    expect(first.reportUrl).toBe(`/report/access#project=${first.projectId}&token=token-${validInput.idempotencyKey}`);
     expect(repository.insertCount).toBe(1);
   });
 

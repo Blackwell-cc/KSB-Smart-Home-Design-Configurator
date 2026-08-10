@@ -4,11 +4,12 @@ import { calculateEstimate } from "@/features/pricing/domain/calculate-estimate"
 import type { PriceBookRepository } from "@/features/pricing/application/estimate-project";
 import { toCalculationConfiguration } from "@/features/pricing/application/estimate-request";
 import { LeadSubmissionSchema, type LeadSubmissionResult } from "../domain/lead";
+import { buildPrivateAccessExchangeUrl } from "../domain/private-access";
 
 export type LeadRepository = {
   submitOnce(input: {
     configurationId: string; configuration: unknown; calculationSnapshot: unknown; priceBookId: string;
-    pricingVersion: string; referenceDate: string; idempotencyKey: string; name: string;
+    idempotencyKey: string; name: string;
     preferredContactMethod: "phone" | "email" | "line"; phone?: string; email?: string; lineId?: string;
     consentVersion: string; tokenHash: string; expiresAt: string;
   }): Promise<{ leadId: string; projectId: string }>;
@@ -42,10 +43,10 @@ export async function submitLead(rawInput: unknown, dependencies: SubmitLeadDepe
   const row = await dependencies.repository.submitOnce({
     configurationId: input.configurationId, configuration: input.configuration,
     calculationSnapshot: { configuration: input.configuration, area, estimate, pricingVersion: priceBook.version, referenceDate: priceBook.referenceDate, assumptions: estimate.assumptions, includedItems: estimate.includedItems, excludedItems: estimate.excludedItems },
-    priceBookId, pricingVersion: priceBook.version, referenceDate: priceBook.referenceDate,
+    priceBookId,
     idempotencyKey: input.idempotencyKey, name: input.name, preferredContactMethod: input.preferredContactMethod,
     ...(input.preferredContactMethod === "phone" ? { phone: input.phone } : input.preferredContactMethod === "email" ? { email: input.email } : { lineId: input.lineId }),
     consentVersion: input.consentVersion, tokenHash: access.hash, expiresAt,
   });
-  return { ...row, privateToken: access.plainText, reportUrl: `/report/${row.projectId}#access=${encodeURIComponent(access.plainText)}` };
+  return { ...row, privateToken: access.plainText, reportUrl: buildPrivateAccessExchangeUrl({ projectId: row.projectId, token: access.plainText }) };
 }

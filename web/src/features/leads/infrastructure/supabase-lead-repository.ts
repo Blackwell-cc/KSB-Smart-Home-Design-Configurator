@@ -9,7 +9,7 @@ export class SupabaseLeadRepository implements LeadRepository {
   async submitOnce(input: Parameters<LeadRepository["submitOnce"]>[0]) {
     const { data, error } = await this.client.rpc("submit_lead_once", {
       p_configuration_id: input.configurationId, p_configuration: input.configuration, p_schema_version: 1,
-      p_price_book_id: input.priceBookId, p_pricing_version: input.pricingVersion, p_reference_date: input.referenceDate,
+      p_price_book_id: input.priceBookId,
       p_snapshot: input.calculationSnapshot, p_idempotency_key: input.idempotencyKey, p_name: input.name,
       p_preferred_contact_method: input.preferredContactMethod, p_phone: input.phone ?? null, p_email: input.email ?? null,
       p_line_id: input.lineId ?? null, p_consent_version: input.consentVersion, p_token_hash_hex: input.tokenHash,
