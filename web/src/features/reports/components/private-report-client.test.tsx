@@ -22,3 +22,13 @@ test("does not emit a handoff event when the consultation request fails", async 
   await userEvent.setup().click(screen.getByRole("button", { name: "consult" }));
   expect(emit).not.toHaveBeenCalled();
 });
+
+test("creates and reveals a privacy-safe public preview link", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ slug: "public-example-7f3k", shareUrl: "/share/public-example-7f3k" }), { status: 201, headers: { "content-type": "application/json" } })));
+  render(<PrivateReportClient report={report} />);
+
+  await userEvent.setup().click(screen.getByRole("button", { name: "สร้างลิงก์ Public Preview" }));
+
+  expect(fetch).toHaveBeenCalledWith("/api/shares", expect.objectContaining({ method: "POST", body: JSON.stringify({ projectId: report.projectId }) }));
+  expect(await screen.findByRole("link", { name: "เปิด Public Preview" })).toHaveAttribute("href", "/share/public-example-7f3k");
+});

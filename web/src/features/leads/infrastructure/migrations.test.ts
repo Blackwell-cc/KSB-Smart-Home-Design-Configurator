@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const migration = (file: string) => readFileSync(resolve(process.cwd(), "../supabase/migrations", file), "utf8");
-const migrations = ["0001_core.sql", "0002_price_books.sql", "0003_leads_projects.sql", "0004_public_previews.sql", "0005_harden_lead_rpc.sql", "0006_normalize_snapshot_metadata.sql", "0007_require_snapshot_estimate_object.sql", "0008_consultation_outbox.sql"].map(migration).join("\n");
+const migrations = ["0001_core.sql", "0002_price_books.sql", "0003_leads_projects.sql", "0004_public_previews.sql", "0005_harden_lead_rpc.sql", "0006_normalize_snapshot_metadata.sql", "0007_require_snapshot_estimate_object.sql", "0008_consultation_outbox.sql", "0009_public_preview_payload_allowlist.sql"].map(migration).join("\n");
 
 test("locks private data behind RLS, typed price tables, and a service-only transactional RPC", () => {
   for (const table of ["configurations", "price_books", "price_book_entries", "calculation_snapshots", "consent_versions", "leads", "projects", "project_access_tokens"]) expect(migrations).toMatch(new RegExp(`alter table ${table} enable row level security`, "i"));
@@ -63,4 +63,12 @@ test("requires stable, local concept presentation metadata before a snapshot can
   const outbox = migration("0008_consultation_outbox.sql");
   expect(outbox).toMatch(/assert_snapshot_concept_metadata[\s\S]*jsonb_typeof\(new\.payload->'concept'\)[\s\S]*'id'[\s\S]*'label'[\s\S]*'imageSrc'[\s\S]*\^\/concepts\//i);
   expect(outbox).toMatch(/create trigger calculation_snapshots_require_concept_metadata[\s\S]*before insert or update of payload on calculation_snapshots/i);
+});
+
+test("enforces the exact public-preview field allowlist inside PostgreSQL", () => {
+  const shareGuard = migration("0009_public_preview_payload_allowlist.sql");
+  expect(shareGuard).toMatch(/alter table public_previews[\s\S]*jsonb_object_length\(public_payload\)\s*=\s*7/i);
+  for (const key of ["conceptAssetId", "styleLabel", "floors", "bedrooms", "bathrooms", "parkingSpaces", "usableAreaM2"]) expect(shareGuard).toContain(`public_payload ? '${key}'`);
+  expect(shareGuard).toMatch(/conceptAssetId[\s\S]*contemporary-warm-luxury[\s\S]*modern-tropical-resort[\s\S]*timeless-contemporary-luxury[\s\S]*not-sure/i);
+  expect(shareGuard).not.toMatch(/\?\s*'(name|phone|email|lineId|budget|price|notes|province|privateToken)'/i);
 });
