@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { qaPriceBook } from "../fixtures/qa-price-book";
+import { THAI_PROVINCE_CODES } from "@/features/configurator/domain/provinces";
 import { SupabasePriceBookRepository } from "./supabase-price-book-repository";
 
 const areaCatalog = {
@@ -15,7 +16,7 @@ function entry(entry_type: string, entry_key: string, payload: unknown) {
 
 function publishedEntries() {
   return [
-    ...Object.entries(qaPriceBook.provinceRates).map(([key, payload]) => entry("province-rate", key, payload)),
+    ...THAI_PROVINCE_CODES.map((key) => entry("province-rate", key, qaPriceBook.provinceRates["10"])),
     ...Object.entries(qaPriceBook.materialFactors).map(([key, value]) => entry("material-factor", key, { value })),
     ...Object.entries(qaPriceBook.floorFactors).map(([key, value]) => entry("floor-factor", key, { value })),
     ...Object.entries(qaPriceBook.siteAccessFactors).map(([key, value]) => entry("site-access-factor", key, { value })),
@@ -49,11 +50,12 @@ function repositoryFor(bookRows: unknown[], entryRows: unknown[], error: unknown
 }
 
 const publishedBook = { id: "book-1", version: qaPriceBook.version, status: "published", reference_date: qaPriceBook.referenceDate };
+const completeProvinceRates = Object.fromEntries(THAI_PROVINCE_CODES.map((key) => [key, qaPriceBook.provinceRates["10"]]));
 
 describe("SupabasePriceBookRepository", () => {
   test("loads exactly one published book and its matching approved entries", async () => {
     await expect(repositoryFor([publishedBook], publishedEntries()).loadPublished()).resolves.toEqual({
-      priceBook: { ...qaPriceBook, status: "published" }, areaCatalog,
+      priceBook: { ...qaPriceBook, status: "published", provinceRates: completeProvinceRates }, areaCatalog,
     });
   });
 
@@ -61,6 +63,8 @@ describe("SupabasePriceBookRepository", () => {
     ["missing book", [], publishedEntries()],
     ["multiple books", [publishedBook, { ...publishedBook, id: "book-2" }], publishedEntries()],
     ["missing area catalog", [publishedBook], publishedEntries().filter((item) => item.entry_type !== "area-catalog")],
+    ["missing canonical province", [publishedBook], publishedEntries().filter((item) => item.entry_key !== "96")],
+    ["forged province", [publishedBook], [...publishedEntries(), entry("province-rate", "999", qaPriceBook.provinceRates["10"])]],
     ["duplicate entry", [publishedBook], [...publishedEntries(), entry("tax-rate", "default", { value: 0 })]],
     ["unknown entry", [publishedBook], [...publishedEntries(), entry("made-up", "default", {})]],
   ])("rejects %s safely", async (_label, bookRows, entryRows) => {

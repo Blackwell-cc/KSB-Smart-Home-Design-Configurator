@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { SPECIAL_FEATURE_CODES } from "@/features/configurator/domain/configuration";
+import { THAI_PROVINCE_CODES } from "@/features/configurator/domain/provinces";
 import type { AreaCatalog } from "@/features/area-planning/domain/area-catalog";
 import type { PriceBook } from "../domain/price-book";
 import type { PriceBookRepository } from "../application/estimate-project";
@@ -27,8 +28,16 @@ function parseEntries(rows: unknown[], book: z.infer<typeof metadata>): { priceB
   const known = new Set<string>();
   const take = (type: z.infer<typeof entry>["entry_type"], key: string) => { known.add(`${type}:${key}`); return get(type, key); };
   const provinceRates: Record<string, PriceBook["provinceRates"][string]> = {};
-  for (const item of parsed.data.filter((row) => row.entry_type === "province-rate")) { known.add(`province-rate:${item.entry_key}`); const value = range.safeParse(item.payload); if (!value.success) throw new Error("INVALID_PUBLISHED_PRICE_BOOK"); provinceRates[item.entry_key] = value.data; }
-  if (!Object.keys(provinceRates).length) throw new Error("INVALID_PUBLISHED_PRICE_BOOK");
+  const provinceEntries = parsed.data.filter((row) => row.entry_type === "province-rate");
+  const canonicalProvinceCodes = new Set<string>(THAI_PROVINCE_CODES);
+  if (provinceEntries.length !== THAI_PROVINCE_CODES.length) throw new Error("INVALID_PUBLISHED_PRICE_BOOK");
+  for (const item of provinceEntries) {
+    if (!canonicalProvinceCodes.has(item.entry_key)) throw new Error("INVALID_PUBLISHED_PRICE_BOOK");
+    known.add(`province-rate:${item.entry_key}`);
+    const value = range.safeParse(item.payload); if (!value.success) throw new Error("INVALID_PUBLISHED_PRICE_BOOK");
+    provinceRates[item.entry_key] = value.data;
+  }
+  if (Object.keys(provinceRates).length !== THAI_PROVINCE_CODES.length) throw new Error("INVALID_PUBLISHED_PRICE_BOOK");
   const factorRecord = (type: z.infer<typeof entry>["entry_type"], keys: readonly string[]) => Object.fromEntries(keys.map((key) => { const value = factor.safeParse(take(type, key)); if (!value.success) throw new Error("INVALID_PUBLISHED_PRICE_BOOK"); return [key, value.data.value]; }));
   const rangeRecord = (type: z.infer<typeof entry>["entry_type"], keys: readonly string[]) => Object.fromEntries(keys.map((key) => { const value = range.safeParse(take(type, key)); if (!value.success) throw new Error("INVALID_PUBLISHED_PRICE_BOOK"); return [key, value.data]; }));
   const materialFactors = factorRecord("material-factor", materialKeys) as PriceBook["materialFactors"];
