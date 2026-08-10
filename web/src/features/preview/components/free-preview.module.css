@@ -31,5 +31,5 @@
 .statusCard { width: min(560px, 100%); display: grid; gap: 18px; padding: 34px; background: var(--surface); border: 1px solid var(--line); }
 .statusCard h1 { color: var(--ivory); font-size: clamp(1.75rem, 4vw, 2.6rem); line-height: 1.15; }
 .statusCard [role="alert"] { color: var(--muted); line-height: 1.6; }
-@media (max-width: 899px) { .page { padding: 20px 16px 38px; } .layout { grid-template-columns: 1fr; gap: 34px; } .conceptPanel { position: static; min-height: 250px; } .conceptImageFrame { min-height: min(72vw, 440px); } .conceptImage { height: min(72vw, 440px); } .summaryPanel { max-width: none; } }
+@media (max-width: 899px) { .page { padding: 20px 16px 38px; } .layout { grid-template-columns: 1fr; gap: 34px; } .conceptPanel { position: relative; min-height: 0; } .conceptImageFrame { min-height: min(72vw, 440px); } .conceptImage { height: min(72vw, 440px); } .summaryPanel { max-width: none; } }
 @media (max-width: 560px) { .masthead { align-items: flex-start; flex-direction: column; } .facts { grid-template-columns: 1fr; } .facts > div:nth-child(odd) { margin-right: 0; } .actions { grid-template-columns: 1fr; } }

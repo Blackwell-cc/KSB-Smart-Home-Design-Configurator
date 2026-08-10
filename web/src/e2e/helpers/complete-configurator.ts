@@ -12,6 +12,7 @@ export const previewFixture = Object.freeze({
   materialLevel: "premium",
   budgetRange: { low: 5_400_000, high: 7_200_000 },
   confidence: "C",
+  estimateMode: "development-demo",
   disclaimer: "กรอบงบประมาณนี้เป็นข้อมูลเบื้องต้นสำหรับการวางแผนเท่านั้น",
 });
 
@@ -21,8 +22,15 @@ export async function mockEstimate(page: Page) {
   });
 }
 
+export async function selectStyleWithKeyboard(page: Page, style: string) {
+  const choice = page.getByRole("radio", { name: style });
+  await choice.focus();
+  await page.keyboard.press("Space");
+  await expect(choice).toBeChecked();
+}
+
 export async function completeConfigurator(page: Page) {
-  await page.getByRole("radio", { name: "Contemporary Warm Luxury" }).check();
+  await selectStyleWithKeyboard(page, "Contemporary Warm Luxury");
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await expect(page.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toBeVisible();
   await page.getByRole("button", { name: "ถัดไป" }).click();

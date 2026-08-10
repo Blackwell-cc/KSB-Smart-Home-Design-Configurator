@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { mockEstimate } from "./helpers/complete-configurator";
+import { mockEstimate, selectStyleWithKeyboard } from "./helpers/complete-configurator";
 
 async function expectNoSeriousAxeViolations(page: Page) {
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
@@ -14,7 +14,7 @@ test("keeps the public journey accessible from landing through the Soft Gate", a
 
   await page.goto("/configurator");
   await expectNoSeriousAxeViolations(page);
-  await page.getByRole("radio", { name: "Contemporary Warm Luxury" }).check();
+  await selectStyleWithKeyboard(page, "Contemporary Warm Luxury");
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await expectNoSeriousAxeViolations(page);
   await page.getByRole("button", { name: "ถัดไป" }).click();
@@ -26,6 +26,7 @@ test("keeps the public journey accessible from landing through the Soft Gate", a
   await expectNoSeriousAxeViolations(page);
   await page.getByRole("button", { name: "ดู Preview" }).click();
   await expect(page.getByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" })).toBeVisible();
+  await expect(page.getByText("ข้อมูลทดสอบเพื่อพัฒนาระบบ")).toBeVisible();
   await expectNoSeriousAxeViolations(page);
   await page.getByRole("button", { name: "รับสรุปโครงการฉบับเต็ม" }).click();
   await expectNoSeriousAxeViolations(page);
