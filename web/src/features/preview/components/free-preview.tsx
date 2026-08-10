@@ -18,6 +18,10 @@ type FreePreviewProps = {
 const money = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 });
 const materialLabels = { select: "Select", premium: "Premium", signature: "Signature" } as const;
 
+function formatRange(range: { low: number; high: number }) {
+  return `${money.format(range.low)} – ${money.format(range.high)} บาท`;
+}
+
 function StatusCard({ status, onBack }: Pick<FreePreviewProps, "status" | "onBack">) {
   if (status === "loading") return <main className={styles.statusPage}><p role="status" aria-busy="true">กำลังเตรียมสรุปโครงการของคุณ</p></main>;
 
@@ -80,10 +84,13 @@ export function FreePreview({ status, preview, onBack, onFullReport, onShare }: 
           <section className={styles.budget} aria-label="กรอบงบประมาณเบื้องต้น">
             {isDevelopmentDemo ? <p className={styles.developmentBadge} role="status">ข้อมูลทดสอบเพื่อพัฒนาระบบ</p> : null}
             <p>กรอบงบประมาณเบื้องต้น</p>
-            <strong>{money.format(preview.budgetRange.low)} – {money.format(preview.budgetRange.high)} บาท</strong>
+            <dl className={styles.budgetRows}>
+              <div><dt>ค่าก่อสร้าง</dt><dd>{formatRange(preview.constructionRange)}</dd></div>
+              <div><dt>ค่าออกแบบและบริการวิชาชีพ</dt><dd>{formatRange(preview.designFeeRange)}</dd></div>
+              <div><dt>งบรวมโดยประมาณ</dt><dd>{formatRange(preview.budgetRange)}</dd></div>
+            </dl>
             <span>เป็นกรอบประมาณการช่วงกว้าง ไม่ใช่ราคาสุดท้าย</span>
-            <span>ค่าออกแบบและบริการวิชาชีพแยกจากค่าก่อสร้าง</span>
-            <span>ไม่รวมค่าควบคุมงานก่อสร้าง</span>
+            <span>งบรวมรวมค่าออกแบบและบริการวิชาชีพแล้ว และไม่รวมค่าควบคุมงานก่อสร้าง</span>
             <span>{preview.disclaimer}</span>
           </section>
 

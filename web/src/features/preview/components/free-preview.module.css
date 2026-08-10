@@ -18,7 +18,11 @@
 .budget { display: grid; gap: 8px; margin-top: 28px; padding: 24px; background: linear-gradient(135deg, rgba(217, 178, 109, .14), rgba(26, 23, 20, .65)); border: 1px solid rgba(242, 216, 161, .38); }
 .budget p { color: var(--gold-light); font-weight: 700; }
 .developmentBadge { padding: 7px 10px; color: #19120a !important; background: var(--gold-light); border-left: 3px solid var(--gold); }
-.budget strong { color: var(--ivory); font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.2; letter-spacing: -.04em; }
+.budgetRows { display: grid; gap: 0; margin: 4px 0 2px; border-top: 1px solid rgba(242, 216, 161, .28); }
+.budgetRows > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 11px 0; border-bottom: 1px solid rgba(242, 216, 161, .2); }
+.budgetRows dt { color: var(--muted); font-size: .88rem; }
+.budgetRows dd { margin: 0; color: var(--ivory); font-weight: 700; text-align: right; }
+.budgetRows > div:last-child dt, .budgetRows > div:last-child dd { color: var(--gold-light); }
 .budget span { color: var(--muted); font-size: .88rem; line-height: 1.6; }
 .actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; margin-top: 22px; }
 .primaryAction, .secondaryAction, .backButton { min-height: 46px; padding: 11px 16px; font: inherit; font-weight: 700; border-radius: 2px; cursor: pointer; }
@@ -32,4 +36,4 @@
 .statusCard h1 { color: var(--ivory); font-size: clamp(1.75rem, 4vw, 2.6rem); line-height: 1.15; }
 .statusCard [role="alert"] { color: var(--muted); line-height: 1.6; }
 @media (max-width: 899px) { .page { padding: 20px 16px 38px; } .layout { grid-template-columns: 1fr; gap: 34px; } .conceptPanel { position: relative; min-height: 0; } .conceptImageFrame { min-height: min(72vw, 440px); } .conceptImage { height: min(72vw, 440px); } .summaryPanel { max-width: none; } }
-@media (max-width: 560px) { .masthead { align-items: flex-start; flex-direction: column; } .facts { grid-template-columns: 1fr; } .facts > div:nth-child(odd) { margin-right: 0; } .actions { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .masthead { align-items: flex-start; flex-direction: column; } .facts { grid-template-columns: 1fr; } .facts > div:nth-child(odd) { margin-right: 0; } .budgetRows > div { grid-template-columns: 1fr; gap: 4px; } .budgetRows dd { text-align: left; } .actions { grid-template-columns: 1fr; } }

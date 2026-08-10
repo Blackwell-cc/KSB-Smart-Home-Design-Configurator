@@ -10,6 +10,8 @@ export const previewFixture = Object.freeze({
   usableAreaM2: 164,
   constructionFloorAreaM2: 198,
   materialLevel: "premium",
+  constructionRange: { low: 4_880_304, high: 6_898_320 },
+  designFeeRange: { low: 244_015, high: 586_357 },
   budgetRange: { low: 5_400_000, high: 7_200_000 },
   confidence: "C",
   estimateMode: "development-demo",

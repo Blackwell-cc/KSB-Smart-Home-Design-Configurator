@@ -3,6 +3,8 @@ import type { HouseConfiguration } from "@/features/configurator/domain/configur
 import { CONCEPT_CATALOG } from "../domain/concept-catalog";
 import type { CalculationSnapshot, EstimateMode } from "@/features/pricing/domain/price-book";
 
+type PreviewMoneyRange = { low: number; high: number };
+
 export type FreePreviewPayload = {
   conceptAssetId: string;
   styleLabel: string;
@@ -13,13 +15,21 @@ export type FreePreviewPayload = {
   usableAreaM2: number;
   constructionFloorAreaM2: number;
   materialLevel: "select" | "premium" | "signature";
-  budgetRange: { low: number; high: number };
+  constructionRange: PreviewMoneyRange;
+  designFeeRange: PreviewMoneyRange;
+  budgetRange: PreviewMoneyRange;
   confidence: "C";
   estimateMode: EstimateMode;
   disclaimer: string;
 };
 
 const FREE_PREVIEW_DISCLAIMER = "กรอบงบประมาณนี้เป็นข้อมูลเบื้องต้นสำหรับการวางแผนเท่านั้น รายละเอียดจริงต้องยืนยันหลังตรวจสอบแบบและหน้างาน";
+
+function rangeFromLine(estimate: CalculationSnapshot, code: "core-construction" | "design-professional-fee"): PreviewMoneyRange {
+  const line = estimate.lines.find((item) => item.code === code);
+  if (!line) throw new Error(`FREE_PREVIEW_REQUIRED_LINE_MISSING:${code}`);
+  return { low: line.amount.low, high: line.amount.high };
+}
 
 export function buildFreePreview(
   configuration: HouseConfiguration,
@@ -40,6 +50,8 @@ export function buildFreePreview(
     usableAreaM2: area.usableAreaM2,
     constructionFloorAreaM2: area.constructionFloorAreaM2,
     materialLevel: configuration.materialLevel,
+    constructionRange: rangeFromLine(estimate, "core-construction"),
+    designFeeRange: rangeFromLine(estimate, "design-professional-fee"),
     budgetRange: { low: estimate.total.low, high: estimate.total.high },
     confidence: "C",
     estimateMode,

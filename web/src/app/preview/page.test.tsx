@@ -18,6 +18,8 @@ const preview: FreePreviewPayload = {
   usableAreaM2: 164,
   constructionFloorAreaM2: 198,
   materialLevel: "premium",
+  constructionRange: { low: 4_880_304, high: 6_898_320 },
+  designFeeRange: { low: 244_015, high: 586_357 },
   budgetRange: { low: 5_124_319, high: 7_634_677 },
   confidence: "C",
   estimateMode: "published",
@@ -62,6 +64,17 @@ test("restores a validated anonymous draft and requests its server preview", asy
 
   await userEvent.setup().click(screen.getByRole("button", { name: "กลับไปแก้ไขข้อมูลบ้าน" }));
   expect(push).toHaveBeenCalledWith("/configurator");
+});
+
+test("rejects a preview response that omits either separated estimate range", async () => {
+  saveValidDraft();
+  const missingRanges: Record<string, unknown> = { ...preview };
+  delete missingRanges.constructionRange;
+  delete missingRanges.designFeeRange;
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ preview: missingRanges }), { status: 200 }));
+  render(<PreviewPage />);
+
+  expect(await screen.findByRole("alert")).toHaveTextContent(/ยังไม่สามารถประเมิน/);
 });
 
 test("does not call the server for missing or incompatible drafts", async () => {
