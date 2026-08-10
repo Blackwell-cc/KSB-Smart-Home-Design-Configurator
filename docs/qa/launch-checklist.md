@@ -2,6 +2,8 @@
 
 เอกสารนี้เป็น checklist บังคับก่อนนำ build ขึ้น Pilot หรือ Production ทุกครั้ง ช่องที่ยังไม่ผ่านต้องมีเจ้าของงานและวันนัดแก้ชัดเจน ห้ามข้ามหัวข้อ Privacy, Pricing, Private Access หรือ Lead Recovery
 
+> สถานะ repository ณ 10 สิงหาคม 2026: **Local technical verification พร้อม แต่ Production Soft Launch ยัง BLOCKED** เพราะยังไม่มี calibration cases/metrics, Published Price Book และลายเซ็น business owners ดูรายละเอียดใน `docs/qa/pricing-calibration-report.md`
+
 ## 1. Automated release suite
 
 รันจากโฟลเดอร์ `web/` ด้วย environment ที่แยกจาก Production:
@@ -94,7 +96,32 @@ npm run test:e2e
 | พื้นที่/CFA | KSB Architect |  |  | Pending |
 | ภาพและสิทธิ์ใช้งาน | Brand/Content Owner |  |  | Pending |
 | PDPA/ข้อความยินยอม | Privacy Owner |  |  | Pending |
+| Webfont/PDF font และ license | Brand/Technical Owner | Noto Sans Thai + OFL มีใน repo; รออนุมัติใช้งานจริง |  | Pending |
 | Lead owner + recovery | Sales/Operations |  |  | Pending |
+| Notification channel/ข้อความติดต่อ | Sales/Operations |  |  | Pending |
+| Production environment/WAF | Engineering | `docs/runbooks/production-environment.md` |  | Pending |
 | Technical release | Engineering |  |  | Pending |
 
 Production release ทำได้เมื่อทุกแถวเป็น Approved เท่านั้น
+
+## 10. Calibration and Pilot gates
+
+- [ ] Import เคส KSB แบบ anonymized 10–20 เคสตาม input contract โดยไม่ commit dataset เข้า Git
+- [ ] Comparable cases อย่างน้อย 10
+- [ ] Pricing Approver กำหนด Coverage, Median APE และ P80 APE threshold ก่อนดูผล
+- [ ] Backtest ผ่านทุก threshold และมี outlier cause ครบ
+- [ ] Price Book มี province rates ครบ 77 จังหวัดและถูก publish ผ่าน atomic admin workflow
+- [ ] Internal E2E อย่างน้อย Desktop, Tablet และ Mobile พร้อมหลักฐานวัน/ผู้ทดสอบ
+- [ ] Invited pilot ระบุกลุ่มผู้ใช้ จำนวน feedback และ issue disposition
+- [ ] Architect เปรียบเทียบ Estimate กับการ review จริงใน pilot และยืนยันว่าไม่มี misleading range
+- [ ] Public Share ถูกตรวจด้วย browser จริงว่าไม่มี PII/Pricing/RSC leak
+- [ ] Funnel Preview → Lead → Full Report และ recovery queue ถูกตรวจใน dashboard/ฐานข้อมูล
+
+### Pilot evidence
+
+| Device / Cohort | วันที่ | ผู้ทดสอบ | Build/Commit | ผล | Issue reference |
+|---|---|---|---|---|---|
+| Desktop internal |  |  |  | Pending |  |
+| Tablet internal |  |  |  | Pending |  |
+| Mobile internal |  |  |  | Pending |  |
+| Invited pilot |  |  |  | Pending |  |
