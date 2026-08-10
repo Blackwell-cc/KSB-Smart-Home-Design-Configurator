@@ -268,7 +268,8 @@
   .shell { grid-template-areas: "preview" "form"; grid-template-columns: minmax(0, 1fr); gap: 30px; padding-top: 22px; }
   .preview { position: static; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 12px; padding: 9px; }
   .previewCopy { align-content: start; padding: 1px 2px 1px 10px; }
-  .previewDescription, .previewMaterialDescription, .materialPalette, .previewFeatures, .mobileOptionalMetric { display: none; }
+  .previewDescription, .previewMaterialDescription, .materialPalette, .previewFeatures { display: none; }
+  .metricList > .mobileOptionalMetric { display: none; }
   .metricList { margin-top: 4px; }.metricList > div { padding-top: 5px; padding-bottom: 5px; }.metricColumnLeft { padding-right: 8px; }.metricColumnRight { padding-left: 8px; }
   .metricList [data-live-metric="usable-area"] { padding-right: 0; padding-left: 8px; border-left: 1px solid var(--line); }
   .metricList dt { font-size: 0.7rem; }.metricList dd { font-size: 0.66rem; }
@@ -282,7 +283,7 @@
   .imageFrame { aspect-ratio: 16 / 10; }
   .previewCopy { padding-left: 10px; }
   .previewCopy h2 { font-size: 1.25rem; }
-  .metricList { grid-template-columns: repeat(2, minmax(0, 1fr)); }.metricList > div { display: grid; }
+  .metricList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .conceptOption { grid-template-columns: minmax(0, 42fr) minmax(0, 58fr); min-height: 136px; }
   .conceptCopy { padding: 12px 11px 10px 0; }.conceptDescription { font-size: 0.73rem; }
   .checkChoice { min-height: 58px; }
