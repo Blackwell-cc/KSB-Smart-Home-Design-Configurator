@@ -5,6 +5,7 @@ import {
   type HouseConfiguration,
 } from "@/features/configurator/domain/configuration";
 import { calculateArea } from "./calculate-area";
+import { QA_AREA_CATALOG } from "./area-catalog";
 
 function configuration(overrides: Partial<HouseConfiguration> = {}): HouseConfiguration {
   return HouseConfigurationSchema.parse({
@@ -12,6 +13,8 @@ function configuration(overrides: Partial<HouseConfiguration> = {}): HouseConfig
     ...overrides,
   });
 }
+
+const calculateQaArea = (input: HouseConfiguration) => calculateArea(input, QA_AREA_CATALOG);
 
 function expectFiniteNonNegative(result: ReturnType<typeof calculateArea>) {
   expect(result.recommendedUsableAreaM2).toBeGreaterThanOrEqual(0);
@@ -30,7 +33,7 @@ function expectFiniteNonNegative(result: ReturnType<typeof calculateArea>) {
 
 describe("calculateArea", () => {
   test("returns the QA usable-area recommendation and weighted CFA for the default configuration", () => {
-    const result = calculateArea(createDefaultConfiguration());
+    const result = calculateQaArea(createDefaultConfiguration());
 
     expect(result.recommendedUsableAreaM2).toBe(164);
     expect(result.usableAreaM2).toBe(164);
@@ -39,7 +42,7 @@ describe("calculateArea", () => {
   });
 
   test("uses an approved user override without changing the room-program recommendation", () => {
-    const result = calculateArea(configuration({ usableAreaOverrideM2: 220 }));
+    const result = calculateQaArea(configuration({ usableAreaOverrideM2: 220 }));
 
     expect(result.recommendedUsableAreaM2).toBe(164);
     expect(result.usableAreaM2).toBe(220);
@@ -47,7 +50,7 @@ describe("calculateArea", () => {
   });
 
   test("adds each requested optional function to the recommended usable area", () => {
-    const base = calculateArea(createDefaultConfiguration());
+    const base = calculateQaArea(createDefaultConfiguration());
     const functionAreas = {
       office: 12,
       elderlyRoom: 16,
@@ -58,7 +61,7 @@ describe("calculateArea", () => {
     for (const [functionName, expectedIncrease] of Object.entries(functionAreas) as Array<
       [keyof HouseConfiguration["functions"], number]
     >) {
-      const result = calculateArea(
+      const result = calculateQaArea(
         configuration({
           functions: { ...createDefaultConfiguration().functions, [functionName]: true },
         }),
@@ -71,7 +74,7 @@ describe("calculateArea", () => {
   });
 
   test("keeps zero parking as a zero-area CFA line item", () => {
-    const result = calculateArea(configuration({ parkingSpaces: 0 }));
+    const result = calculateQaArea(configuration({ parkingSpaces: 0 }));
 
     expect(result.breakdown.find((item) => item.code === "covered-parking")).toEqual({
       code: "covered-parking",
@@ -100,18 +103,18 @@ describe("calculateArea", () => {
       usableAreaOverrideM2: 1500,
     });
 
-    expect(calculateArea(minimum)).toMatchObject({
+    expect(calculateQaArea(minimum)).toMatchObject({
       recommendedUsableAreaM2: 100,
       usableAreaM2: 100,
       constructionFloorAreaM2: 104,
     });
-    expect(calculateArea(maximum)).toMatchObject({
+    expect(calculateQaArea(maximum)).toMatchObject({
       recommendedUsableAreaM2: 457,
       usableAreaM2: 1500,
       constructionFloorAreaM2: 1654,
     });
-    expectFiniteNonNegative(calculateArea(minimum));
-    expectFiniteNonNegative(calculateArea(maximum));
+    expectFiniteNonNegative(calculateQaArea(minimum));
+    expectFiniteNonNegative(calculateQaArea(maximum));
   });
 
   test("returns deterministic arithmetic where the CFA equals the breakdown sum", () => {
@@ -119,8 +122,8 @@ describe("calculateArea", () => {
       functions: { office: true, elderlyRoom: true, thaiKitchen: true, multipurposeRoom: true },
       parkingSpaces: 3,
     });
-    const first = calculateArea(input);
-    const second = calculateArea(input);
+    const first = calculateQaArea(input);
+    const second = calculateQaArea(input);
 
     expect(second).toEqual(first);
     expect(first.constructionFloorAreaM2).toBe(

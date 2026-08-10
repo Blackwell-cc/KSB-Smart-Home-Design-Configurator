@@ -1,23 +1,21 @@
 import { calculateArea } from "@/features/area-planning/domain/calculate-area";
-import type { HouseConfiguration } from "@/features/configurator/domain/configuration";
+import type { AreaCatalog } from "@/features/area-planning/domain/area-catalog";
 import { buildFreePreview, type FreePreviewPayload } from "@/features/preview/application/build-free-preview";
 import { calculateEstimate } from "../domain/calculate-estimate";
 import type { PriceBook } from "../domain/price-book";
+import { toCalculationConfiguration, type EstimateRequest } from "./estimate-request";
 
 export type PriceBookRepository = {
-  loadPublished(): Promise<PriceBook>;
+  loadPublished(): Promise<{ priceBook: PriceBook; areaCatalog: AreaCatalog }>;
 };
 
 export async function estimateProject(
-  configuration: HouseConfiguration,
+  request: EstimateRequest,
   priceBookRepository: PriceBookRepository,
 ): Promise<FreePreviewPayload> {
-  if (configuration.styleId === null || configuration.provinceCode === null) {
-    throw new Error("CONFIGURATION_NOT_READY");
-  }
-
-  const area = calculateArea(configuration);
-  const priceBook = await priceBookRepository.loadPublished();
+  const configuration = toCalculationConfiguration(request);
+  const { priceBook, areaCatalog } = await priceBookRepository.loadPublished();
+  const area = calculateArea(configuration, areaCatalog);
   const estimate = calculateEstimate({
     configuration,
     constructionFloorAreaM2: area.constructionFloorAreaM2,

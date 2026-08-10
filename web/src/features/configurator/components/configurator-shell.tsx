@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { ProgressStepper } from "@/components/ui/progress-stepper";
 import { calculateArea } from "@/features/area-planning/domain/calculate-area";
+import { QA_AREA_CATALOG } from "@/features/area-planning/domain/area-catalog";
 import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import { HouseConfigurationSchema, type HouseConfiguration } from "../domain/configuration";
 import { createConfiguratorStore } from "../state/configurator-store";
@@ -146,7 +147,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   const error = stepError(state.currentStep, stepSchemaValid);
   const errorId = state.currentStep === 0 ? "style-error" : "province-error";
   const concept = CONCEPT_CATALOG.find((item) => item.id === state.configuration.styleId) ?? CONCEPT_CATALOG[0];
-  const area = calculateArea(state.configuration);
+  const area = calculateArea(state.configuration, QA_AREA_CATALOG);
 
   useEffect(() => {
     headingRef.current?.focus();

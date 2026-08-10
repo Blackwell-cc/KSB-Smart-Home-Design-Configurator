@@ -1,5 +1,5 @@
 import type { HouseConfiguration } from "@/features/configurator/domain/configuration";
-import { QA_AREA_CATALOG as C } from "./area-catalog";
+import type { AreaCatalog } from "./area-catalog";
 
 export type AreaRecommendation = {
   recommendedUsableAreaM2: number;
@@ -13,7 +13,8 @@ export type AreaRecommendation = {
   }>;
 };
 
-export function calculateArea(input: HouseConfiguration): AreaRecommendation {
+export function calculateArea(input: HouseConfiguration, catalog: AreaCatalog): AreaRecommendation {
+  const C = catalog;
   const recommendedUsableAreaM2 = Math.round(
     input.bedrooms * C.bedroomM2 +
       input.bathrooms * C.bathroomM2 +

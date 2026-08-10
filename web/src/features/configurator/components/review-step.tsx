@@ -1,4 +1,5 @@
 import { calculateArea } from "@/features/area-planning/domain/calculate-area";
+import { QA_AREA_CATALOG } from "@/features/area-planning/domain/area-catalog";
 import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import { THAI_PROVINCES } from "../domain/provinces";
 import type { HouseConfiguration } from "../domain/configuration";
@@ -8,7 +9,7 @@ const ACCESS_LABELS = { normal: "เข้าถึงปกติ", restricted:
 
 export function ReviewStep({ configuration, onEdit }: { configuration: HouseConfiguration; onEdit(step: number): void }) {
   const concept = CONCEPT_CATALOG.find((item) => item.id === configuration.styleId);
-  const area = calculateArea(configuration);
+  const area = calculateArea(configuration, QA_AREA_CATALOG);
 
   return (
     <dl className={styles.reviewList}>
