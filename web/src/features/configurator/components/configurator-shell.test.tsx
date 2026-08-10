@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { act } from "react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import { createConfiguratorStore } from "../state/configurator-store";
 import type { DraftStorage } from "../state/draft-storage";
 import { ConfiguratorShell } from "./configurator-shell";
@@ -307,4 +308,41 @@ test("supports arrow-key material selection and blocks preview for an incomplete
   expect(screen.getByRole("radio", { name: /Select/ })).toHaveAttribute("aria-checked", "true");
   await user.keyboard("{ArrowDown}");
   expect(screen.getByRole("radio", { name: /Premium/ })).toHaveAttribute("aria-checked", "true");
+});
+
+test("presents every house style as an image-backed architect card", () => {
+  renderConfigurator();
+
+  const choices = screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
+  const cards = within(choices).getAllByRole("radio");
+
+  expect(cards).toHaveLength(CONCEPT_CATALOG.length);
+  CONCEPT_CATALOG.forEach((concept) => {
+    const card = within(choices).getByRole("radio", { name: concept.label }).closest("label");
+    expect(card).toHaveAttribute("data-style-card", "true");
+    expect(card?.querySelector("img")).toHaveAttribute("src", expect.stringContaining(encodeURIComponent(concept.image)));
+    expect(within(card as HTMLElement).getByText(concept.thaiLabel)).toBeInTheDocument();
+  });
+});
+
+test("marks preview data, material boards, and mobile-safe landmarks for the active selection", async () => {
+  const { store } = renderConfigurator();
+
+  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
+  const form = screen.getByRole("region", { name: "เลือกสไตล์บ้าน" });
+  expect(preview).toHaveAttribute("data-preview-style", "contemporary-warm-luxury");
+  expect(preview).toHaveAttribute("data-preview-material", "premium");
+  expect(preview).toHaveAttribute("data-mobile-preview-ratio", "16:10");
+  expect(form).toHaveAttribute("data-choice-canvas", "true");
+
+  await act(async () => {
+    store.getState().setCurrentStep(3);
+  });
+
+  const premium = screen.getByRole("radio", { name: /Premium/ });
+  expect(premium).toHaveAttribute("data-material-board", "premium");
+  expect(within(premium).getAllByTestId("material-swatch")).toHaveLength(3);
+  expect(within(premium).getByText("ผนัง")).toBeInTheDocument();
+  expect(within(premium).getByText("ไม้")).toBeInTheDocument();
+  expect(within(premium).getByText("โลหะและกระจก")).toBeInTheDocument();
 });

@@ -8,9 +8,9 @@ type MaterialFeaturesStepProps = {
 };
 
 const MATERIALS = [
-  ["select", "Select", "คุณภาพดี คุมงบอย่างมีมาตรฐาน"],
-  ["premium", "Premium", "สมดุลความสวย รายละเอียด และคุณภาพ"],
-  ["signature", "Signature", "วัสดุและรายละเอียดเฉพาะตัว"],
+  ["select", "Select", "คุณภาพดี คุมงบอย่างมีมาตรฐาน", [["ผนัง", "#D7CFC2"], ["ไม้", "#8A6548"], ["โลหะและกระจก", "#A9B0AF"]]],
+  ["premium", "Premium", "สมดุลความสวย รายละเอียด และคุณภาพ", [["ผนัง", "#E5DDD1"], ["ไม้", "#69452E"], ["โลหะและกระจก", "#7B7770"]]],
+  ["signature", "Signature", "วัสดุและรายละเอียดเฉพาะตัว", [["ผนัง", "#BDA98C"], ["ไม้", "#4D2E1F"], ["โลหะและกระจก", "#A98550"]]],
 ] as const;
 
 const SPECIAL_FEATURES = [
@@ -36,10 +36,12 @@ export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeatur
   return (
     <div className={styles.stepStack}>
       <div aria-label="ระดับวัสดุ" className={styles.materialGrid} role="radiogroup">
-        {MATERIALS.map(([id, title, description]) => (
+        {MATERIALS.map(([id, title, description, swatches]) => (
           <ChoiceCard
             aria-checked={configuration.materialLevel === id}
+            data-material-board={id}
             description={description}
+            icon={<span aria-label={`วัสดุระดับ ${title}`} className={styles.materialBoard}>{swatches.map(([label, color]) => <span className={styles.materialBoardSwatch} data-testid="material-swatch" key={label}><span aria-hidden="true" className={styles.materialBoardColor} style={{ backgroundColor: color }} /><span>{label}</span></span>)}</span>}
             key={id}
             onClick={() => onChange({ materialLevel: id })}
             onKeyDown={(event) => {
@@ -63,9 +65,10 @@ export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeatur
         <legend>ส่วนพิเศษที่อยากพิจารณา</legend>
         <div className={styles.checkboxGrid}>
           {SPECIAL_FEATURES.map(([id, label]) => (
-            <label className={styles.checkChoice} key={id}>
+            <label className={styles.checkChoice} data-selected={configuration.specialFeatures.includes(id)} key={id}>
               <input checked={configuration.specialFeatures.includes(id)} onChange={() => toggleFeature(id)} type="checkbox" />
-              <span>{label}</span>
+              <span className={styles.featureLabel}>{label}</span>
+              <span aria-hidden="true" className={styles.featureState}>{configuration.specialFeatures.includes(id) ? "เลือกแล้ว" : "เพิ่มในโจทย์"}</span>
             </label>
           ))}
         </div>

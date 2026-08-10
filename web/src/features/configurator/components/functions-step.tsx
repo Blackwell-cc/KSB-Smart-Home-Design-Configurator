@@ -41,13 +41,14 @@ export function FunctionsStep({ areaDraft, areaError, configuration, onAreaChang
         <legend>ฟังก์ชันเพิ่มเติม</legend>
         <div className={styles.checkboxGrid}>
           {FUNCTION_CHOICES.map(([key, label]) => (
-            <label className={styles.checkChoice} key={key}>
+            <label className={styles.checkChoice} data-selected={configuration.functions[key]} key={key}>
               <input
                 checked={configuration.functions[key]}
                 onChange={(event) => onChange({ functions: { ...configuration.functions, [key]: event.target.checked } })}
                 type="checkbox"
               />
-              <span>{label}</span>
+              <span className={styles.featureLabel}>{label}</span>
+              <span aria-hidden="true" className={styles.featureState}>{configuration.functions[key] ? "เลือกแล้ว" : "เพิ่มในโจทย์"}</span>
             </label>
           ))}
         </div>

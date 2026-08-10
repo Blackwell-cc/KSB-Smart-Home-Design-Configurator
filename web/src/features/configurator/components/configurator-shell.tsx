@@ -199,16 +199,20 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
         <ProgressStepper currentStep={state.currentStep} steps={CONFIGURATOR_STEPS} />
       </header>
       <div className={styles.shell}>
-        <aside aria-label="ภาพตัวอย่างบ้าน" className={styles.preview}>
+        <aside aria-label="ภาพตัวอย่างบ้าน" className={styles.preview} data-mobile-preview-ratio="16:10" data-preview-material={livePreview.material.level} data-preview-style={livePreview.concept.id}>
           <div className={styles.imageFrame}>
-            <Image alt={`ภาพอ้างอิง ${livePreview.concept.thaiLabel} (${livePreview.concept.englishLabel})`} fill preload sizes="(max-width: 899px) 100vw, 50vw" src={livePreview.concept.image} />
+            <Image alt={`ภาพอ้างอิง ${livePreview.concept.thaiLabel} (${livePreview.concept.englishLabel})`} fill key={livePreview.concept.id} preload sizes="(max-width: 899px) 100vw, 50vw" src={livePreview.concept.image} />
           </div>
           <div className={styles.previewCopy} aria-live="polite">
             <p>CONCEPT PREVIEW</p>
             <h2>{livePreview.concept.thaiLabel}</h2>
             <span>{livePreview.concept.englishLabel}</span>
             <span>{livePreview.concept.description}</span>
-            {areaError ? <span>พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง</span> : livePreview.metricRows.map((metric) => <span key={metric.id}>{metric.id === "construction-floor-area" ? "CFA" : metric.label} {metric.value}{metric.id === "usable-area" ? state.configuration.usableAreaOverrideM2 ? " (กำหนดเอง)" : " (แนะนำ)" : ""}</span>)}
+            {areaError ? <span>พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง</span> : <dl className={styles.metricList}>{livePreview.metricRows.map((metric) => {
+              const label = metric.id === "construction-floor-area" ? "CFA" : metric.label;
+              const value = `${metric.value}${metric.id === "usable-area" ? state.configuration.usableAreaOverrideM2 ? " (กำหนดเอง)" : " (แนะนำ)" : ""}`;
+              return <div data-live-metric={metric.id} key={metric.id}><dt>{label}</dt><dd className="tabularNumbers">{value}<span aria-hidden="true" className={styles.metricSummary}>{label} {value}</span></dd></div>;
+            })}</dl>}
             <span>ระดับวัสดุ {livePreview.material.label}</span>
             <span>{livePreview.material.description}</span>
             <ul aria-label={`ตัวอย่างวัสดุระดับ ${livePreview.material.label}`} className={styles.materialPalette}>
@@ -223,7 +227,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             <span>ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง</span>
           </div>
         </aside>
-        <section aria-labelledby="step-heading" className={styles.formPanel}>
+        <section aria-labelledby="step-heading" className={styles.formPanel} data-choice-canvas="true">
           <p className={styles.eyebrow}>ขั้นตอน {state.currentStep + 1} / {CONFIGURATOR_STEPS.length}</p>
           <h1 id="step-heading" ref={headingRef} tabIndex={-1}>{STEP_HEADINGS[state.currentStep]}</h1>
           <p className={styles.intro}>ให้ข้อมูลเท่าที่สะดวก เพื่อจัดกรอบความต้องการเบื้องต้นก่อนคุยกับสถาปนิก</p>

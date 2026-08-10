@@ -8,7 +8,14 @@
   --sage: #9cb091;
   --line: rgba(216, 177, 105, 0.26);
   --focus: #f7e1b6;
-  --font-thai: var(--font-noto-thai), sans-serif;
+  --font-thai: "KSB DB Heavent", var(--font-noto-thai), "Noto Sans Thai", sans-serif;
+  --font-data: ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+
+@font-face {
+  font-family: "KSB DB Heavent";
+  src: local("DB Heavent");
+  font-display: swap;
 }
 
 html {
@@ -43,6 +50,11 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+.tabularNumbers {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
 }
 
 @media (prefers-reduced-motion: reduce) {

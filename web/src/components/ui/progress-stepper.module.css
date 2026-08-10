@@ -1,6 +1,8 @@
 .navigation {
   overflow-x: auto;
   padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) transparent;
 }
 
 .steps {
@@ -33,6 +35,8 @@
 
 .steps li[data-state="current"] {
   color: var(--gold-light);
+  background: rgba(217, 178, 109, 0.12);
+  box-shadow: inset 0 -1px 0 var(--gold);
 }
 
 .steps li[data-state="complete"] {
