@@ -20,6 +20,7 @@ const preview: FreePreviewPayload = {
   materialLevel: "premium",
   budgetRange: { low: 5_124_319, high: 7_634_677 },
   confidence: "C",
+  estimateMode: "published",
   disclaimer: "ข้อมูลเบื้องต้น",
 };
 

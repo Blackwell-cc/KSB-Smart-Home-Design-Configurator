@@ -1,4 +1,5 @@
 export type MoneyRange = { low: number; expected: number; high: number };
+export type EstimateMode = "published" | "development-demo";
 
 export type PriceBookStatus = "draft" | "review" | "published" | "retired";
 

@@ -77,6 +77,7 @@ describe("POST /api/estimate", () => {
         materialLevel: "premium",
         budgetRange: { low: 5_124_319, high: 7_634_677 },
         confidence: "C",
+        estimateMode: "published",
         disclaimer: expect.any(String),
       }),
     });
@@ -88,6 +89,7 @@ describe("POST /api/estimate", () => {
       "confidence",
       "constructionFloorAreaM2",
       "disclaimer",
+      "estimateMode",
       "floors",
       "materialLevel",
       "parkingSpaces",
@@ -151,10 +153,10 @@ describe("POST /api/estimate", () => {
     await expect(oversized.json()).resolves.toEqual({ error: { code: "PAYLOAD_TOO_LARGE" } });
   });
 
-  test("returns a safe unavailable response from the default runtime when no published book is configured", async () => {
+  test("uses a visibly marked development estimate from the default runtime when publication is unavailable outside production", async () => {
     const response = await POST(jsonRequest(validConfiguration));
 
-    expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toEqual({ error: { code: "ESTIMATE_UNAVAILABLE" } });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ preview: expect.objectContaining({ estimateMode: "development-demo" }) });
   });
 });

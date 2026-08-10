@@ -1,6 +1,6 @@
 import { estimateProject, type PriceBookRepository } from "@/features/pricing/application/estimate-project";
 import { EstimateRequestSchema } from "@/features/pricing/application/estimate-request";
-import { createSupabasePriceBookRepositoryFromEnvironment } from "@/features/pricing/infrastructure/supabase-price-book-repository";
+import { createRuntimePriceBookRepository } from "@/features/pricing/infrastructure/development-price-book-repository";
 
 type EstimateHandlerDependencies = { priceBookRepository: PriceBookRepository };
 
@@ -47,7 +47,7 @@ export function createEstimatePostHandler({ priceBookRepository }: EstimateHandl
 export async function POST(request: Request): Promise<Response> {
   try {
     return await createEstimatePostHandler({
-      priceBookRepository: createSupabasePriceBookRepositoryFromEnvironment(),
+      priceBookRepository: createRuntimePriceBookRepository(),
     })(request);
   } catch {
     return errorResponse(503, "ESTIMATE_UNAVAILABLE");

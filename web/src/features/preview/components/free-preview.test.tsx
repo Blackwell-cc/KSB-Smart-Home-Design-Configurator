@@ -16,6 +16,7 @@ const preview: FreePreviewPayload = {
   materialLevel: "premium",
   budgetRange: { low: 5_124_319, high: 7_634_677 },
   confidence: "C",
+  estimateMode: "development-demo",
   disclaimer: "ข้อมูลเบื้องต้น",
 };
 
@@ -39,6 +40,10 @@ test("renders the complete PII-free free preview and semantic CTA handoffs", asy
   expect(screen.getByText(/7,634,677/)).toBeInTheDocument();
   expect(screen.getByText("ระดับความเชื่อมั่น C")).toBeInTheDocument();
   expect(screen.getByText("ข้อมูลเบื้องต้น")).toBeInTheDocument();
+  expect(screen.getByText("ข้อมูลทดสอบเพื่อพัฒนาระบบ")).toBeVisible();
+  expect(screen.getByText("เป็นกรอบประมาณการช่วงกว้าง ไม่ใช่ราคาสุดท้าย")).toBeVisible();
+  expect(screen.getByText("ค่าออกแบบและบริการวิชาชีพแยกจากค่าก่อสร้าง")).toBeVisible();
+  expect(screen.getByText("ไม่รวมค่าควบคุมงานก่อสร้าง")).toBeVisible();
   expect(screen.queryByLabelText(/ชื่อ|อีเมล|เบอร์โทร|LINE/i)).not.toBeInTheDocument();
   expect(screen.queryByText(/รายละเอียดราคา|สมมติฐาน|รายการที่รวม|รายการที่ไม่รวม/i)).not.toBeInTheDocument();
 

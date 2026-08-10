@@ -17,6 +17,7 @@
 .facts dd { margin: 7px 0 0; color: var(--ivory); font-weight: 700; }
 .budget { display: grid; gap: 8px; margin-top: 28px; padding: 24px; background: linear-gradient(135deg, rgba(217, 178, 109, .14), rgba(26, 23, 20, .65)); border: 1px solid rgba(242, 216, 161, .38); }
 .budget p { color: var(--gold-light); font-weight: 700; }
+.developmentBadge { padding: 7px 10px; color: #19120a !important; background: var(--gold-light); border-left: 3px solid var(--gold); }
 .budget strong { color: var(--ivory); font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.2; letter-spacing: -.04em; }
 .budget span { color: var(--muted); font-size: .88rem; line-height: 1.6; }
 .actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; margin-top: 22px; }

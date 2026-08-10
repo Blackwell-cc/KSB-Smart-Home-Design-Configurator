@@ -1,7 +1,7 @@
 "use client";
 
-import type { FreePreviewPayload } from "../application/build-free-preview";
 import Image from "next/image";
+import type { FreePreviewPayload } from "../application/build-free-preview";
 import { CONCEPT_CATALOG } from "../domain/concept-catalog";
 import styles from "./free-preview.module.css";
 
@@ -19,9 +19,7 @@ const money = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 });
 const materialLabels = { select: "Select", premium: "Premium", signature: "Signature" } as const;
 
 function StatusCard({ status, onBack }: Pick<FreePreviewProps, "status" | "onBack">) {
-  if (status === "loading") {
-    return <main className={styles.statusPage}><p role="status" aria-busy="true">กำลังเตรียมสรุปโครงการของคุณ</p></main>;
-  }
+  if (status === "loading") return <main className={styles.statusPage}><p role="status" aria-busy="true">กำลังเตรียมสรุปโครงการของคุณ</p></main>;
 
   const message = status === "no-draft"
     ? "ไม่พบข้อมูลบ้านสำหรับสร้าง Preview"
@@ -44,6 +42,7 @@ export function FreePreview({ status, preview, onBack, onFullReport, onShare }: 
   if (status !== "ready" || !preview) return <StatusCard status={status === "ready" ? "unavailable" : status} onBack={onBack} />;
 
   const concept = CONCEPT_CATALOG.find((item) => item.id === preview.conceptAssetId);
+  const isDevelopmentDemo = preview.estimateMode === "development-demo";
   return (
     <main className={styles.page} aria-labelledby="preview-title">
       <header className={styles.masthead}>
@@ -79,8 +78,12 @@ export function FreePreview({ status, preview, onBack, onFullReport, onShare }: 
           </dl>
 
           <section className={styles.budget} aria-label="กรอบงบประมาณเบื้องต้น">
+            {isDevelopmentDemo ? <p className={styles.developmentBadge} role="status">ข้อมูลทดสอบเพื่อพัฒนาระบบ</p> : null}
             <p>กรอบงบประมาณเบื้องต้น</p>
             <strong>{money.format(preview.budgetRange.low)} – {money.format(preview.budgetRange.high)} บาท</strong>
+            <span>เป็นกรอบประมาณการช่วงกว้าง ไม่ใช่ราคาสุดท้าย</span>
+            <span>ค่าออกแบบและบริการวิชาชีพแยกจากค่าก่อสร้าง</span>
+            <span>ไม่รวมค่าควบคุมงานก่อสร้าง</span>
             <span>{preview.disclaimer}</span>
           </section>
 

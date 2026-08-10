@@ -14,7 +14,7 @@ type PreviewState =
   | { status: "ready"; preview: FreePreviewPayload; configuration: EstimateRequest }
   | { status: "no-draft" | "invalid-draft" | "unavailable" };
 const FreePreviewPayloadSchema = z.object({
-  conceptAssetId: z.string(), styleLabel: z.string(), floors: z.number().int(), bedrooms: z.number().int(), bathrooms: z.number().int(), parkingSpaces: z.number().int(), usableAreaM2: z.number(), constructionFloorAreaM2: z.number(), materialLevel: z.enum(["select", "premium", "signature"]), budgetRange: z.object({ low: z.number(), high: z.number() }).strict(), confidence: z.literal("C"), disclaimer: z.string(),
+  conceptAssetId: z.string(), styleLabel: z.string(), floors: z.number().int(), bedrooms: z.number().int(), bathrooms: z.number().int(), parkingSpaces: z.number().int(), usableAreaM2: z.number(), constructionFloorAreaM2: z.number(), materialLevel: z.enum(["select", "premium", "signature"]), budgetRange: z.object({ low: z.number(), high: z.number() }).strict(), confidence: z.literal("C"), estimateMode: z.enum(["published", "development-demo"]), disclaimer: z.string(),
 }).strict();
 
 export default function PreviewPage() {

@@ -1,7 +1,7 @@
 import type { AreaRecommendation } from "@/features/area-planning/domain/calculate-area";
 import type { HouseConfiguration } from "@/features/configurator/domain/configuration";
 import { CONCEPT_CATALOG } from "../domain/concept-catalog";
-import type { CalculationSnapshot } from "@/features/pricing/domain/price-book";
+import type { CalculationSnapshot, EstimateMode } from "@/features/pricing/domain/price-book";
 
 export type FreePreviewPayload = {
   conceptAssetId: string;
@@ -15,6 +15,7 @@ export type FreePreviewPayload = {
   materialLevel: "select" | "premium" | "signature";
   budgetRange: { low: number; high: number };
   confidence: "C";
+  estimateMode: EstimateMode;
   disclaimer: string;
 };
 
@@ -24,6 +25,7 @@ export function buildFreePreview(
   configuration: HouseConfiguration,
   area: AreaRecommendation,
   estimate: CalculationSnapshot,
+  estimateMode: EstimateMode = "published",
 ): FreePreviewPayload {
   const concept = CONCEPT_CATALOG.find((item) => item.id === configuration.styleId);
   if (!concept) throw new Error("CONCEPT_NOT_FOUND");
@@ -40,6 +42,7 @@ export function buildFreePreview(
     materialLevel: configuration.materialLevel,
     budgetRange: { low: estimate.total.low, high: estimate.total.high },
     confidence: "C",
+    estimateMode,
     disclaimer: FREE_PREVIEW_DISCLAIMER,
   };
 }
