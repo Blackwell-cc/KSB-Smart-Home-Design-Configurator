@@ -104,6 +104,19 @@ test("back navigation preserves previous choices and the live preview reflects t
   expect(screen.getByRole("radio", { name: "Modern Tropical Resort" })).toBeChecked();
 });
 
+test("renders the live architect material board from the current configuration", async () => {
+  const { user } = renderConfigurator();
+  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
+
+  await user.click(screen.getByRole("radio", { name: "Modern Tropical Resort" }));
+
+  expect(within(preview).getByText("โมเดิร์น ทรอปิคอล รีสอร์ต")).toBeInTheDocument();
+  expect(within(preview).getByText("จำนวนชั้น 2 ชั้น")).toBeInTheDocument();
+  expect(within(preview).getByText(/CFA 198/)).toBeInTheDocument();
+  expect(within(preview).getByText("ระดับวัสดุ Premium")).toBeInTheDocument();
+  expect(within(preview).getByText("ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง")).toBeInTheDocument();
+});
+
 test("exposes ordered progress, named counter controls, accessible choice groups, and responsive layout semantics", async () => {
   const { user } = renderConfigurator();
   const progress = screen.getByRole("list", { name: "ขั้นตอนการออกแบบบ้าน" });

@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ProgressStepper } from "@/components/ui/progress-stepper";
 import { calculateArea } from "@/features/area-planning/domain/calculate-area";
 import { QA_AREA_CATALOG } from "@/features/area-planning/domain/area-catalog";
-import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import { HouseConfigurationSchema, type HouseConfiguration } from "../domain/configuration";
+import { buildLivePreview } from "../presentation/live-preview";
 import { createConfiguratorStore } from "../state/configurator-store";
 import { createDraftStorage, type DraftStorage } from "../state/draft-storage";
 import { FunctionsStep } from "./functions-step";
@@ -150,8 +150,8 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   const isValid = stepSchemaValid && (state.currentStep !== 1 || areaError === undefined) && (state.currentStep !== 2 || budgetError === undefined);
   const error = stepError(state.currentStep, stepSchemaValid);
   const errorId = state.currentStep === 0 ? "style-error" : "province-error";
-  const concept = CONCEPT_CATALOG.find((item) => item.id === state.configuration.styleId) ?? CONCEPT_CATALOG[0];
   const area = calculateArea(state.configuration, QA_AREA_CATALOG);
+  const livePreview = buildLivePreview(state.configuration, area);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -201,12 +201,18 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
       <div className={styles.shell}>
         <aside aria-label="ภาพตัวอย่างบ้าน" className={styles.preview}>
           <div className={styles.imageFrame}>
-            <Image alt={`ภาพตัวอย่าง ${concept.label}`} fill preload sizes="(max-width: 899px) 100vw, 50vw" src={concept.image} />
+            <Image alt={`ภาพอ้างอิง ${livePreview.concept.thaiLabel} (${livePreview.concept.englishLabel})`} fill preload sizes="(max-width: 899px) 100vw, 50vw" src={livePreview.concept.image} />
           </div>
           <div className={styles.previewCopy} aria-live="polite">
             <p>CONCEPT PREVIEW</p>
-            <h2>{concept.label}</h2>
-            {areaError ? <span>พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง</span> : <><span>พื้นที่ใช้สอย {area.usableAreaM2.toLocaleString("th-TH")} ตร.ม. {state.configuration.usableAreaOverrideM2 ? "(กำหนดเอง)" : "(แนะนำ)"}</span><span>พื้นที่แนะนำ {area.recommendedUsableAreaM2.toLocaleString("th-TH")} ตร.ม. · CFA {area.constructionFloorAreaM2.toLocaleString("th-TH")} ตร.ม.</span></>}
+            <h2>{livePreview.concept.thaiLabel}</h2>
+            <span>{livePreview.concept.englishLabel}</span>
+            <span>{livePreview.concept.description}</span>
+            {areaError ? <span>พื้นที่ใช้สอยที่กำลังกรอกไม่ถูกต้อง</span> : livePreview.metricRows.map((metric) => <span key={metric.id}>{metric.id === "construction-floor-area" ? "CFA" : metric.label} {metric.value}{metric.id === "usable-area" ? state.configuration.usableAreaOverrideM2 ? " (กำหนดเอง)" : " (แนะนำ)" : ""}</span>)}
+            <span>ระดับวัสดุ {livePreview.material.label}</span>
+            <span>{livePreview.material.description}</span>
+            {livePreview.activeFeatures.length > 0 ? <span>ส่วนพิเศษ {livePreview.activeFeatures.map((feature) => feature.label).join(" · ")}</span> : null}
+            <span>ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง</span>
           </div>
         </aside>
         <section aria-labelledby="step-heading" className={styles.formPanel}>
