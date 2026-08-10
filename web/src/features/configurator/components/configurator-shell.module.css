@@ -270,6 +270,7 @@
   .previewCopy { align-content: start; padding: 1px 2px 1px 10px; }
   .previewDescription, .previewMaterialDescription, .materialPalette, .previewFeatures, .mobileOptionalMetric { display: none; }
   .metricList { margin-top: 4px; }.metricList > div { padding-top: 5px; padding-bottom: 5px; }.metricColumnLeft { padding-right: 8px; }.metricColumnRight { padding-left: 8px; }
+  .metricList [data-live-metric="usable-area"] { padding-right: 0; padding-left: 8px; border-left: 1px solid var(--line); }
   .metricList dt { font-size: 0.7rem; }.metricList dd { font-size: 0.66rem; }
   .stepContent { margin-top: 25px; }
   .counterGrid, .checkboxGrid, .budgetGrid, .materialGrid, .conceptGrid { grid-template-columns: 1fr; }
