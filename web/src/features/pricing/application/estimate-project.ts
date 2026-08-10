@@ -6,7 +6,7 @@ import type { PriceBook } from "../domain/price-book";
 import { toCalculationConfiguration, type EstimateRequest } from "./estimate-request";
 
 export type PriceBookRepository = {
-  loadPublished(): Promise<{ priceBook: PriceBook; areaCatalog: AreaCatalog }>;
+  loadPublished(): Promise<{ priceBookId: string; priceBook: PriceBook; areaCatalog: AreaCatalog }>;
 };
 
 export async function estimateProject(

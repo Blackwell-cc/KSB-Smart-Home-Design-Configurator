@@ -19,7 +19,7 @@ const materialKeys = ["select", "premium", "signature"] as const;
 const floorKeys = ["1", "2", "3"] as const;
 const accessKeys = ["normal", "restricted", "very-restricted"] as const;
 
-function parseEntries(rows: unknown[], book: z.infer<typeof metadata>): { priceBook: PriceBook; areaCatalog: AreaCatalog } {
+function parseEntries(rows: unknown[], book: z.infer<typeof metadata>): { priceBookId: string; priceBook: PriceBook; areaCatalog: AreaCatalog } {
   const parsed = z.array(entry).safeParse(rows);
   if (!parsed.success) throw new Error("INVALID_PUBLISHED_PRICE_BOOK");
   const map = new Map<string, z.infer<typeof entry>>();
@@ -49,7 +49,7 @@ function parseEntries(rows: unknown[], book: z.infer<typeof metadata>): { priceB
   const tax = factor.safeParse(take("tax-rate", "default"));
   const approvedArea = areaCatalog.safeParse(take("area-catalog", "default"));
   if (!designFeeRates.success || !tax.success || tax.data.value > 1 || !approvedArea.success || known.size !== map.size) throw new Error("INVALID_PUBLISHED_PRICE_BOOK");
-  return { priceBook: { version: book.version, status: "published", referenceDate: book.reference_date, provinceRates, materialFactors, floorFactors, siteAccessFactors, siteRisk, featureAllowances, designFeeRates: designFeeRates.data, taxRate: tax.data.value }, areaCatalog: approvedArea.data };
+  return { priceBookId: book.id, priceBook: { version: book.version, status: "published", referenceDate: book.reference_date, provinceRates, materialFactors, floorFactors, siteAccessFactors, siteRisk, featureAllowances, designFeeRates: designFeeRates.data, taxRate: tax.data.value }, areaCatalog: approvedArea.data };
 }
 
 export class SupabasePriceBookRepository implements PriceBookRepository {

@@ -55,7 +55,7 @@ const completeProvinceRates = Object.fromEntries(THAI_PROVINCE_CODES.map((key) =
 describe("SupabasePriceBookRepository", () => {
   test("loads exactly one published book and its matching approved entries", async () => {
     await expect(repositoryFor([publishedBook], publishedEntries()).loadPublished()).resolves.toEqual({
-      priceBook: { ...qaPriceBook, status: "published", provinceRates: completeProvinceRates }, areaCatalog,
+      priceBookId: "book-1", priceBook: { ...qaPriceBook, status: "published", provinceRates: completeProvinceRates }, areaCatalog,
     });
   });
 

@@ -1,0 +1,16 @@
+.gate { margin-top: 1.5rem; border-top: 1px solid color-mix(in srgb, var(--gold, #ba9454) 48%, transparent); padding-top: 1.5rem; }
+.eyebrow { color: var(--gold, #ba9454); font-size: .75rem; font-weight: 700; letter-spacing: .12em; margin: 0 0 .45rem; }
+.title { color: inherit; font-family: var(--font-display, serif); font-size: clamp(1.5rem, 4vw, 2.25rem); margin: 0; }
+.intro { max-width: 58ch; }
+.valueList { display: grid; gap: .55rem; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; margin: 1rem 0 1.25rem; padding: 0; }
+.valueList li { border-left: 2px solid var(--gold, #ba9454); padding-left: .65rem; }
+.form { display: grid; gap: 1rem; }
+.field { display: grid; gap: .4rem; }
+.field input, .field select { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.35); border-radius: 0; color: inherit; font: inherit; min-height: 2.8rem; padding: .55rem .7rem; }
+.field input:focus-visible, .field select:focus-visible, .consent input:focus-visible, .submit:focus-visible { outline: 3px solid var(--gold, #ba9454); outline-offset: 3px; }
+.privacy { color: inherit; font-size: .9rem; line-height: 1.6; margin: 0; }
+.consent { align-items: start; display: flex; gap: .65rem; line-height: 1.5; }
+.submit { background: var(--gold, #ba9454); border: 0; color: #171717; cursor: pointer; font: inherit; font-weight: 700; min-height: 3rem; padding: .7rem 1rem; }
+.submit:disabled { cursor: wait; opacity: .68; }
+.error { color: #ffb3a7; margin: 0; }
+@media (max-width: 560px) { .valueList { grid-template-columns: 1fr; } }

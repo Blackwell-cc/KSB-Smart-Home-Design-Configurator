@@ -52,7 +52,7 @@ function approvedAreaCatalog() {
 
 function createPublishedHandler(book: PriceBook = publishedPriceBook(), areaCatalog = approvedAreaCatalog()) {
   return createEstimatePostHandler({
-    priceBookRepository: { loadPublished: async () => ({ priceBook: book, areaCatalog }) },
+    priceBookRepository: { loadPublished: async () => ({ priceBookId: "test-book", priceBook: book, areaCatalog }) },
   });
 }
 

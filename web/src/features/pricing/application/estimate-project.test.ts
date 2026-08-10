@@ -16,7 +16,7 @@ test("uses the approved area catalog supplied with the published price book inst
   const configuration = projectEstimateRequest({ ...createDefaultConfiguration(), styleId: "contemporary-warm-luxury", provinceCode: "10" });
 
   const preview = await estimateProject(configuration, {
-    loadPublished: async () => ({ priceBook: { ...qaPriceBook, status: "published" }, areaCatalog }),
+    loadPublished: async () => ({ priceBookId: "test-book", priceBook: { ...qaPriceBook, status: "published" }, areaCatalog }),
   });
 
   expect(preview.usableAreaM2).toBe(182);
