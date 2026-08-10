@@ -1,0 +1,51 @@
+.card {
+  color: #f5f0e5;
+  background: #171919;
+  border: 1px solid #a9844f;
+  box-shadow: 0 16px 38px rgb(0 0 0 / 28%);
+  font-family: Arial, "Noto Sans Thai", sans-serif;
+}
+
+.header, .footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .8rem 1rem;
+  border-color: rgb(169 132 79 / 65%);
+  border-style: solid;
+  font-size: .67rem;
+  letter-spacing: .12em;
+}
+
+.header { border-width: 0 0 1px; }
+.footer { border-width: 1px 0 0; color: #d6bf91; }
+.brand, .document, .conceptLabel, .eyebrow, .budget p, .budget span { margin: 0; }
+.brand, .conceptLabel, .eyebrow { color: #d6bf91; letter-spacing: .11em; font-size: .68rem; }
+.document { color: #a6aaa3; }
+.content { display: grid; grid-template-columns: 1.08fr .92fr; }
+.concept { min-height: 18rem; position: relative; padding: 1.1rem; display: flex; flex-direction: column; justify-content: end; overflow: hidden; border-right: 1px solid rgb(169 132 79 / 65%); }
+.image, .imageFallback { z-index: 0; object-fit: cover; position: absolute; inset: 0; width: 100%; height: 100%; opacity: .46; filter: saturate(.7) contrast(1.05); }
+.imageFallback { background: linear-gradient(145deg, #35393a, #171919 64%); }
+.concept::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(15 16 16 / 88%), transparent 65%); z-index: 1; }
+.conceptLabel, .concept h2 { position: relative; z-index: 2; }
+.concept h2 { margin: .35rem 0 0; max-width: 15ch; font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.08; }
+.details { padding: 1.25rem; }
+.facts { display: grid; grid-template-columns: repeat(2, 1fr); margin: 1rem 0 1.4rem; gap: .7rem .5rem; }
+.facts div { border-bottom: 1px solid rgb(245 240 229 / 16%); padding-bottom: .45rem; }
+.facts dt { color: #b6b8b2; font-size: .7rem; }
+.facts dd { margin: .18rem 0 0; font-weight: 700; }
+.budget { border-left: 2px solid #d6bf91; padding-left: .7rem; }
+.budget strong { display: block; margin: .25rem 0; color: #f4dba4; font-size: 1.08rem; line-height: 1.2; }
+.budget span { color: #b6b8b2; font-size: .7rem; line-height: 1.4; }
+.triptych { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; border-top: 1px solid rgb(169 132 79 / 65%); }
+.triptych div { padding: .85rem 1rem; min-width: 0; }
+.triptych div + div { border-left: 1px solid rgb(169 132 79 / 65%); }
+.triptych dt { color: #d6bf91; font-size: .62rem; letter-spacing: .07em; }
+.triptych dd { margin: .35rem 0 0; font-size: clamp(.8rem, 2.6vw, 1.05rem); font-weight: 700; white-space: nowrap; }
+
+@media (max-width: 520px) {
+  .content { grid-template-columns: 1fr; }
+  .concept { min-height: 14rem; border-right: 0; border-bottom: 1px solid rgb(169 132 79 / 65%); }
+  .triptych dd { white-space: normal; }
+  .triptych div { padding: .7rem .5rem; }
+}
