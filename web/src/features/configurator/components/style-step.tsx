@@ -1,4 +1,5 @@
 import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
+import { FieldError } from "@/components/ui/field-error";
 import styles from "./configurator-shell.module.css";
 
 type StyleStepProps = {
@@ -26,7 +27,7 @@ export function StyleStep({ error, errorId, selectedStyleId, onChange }: StyleSt
           </label>
         ))}
       </div>
-      {error ? <p className={styles.error} id={errorId} role="alert">{error}</p> : null}
+      {error ? <FieldError className={styles.error} id={errorId}>{error}</FieldError> : null}
     </fieldset>
   );
 }

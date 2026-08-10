@@ -23,3 +23,16 @@ test("returns safe validation and payload-size errors without calling applicatio
   expect(invalid.status).toBe(400); expect(oversized.status).toBe(413); expect(submit).not.toHaveBeenCalled();
   expect(await invalid.json()).toEqual({ error: { code: "INVALID_LEAD" } });
 });
+
+test("returns a no-store 429 envelope before Lead services run", async () => {
+  const submit = vi.fn();
+  const rateLimit = vi.fn().mockReturnValue({ allowed: false, retryAfterSeconds: 27 });
+  const handler = createLeadPostHandler({ submit, rateLimit });
+  const response = await handler(new Request("https://ksb.test/api/leads", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(validBody) }));
+
+  expect(response.status).toBe(429);
+  expect(response.headers.get("retry-after")).toBe("27");
+  expect(response.headers.get("cache-control")).toBe("no-store");
+  expect(await response.json()).toEqual({ error: { code: "RATE_LIMITED" } });
+  expect(submit).not.toHaveBeenCalled();
+});

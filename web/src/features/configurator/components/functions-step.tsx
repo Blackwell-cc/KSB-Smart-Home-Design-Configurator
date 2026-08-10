@@ -1,4 +1,5 @@
 import { Counter } from "@/components/ui/counter";
+import { FieldError } from "@/components/ui/field-error";
 import type { HouseConfiguration } from "../domain/configuration";
 import styles from "./configurator-shell.module.css";
 
@@ -34,7 +35,7 @@ export function FunctionsStep({ areaDraft, areaError, configuration, onAreaChang
         <label htmlFor="usable-area">พื้นที่ใช้สอยที่ต้องการ <span>(ไม่บังคับ)</span></label>
         <input aria-describedby={areaError ? "usable-area-help usable-area-error" : "usable-area-help"} id="usable-area" inputMode="numeric" max="1500" min="60" onChange={(event) => onAreaChange(event.target.value)} type="number" value={areaDraft} />
         <p id="usable-area-help">เว้นว่างเพื่อใช้พื้นที่แนะนำจากจำนวนห้องและผู้อยู่อาศัย (60–1,500 ตร.ม.)</p>
-        {areaError ? <p className={styles.error} id="usable-area-error" role="alert">{areaError}</p> : null}
+        {areaError ? <FieldError className={styles.error} id="usable-area-error">{areaError}</FieldError> : null}
       </div>
       <fieldset className={styles.choiceFieldset}>
         <legend>ฟังก์ชันเพิ่มเติม</legend>

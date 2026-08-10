@@ -5,6 +5,7 @@ import { createSupabasePublicShareRepositoryFromEnvironment } from "@/features/s
 import { createSupabasePrivateProjectRepositoryFromEnvironment } from "@/features/project-access/infrastructure/supabase-private-project-repository";
 import { PROJECT_SESSION_COOKIE, readProjectSession } from "@/features/project-access/domain/project-session";
 import { resolvePrivateProjectSession } from "@/features/project-access/application/resolve-private-project";
+import { isSameOriginRequest } from "@/lib/api/same-origin";
 
 const MAX_BODY_BYTES = 4_096;
 const ShareRequestSchema = z.object({ projectId: z.string().uuid() }).strict();
@@ -22,7 +23,7 @@ async function readBody(request: Request): Promise<unknown | Response> {
 
 export function createSharePostHandler({ authorizeAndLoad, createShare }: Dependencies) {
   return async (request: Request): Promise<Response> => {
-    if (request.headers.get("origin") !== new URL(request.url).origin) return error(403);
+    if (!isSameOriginRequest(request)) return error(403);
     const raw = await readBody(request); if (raw instanceof Response) return raw;
     const input = ShareRequestSchema.safeParse(raw); if (!input.success) return error(400);
     try {

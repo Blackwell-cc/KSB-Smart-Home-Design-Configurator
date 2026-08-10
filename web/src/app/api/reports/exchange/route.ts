@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createProjectSession, PROJECT_SESSION_COOKIE } from "@/features/project-access/domain/project-session";
 import { resolvePrivateProject, type ResolvedPrivateProject } from "@/features/project-access/application/resolve-private-project";
 import { createSupabasePrivateProjectRepositoryFromEnvironment } from "@/features/project-access/infrastructure/supabase-private-project-repository";
+import { isSameOriginRequest } from "@/lib/api/same-origin";
 
 const MAX_BODY_BYTES = 4 * 1024;
 const ExchangeSchema = z.object({ projectId: z.uuid(), token: z.string().min(24).max(512) }).strict();
@@ -16,7 +17,7 @@ async function readJson(request: Request): Promise<unknown | Response> {
 }
 export function createPrivateAccessExchangeHandler({ resolve, secret, now }: HandlerDependencies) {
   return async (request: Request): Promise<Response> => {
-    if (request.headers.get("origin") !== new URL(request.url).origin) return error(403, "PROJECT_LINK_INVALID");
+    if (!isSameOriginRequest(request)) return error(403, "PROJECT_LINK_INVALID");
     const raw = await readJson(request); if (raw instanceof Response) return raw;
     const input = ExchangeSchema.safeParse(raw); if (!input.success) return error(400, "PROJECT_LINK_INVALID");
     try {

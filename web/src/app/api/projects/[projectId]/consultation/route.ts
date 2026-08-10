@@ -1,15 +1,15 @@
 import { createSupabasePrivateProjectRepositoryFromEnvironment } from "@/features/project-access/infrastructure/supabase-private-project-repository";
 import { readProjectSession, PROJECT_SESSION_COOKIE } from "@/features/project-access/domain/project-session";
 import { resolvePrivateProjectSession } from "@/features/project-access/application/resolve-private-project";
+import { isSameOriginRequest } from "@/lib/api/same-origin";
 
 type Context = { params: Promise<{ projectId: string }> };
 type Dependencies = { authorize: (request: Request, projectId: string) => Promise<void>; requestConsultation: (projectId: string) => Promise<Date> };
 const noStore = { "cache-control": "no-store" };
 const invalid = () => Response.json({ error: { code: "PROJECT_LINK_INVALID" } }, { status: 404, headers: noStore });
-function sameOrigin(request: Request) { return request.headers.get("origin") === new URL(request.url).origin; }
 export function createConsultationPostHandler({ authorize, requestConsultation }: Dependencies) {
   return async (request: Request, context: Context): Promise<Response> => {
-    const { projectId } = await context.params; if (!sameOrigin(request)) return invalid();
+    const { projectId } = await context.params; if (!isSameOriginRequest(request)) return invalid();
     try { await authorize(request, projectId); const consultationRequestedAt = await requestConsultation(projectId); return Response.json({ consultationRequestedAt: consultationRequestedAt.toISOString() }, { headers: noStore }); } catch { return invalid(); }
   };
 }

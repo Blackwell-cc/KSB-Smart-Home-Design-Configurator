@@ -63,6 +63,7 @@ describe("POST /api/estimate", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
     expect(body).toEqual({
       preview: expect.objectContaining({
         conceptAssetId: "contemporary-warm-luxury",
@@ -129,6 +130,7 @@ describe("POST /api/estimate", () => {
     const malformedResponse = await handler(malformedJsonRequest());
 
     expect(invalidResponse.status).toBe(400);
+    expect(invalidResponse.headers.get("cache-control")).toBe("no-store");
     await expect(invalidResponse.json()).resolves.toEqual({ error: { code: "INVALID_CONFIGURATION" } });
     expect(malformedResponse.status).toBe(400);
     await expect(malformedResponse.json()).resolves.toEqual({ error: { code: "INVALID_JSON" } });

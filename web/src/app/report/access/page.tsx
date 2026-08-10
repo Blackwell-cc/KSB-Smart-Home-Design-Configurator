@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseAndScrubPrivateAccessFragment } from "@/features/project-access/domain/private-access-exchange";
 
 export default function PrivateAccessPage() {
   const router = useRouter(); const [state, setState] = useState<"loading" | "invalid">("loading");
+  const exchangeRef = useRef<ReturnType<typeof parseAndScrubPrivateAccessFragment> | undefined>(undefined);
   useEffect(() => {
     const controller = new AbortController();
-    const exchange = parseAndScrubPrivateAccessFragment(window.location.hash, "/report/access", window.history.replaceState.bind(window.history));
+    if (exchangeRef.current === undefined) exchangeRef.current = parseAndScrubPrivateAccessFragment(window.location.hash, "/report/access", window.history.replaceState.bind(window.history));
+    const exchange = exchangeRef.current;
     if (!exchange) { queueMicrotask(() => { if (!controller.signal.aborted) setState("invalid"); }); return () => controller.abort(); }
     void (async () => {
       try {

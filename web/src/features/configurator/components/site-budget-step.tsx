@@ -1,4 +1,5 @@
 import { THAI_PROVINCES } from "../domain/provinces";
+import { FieldError } from "@/components/ui/field-error";
 import type { HouseConfiguration } from "../domain/configuration";
 import styles from "./configurator-shell.module.css";
 
@@ -27,7 +28,7 @@ export function SiteBudgetStep({ budgetDraft, budgetError, configuration, error,
           <option value="">เลือกจังหวัด</option>
           {THAI_PROVINCES.map((province) => <option key={province.code} value={province.code}>{province.name}</option>)}
         </select>
-        {error ? <p className={styles.error} id={errorId} role="alert">{error}</p> : null}
+        {error ? <FieldError className={styles.error} id={errorId}>{error}</FieldError> : null}
       </div>
       <div className={styles.field}>
         <label htmlFor="district">อำเภอ / เขต <span>(ไม่บังคับ)</span></label>
@@ -46,7 +47,7 @@ export function SiteBudgetStep({ budgetDraft, budgetError, configuration, error,
           <label>เริ่มต้น (บาท)<input aria-describedby={budgetError ? "budget-error" : undefined} inputMode="numeric" min="1" onChange={(event) => onBudgetChange("min", event.target.value)} type="number" value={budgetDraft.min} /></label>
           <label>สูงสุด (บาท)<input aria-describedby={budgetError ? "budget-error" : undefined} inputMode="numeric" min="1" onChange={(event) => onBudgetChange("max", event.target.value)} type="number" value={budgetDraft.max} /></label>
         </div>
-        {budgetError ? <p className={styles.error} id="budget-error" role="alert">{budgetError}</p> : null}
+        {budgetError ? <FieldError className={styles.error} id="budget-error">{budgetError}</FieldError> : null}
       </fieldset>
     </div>
   );

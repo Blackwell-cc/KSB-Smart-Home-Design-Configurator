@@ -5,9 +5,10 @@ import { createSupabasePriceBookRepositoryFromEnvironment } from "@/features/pri
 type EstimateHandlerDependencies = { priceBookRepository: PriceBookRepository };
 
 const MAX_BODY_BYTES = 32 * 1024;
+const noStore = { "cache-control": "no-store" };
 
 function errorResponse(status: number, code: "INVALID_JSON" | "INVALID_CONFIGURATION" | "ESTIMATE_UNAVAILABLE" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE") {
-  return Response.json({ error: { code } }, { status });
+  return Response.json({ error: { code } }, { status, headers: noStore });
 }
 
 async function readJson(request: Request): Promise<{ ok: true; body: unknown } | { ok: false; response: Response }> {
@@ -33,7 +34,7 @@ export function createEstimatePostHandler({ priceBookRepository }: EstimateHandl
 
     try {
       const preview = await estimateProject(configuration.data, priceBookRepository);
-      return Response.json({ preview });
+      return Response.json({ preview }, { headers: noStore });
     } catch (error) {
       if (error instanceof Error && error.message === "CONFIGURATION_NOT_READY") {
         return errorResponse(400, "INVALID_CONFIGURATION");

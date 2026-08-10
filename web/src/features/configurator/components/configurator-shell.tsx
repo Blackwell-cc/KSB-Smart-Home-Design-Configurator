@@ -104,6 +104,8 @@ function createBrowserConfiguratorStore() {
   }
 }
 
+const SERVER_CONFIGURATOR_SNAPSHOT = createConfiguratorStore(createUnavailableDraftStorage()).getInitialState();
+
 function validationForStep(configuration: HouseConfiguration, step: number) {
   if (step === 0) return StyleStepSchema.safeParse({ styleId: configuration.styleId });
   if (step === 1) {
@@ -136,9 +138,11 @@ function stepError(step: number, valid: boolean) {
 export function ConfiguratorShell({ onPreview, store: injectedStore }: ConfiguratorShellProps) {
   const [browserStore] = useState(createBrowserConfiguratorStore);
   const store = injectedStore ?? browserStore;
-  const state = useSyncExternalStore(store.subscribe, store.getState, store.getInitialState);
-  const [budgetDraft, setBudgetDraft] = useState<BudgetDraft>(() => budgetDraftFor(state.configuration.targetBudget));
-  const [areaDraft, setAreaDraft] = useState<AreaDraft>(() => areaDraftFor(state.configuration.usableAreaOverrideM2));
+  const state = useSyncExternalStore(store.subscribe, store.getState, () => SERVER_CONFIGURATOR_SNAPSHOT);
+  const [budgetDraftOverride, setBudgetDraft] = useState<BudgetDraft | null>(null);
+  const [areaDraftOverride, setAreaDraft] = useState<AreaDraft | null>(null);
+  const budgetDraft = budgetDraftOverride ?? budgetDraftFor(state.configuration.targetBudget);
+  const areaDraft = areaDraftOverride ?? areaDraftFor(state.configuration.usableAreaOverrideM2);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const stepSchemaValid = validationForStep(state.configuration, state.currentStep).success;
   const budgetError = budgetErrorFor(budgetDraft);

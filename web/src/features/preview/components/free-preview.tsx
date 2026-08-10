@@ -53,7 +53,9 @@ export function FreePreview({ status, preview, onBack, onFullReport, onShare }: 
 
       <div className={styles.layout}>
         <section className={styles.conceptPanel} aria-label="ภาพคอนเซปต์บ้าน">
-          {concept ? <Image className={styles.conceptImage} src={concept.image} alt={`Concept บ้านสไตล์ ${preview.styleLabel}`} fill sizes="(max-width: 899px) 100vw, 50vw" priority /> : null}
+          <div className={styles.conceptImageFrame}>
+            {concept ? <Image className={styles.conceptImage} src={concept.image} alt={`Concept บ้านสไตล์ ${preview.styleLabel}`} fill sizes="(max-width: 899px) 100vw, 50vw" priority /> : null}
+          </div>
           <div className={styles.conceptCaption}>
             <span>CONCEPT DIRECTION</span>
             <strong>{preview.styleLabel}</strong>
