@@ -1,37 +1,181 @@
 export type LandingLocale = "th" | "en";
+export type LandingIconName =
+  | "phone"
+  | "calculator"
+  | "eye"
+  | "clock"
+  | "shield"
+  | "share"
+  | "home"
+  | "space"
+  | "chart"
+  | "menu"
+  | "arrow";
+
+type NavigationItem = { label: string; href: `#${string}` };
+type BenefitItem = { label: string; icon: LandingIconName };
+type StepItem = {
+  number: string;
+  title: string;
+  description: string;
+  icon: LandingIconName;
+};
+type FaqItem = { question: string; answer: string };
 
 export type LandingContent = {
-  brand: string;
-  contactLabel: string;
-  contactNumber: string;
-  eyebrow: string;
-  heading: string;
-  statement: string;
-  primaryCta: string;
-  secondaryCta: string;
-  helper: string;
-  conceptAlt: string;
-  conceptLabel: string;
+  brand: { logoAlt: string; homeLabel: string };
+  header: { phoneLabel: string; phoneNumber: string; ctaLabel: string };
+  navigation: NavigationItem[];
+  hero: {
+    headingLead: string;
+    headingAccent: string;
+    supportingCopy: string;
+    explanation: string;
+    primaryCta: string;
+    secondaryCta: string;
+  };
+  benefits: BenefitItem[];
+  steps: StepItem[];
+  faqs: FaqItem[];
+  showcase: {
+    imageAlt: string;
+    style: {
+      label: string;
+      selected: string;
+      choices: Array<{ label: string; image: string }>;
+    };
+    area: { label: string; value: string; unit: string };
+    material: {
+      label: string;
+      selected: string;
+      swatches: Array<{ label: string; color: string }>;
+    };
+    budget: {
+      label: string;
+      value: string;
+      supporting: string;
+      detailLabel: string;
+      disclaimer: string;
+    };
+    share: { title: string; supporting: string; imageAlt: string };
+  };
 };
 
-const defaultLandingLocale: LandingLocale = "th";
-
-const landingContent: Partial<Record<LandingLocale, LandingContent>> = {
-  th: {
-    brand: "KSB ARCHITECT",
-    contactLabel: "ปรึกษาสถาปนิก",
-    contactNumber: "091 991 4592",
-    eyebrow: "บริการวางแผนบ้านโดยสถาปนิก",
-    heading: "รู้พื้นที่และงบประมาณบ้าน ก่อนเริ่มสร้าง",
-    statement: "บ้านหรูไม่ได้เริ่มจากวัสดุแพง แต่เริ่มจากการวางแผนพื้นที่ ฟังก์ชัน และกรอบงบประมาณให้สอดคล้องกัน",
-    primaryCta: "เริ่มวางแผนบ้าน",
-    secondaryCta: "ปรึกษาฟรี",
-    helper: "ใช้เวลาประมาณ 3–5 นาที · Preview แรกไม่ต้องกรอกข้อมูลส่วนตัว",
-    conceptAlt: "ภาพแนวคิดบ้านสไตล์ Contemporary Warm Luxury สำหรับประกอบการวางแผน",
-    conceptLabel: "Contemporary Warm Luxury",
+const thaiContent: LandingContent = {
+  brand: {
+    logoAlt: "โลโก้ KSB Architect",
+    homeLabel: "KSB Architect หน้าแรก",
+  },
+  header: {
+    phoneLabel: "โทรปรึกษา",
+    phoneNumber: "091 991 4592",
+    ctaLabel: "ลองประเมินฟรี",
+  },
+  navigation: [
+    { label: "เริ่มต้น", href: "#start" },
+    { label: "แบบบ้าน", href: "#house-preview" },
+    { label: "วิธีใช้งาน", href: "#how-it-works" },
+    { label: "คำถามที่พบบ่อย", href: "#faq" },
+  ],
+  hero: {
+    headingLead: "บ้านในฝันของคุณ",
+    headingAccent: "ราคาเท่าไหร่?",
+    supportingCopy:
+      "ลองเลือกสไตล์ ฟังก์ชัน และการตกแต่ง เพื่อดูงบประมาณและภาพบ้านเบื้องต้นของคุณ",
+    explanation:
+      "เครื่องมือช่วยวางแผนบ้านที่เข้าใจง่าย ให้คุณเห็นภาพบ้านในฝัน พร้อมงบประมาณเบื้องต้น ก่อนตัดสินใจคุยรายละเอียดกับสถาปนิก",
+    primaryCta: "เริ่มประเมินฟรี",
+    secondaryCta: "ดูตัวอย่างบ้าน",
+  },
+  benefits: [
+    { label: "ใช้เวลา 3–5 นาที", icon: "clock" },
+    { label: "ไม่ต้องกรอกข้อมูลก่อน", icon: "shield" },
+    { label: "แชร์ผลลัพธ์ให้ครอบครัวได้", icon: "share" },
+  ],
+  steps: [
+    {
+      number: "1",
+      title: "เลือกสไตล์",
+      description: "สไตล์ที่ใช่สำหรับคุณ",
+      icon: "home",
+    },
+    {
+      number: "2",
+      title: "ปรับฟังก์ชัน",
+      description: "ขนาดพื้นที่และฟังก์ชัน",
+      icon: "space",
+    },
+    {
+      number: "3",
+      title: "ดูราคาและภาพตัวอย่าง",
+      description: "เห็นงบประมาณและภาพบ้าน",
+      icon: "chart",
+    },
+  ],
+  faqs: [
+    {
+      question: "ตัวเลขที่เห็นเป็นราคาสุดท้ายหรือไม่?",
+      answer:
+        "ไม่ใช่ ผลลัพธ์เป็นการประเมินเบื้องต้นเพื่อช่วยวางแผนก่อนคุยรายละเอียดกับสถาปนิก",
+    },
+    {
+      question: "ต้องให้ข้อมูลส่วนตัวก่อนหรือไม่?",
+      answer:
+        "ไม่ต้อง คุณสามารถเลือกความต้องการและดู Preview แรกได้ก่อนกรอกข้อมูลติดต่อ",
+    },
+    {
+      question: "กลับมาแก้ไขหรือแชร์ผลลัพธ์ได้ไหม?",
+      answer:
+        "ได้ คุณสามารถย้อนกลับไปปรับตัวเลือกและแชร์ผลลัพธ์ให้ครอบครัวช่วยตัดสินใจได้",
+    },
+  ],
+  showcase: {
+    imageAlt: "บ้านร่วมสมัยแสงอบอุ่นช่วงเย็นสำหรับตัวอย่างการวางแผนบ้าน",
+    style: {
+      label: "สไตล์บ้าน",
+      selected: "Modern Warm",
+      choices: [
+        {
+          label: "Modern Warm",
+          image: "/concepts/contemporary-warm-luxury.png",
+        },
+        { label: "Tropical", image: "/concepts/modern-tropical-resort.png" },
+        {
+          label: "Timeless",
+          image: "/concepts/timeless-contemporary-luxury.png",
+        },
+      ],
+    },
+    area: { label: "พื้นที่ใช้สอย", value: "320", unit: "ตร.ม." },
+    material: {
+      label: "ระดับวัสดุและการตกแต่ง",
+      selected: "Premium",
+      swatches: [
+        { label: "ไม้", color: "#75583E" },
+        { label: "หิน", color: "#B6A58D" },
+        { label: "กระจก", color: "#849097" },
+        { label: "ผิวสีอ่อน", color: "#D8D0C4" },
+      ],
+    },
+    budget: {
+      label: "งบประมาณเริ่มต้น",
+      value: "5.8 – 6.9 ล้านบาท",
+      supporting: "ช่วงราคาประมาณการเบื้องต้น",
+      detailLabel: "ดูรายละเอียด",
+      disclaimer: "ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน",
+    },
+    share: {
+      title: "Preview พร้อมแชร์",
+      supporting: "ส่งให้ครอบครัวช่วยตัดสินใจ",
+      imageAlt: "ภาพย่อ Preview บ้านสำหรับแชร์",
+    },
   },
 };
 
-export function getLandingContent(locale: LandingLocale = defaultLandingLocale): LandingContent {
-  return landingContent[locale] ?? landingContent[defaultLandingLocale]!;
+const landingContent: Partial<Record<LandingLocale, LandingContent>> = {
+  th: thaiContent,
+};
+
+export function getLandingContent(locale: LandingLocale = "th"): LandingContent {
+  return landingContent[locale] ?? thaiContent;
 }

@@ -1,22 +1,25 @@
 import { getLandingContent } from "./landing-content";
 
-test("provides concise Thai content for the single premium hero", () => {
+test("provides the approved consumer hero content and safe demo budget", () => {
   const content = getLandingContent("th");
 
-  expect(content).toMatchObject({
-    brand: "KSB ARCHITECT",
-    contactLabel: "ปรึกษาสถาปนิก",
-    contactNumber: "091 991 4592",
-    eyebrow: "บริการวางแผนบ้านโดยสถาปนิก",
-    heading: "รู้พื้นที่และงบประมาณบ้าน ก่อนเริ่มสร้าง",
-    primaryCta: "เริ่มวางแผนบ้าน",
-    secondaryCta: "ปรึกษาฟรี",
-    conceptLabel: "Contemporary Warm Luxury",
+  expect(content.hero).toMatchObject({
+    headingLead: "บ้านในฝันของคุณ",
+    headingAccent: "ราคาเท่าไหร่?",
+    primaryCta: "เริ่มประเมินฟรี",
+    secondaryCta: "ดูตัวอย่างบ้าน",
   });
-  expect(content.helper).toContain("ไม่ต้องกรอกข้อมูลส่วนตัว");
-  expect(content).not.toHaveProperty("values");
-  expect(content).not.toHaveProperty("processSteps");
-  expect(content).not.toHaveProperty("finalHeading");
+  expect(content.navigation.map((item) => item.label)).toEqual([
+    "เริ่มต้น",
+    "แบบบ้าน",
+    "วิธีใช้งาน",
+    "คำถามที่พบบ่อย",
+  ]);
+  expect(content.benefits).toHaveLength(3);
+  expect(content.steps).toHaveLength(3);
+  expect(content.showcase.budget.disclaimer).toBe("ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน");
+  expect(content.showcase.budget.value).toBe("5.8 – 6.9 ล้านบาท");
+  expect(content.faqs).toHaveLength(3);
 });
 
 test("falls back to Thai for an untranslated locale", () => {
