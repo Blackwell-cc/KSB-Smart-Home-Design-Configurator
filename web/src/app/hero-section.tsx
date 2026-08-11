@@ -21,7 +21,7 @@ export function HeroSection({ content }: { content: LandingContent }) {
       <div aria-label="ประโยชน์ของเครื่องมือ" className={styles.benefitRow}>
         {content.benefits.map((benefit) => <div key={benefit.label}><LandingIcon name={benefit.icon} /><span>{benefit.label}</span></div>)}
       </div>
-      <SimpleSteps faqs={content.faqs} steps={content.steps} />
+      <SimpleSteps steps={content.steps} />
     </section>
   );
 }

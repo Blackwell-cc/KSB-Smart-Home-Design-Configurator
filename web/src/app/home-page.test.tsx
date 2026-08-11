@@ -10,10 +10,11 @@ test("renders the consumer acquisition header and one focused hero", () => {
   expect(screen.getAllByRole("link", { name: "เริ่มต้น" })[0]).toHaveAttribute("href", "#start");
   expect(screen.getAllByRole("link", { name: "แบบบ้าน" })[0]).toHaveAttribute("href", "#house-preview");
   expect(screen.getAllByRole("link", { name: "วิธีใช้งาน" })[0]).toHaveAttribute("href", "#how-it-works");
-  expect(screen.getAllByRole("link", { name: "คำถามที่พบบ่อย" })[0]).toHaveAttribute("href", "#faq");
   expect(screen.getByRole("link", { name: "ลองประเมินฟรี" })).toHaveAttribute("href", "/configurator");
   expect(screen.getByRole("link", { name: "เริ่มประเมินฟรี" })).toHaveAttribute("href", "/configurator");
   expect(screen.getByRole("link", { name: "ดูตัวอย่างบ้าน" })).toHaveAttribute("href", "#house-preview");
+  expect(container.querySelector("#faq")).not.toBeInTheDocument();
+  expect(container.querySelectorAll('a[href="#faq"]')).toHaveLength(0);
 });
 
 test("renders five non-interactive demo cards with safe sample pricing", () => {
@@ -27,7 +28,6 @@ test("renders five non-interactive demo cards with safe sample pricing", () => {
   expect(within(showcase).getByText("ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน")).toBeInTheDocument();
   expect(screen.getAllByText(/ใช้เวลา 3–5 นาที/)).toHaveLength(1);
   expect(screen.getByRole("heading", { name: "3 ขั้นตอนง่าย ๆ เพื่อบ้านในฝัน" })).toBeInTheDocument();
-  expect(screen.getByText("ตัวเลขที่เห็นเป็นราคาสุดท้ายหรือไม่?")).toBeInTheDocument();
   const mobileMenuSummary = container.querySelector("details summary");
   expect(mobileMenuSummary).toHaveAttribute("aria-label", "เมนูหลัก");
   expect(mobileMenuSummary).not.toHaveAttribute("aria-label", "เปิดเมนูหลัก");

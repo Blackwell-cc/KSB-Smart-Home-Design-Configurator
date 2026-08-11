@@ -20,7 +20,6 @@ type StepItem = {
   description: string;
   icon: LandingIconName;
 };
-type FaqItem = { question: string; answer: string };
 
 export type LandingContent = {
   brand: { logoAlt: string; homeLabel: string };
@@ -36,7 +35,6 @@ export type LandingContent = {
   };
   benefits: BenefitItem[];
   steps: StepItem[];
-  faqs: FaqItem[];
   showcase: {
     imageAlt: string;
     style: {
@@ -75,7 +73,6 @@ const thaiContent: LandingContent = {
     { label: "เริ่มต้น", href: "#start" },
     { label: "แบบบ้าน", href: "#house-preview" },
     { label: "วิธีใช้งาน", href: "#how-it-works" },
-    { label: "คำถามที่พบบ่อย", href: "#faq" },
   ],
   hero: {
     headingLead: "บ้านในฝันของคุณ",
@@ -110,23 +107,6 @@ const thaiContent: LandingContent = {
       title: "ดูราคาและภาพตัวอย่าง",
       description: "เห็นงบประมาณและภาพบ้าน",
       icon: "chart",
-    },
-  ],
-  faqs: [
-    {
-      question: "ตัวเลขที่เห็นเป็นราคาสุดท้ายหรือไม่?",
-      answer:
-        "ไม่ใช่ ผลลัพธ์เป็นการประเมินเบื้องต้นเพื่อช่วยวางแผนก่อนคุยรายละเอียดกับสถาปนิก",
-    },
-    {
-      question: "ต้องให้ข้อมูลส่วนตัวก่อนหรือไม่?",
-      answer:
-        "ไม่ต้อง คุณสามารถเลือกความต้องการและดู Preview แรกได้ก่อนกรอกข้อมูลติดต่อ",
-    },
-    {
-      question: "กลับมาแก้ไขหรือแชร์ผลลัพธ์ได้ไหม?",
-      answer:
-        "ได้ คุณสามารถย้อนกลับไปปรับตัวเลือกและแชร์ผลลัพธ์ให้ครอบครัวช่วยตัดสินใจได้",
     },
   ],
   showcase: {

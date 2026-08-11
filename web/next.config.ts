@@ -4,5 +4,5 @@ import { assertProductionEnvironment } from "./src/lib/env/production-environmen
 
 export default function createNextConfig(phase: string): NextConfig {
   if (phase === PHASE_PRODUCTION_SERVER) assertProductionEnvironment(process.env);
-  return { allowedDevOrigins: ["127.0.0.1"] };
+  return { allowedDevOrigins: ["127.0.0.1"], devIndicators: false };
 }

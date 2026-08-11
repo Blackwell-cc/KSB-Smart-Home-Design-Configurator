@@ -90,7 +90,6 @@ test("exposes focus and disables decorative motion when requested", async ({ pag
     page.getByRole("link", { name: "ลองประเมินฟรี" }),
     page.getByRole("link", { name: "เริ่มประเมินฟรี" }),
     page.getByRole("link", { name: "ดูตัวอย่างบ้าน" }),
-    page.locator("details#faq > summary"),
   ];
 
   for (const target of focusTargets) {

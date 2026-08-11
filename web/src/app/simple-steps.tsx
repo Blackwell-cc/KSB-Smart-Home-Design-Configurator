@@ -2,9 +2,9 @@ import type { LandingContent } from "./landing-content";
 import { LandingIcon } from "./landing-icons";
 import styles from "./landing-page.module.css";
 
-type Props = Pick<LandingContent, "steps" | "faqs">;
+type Props = Pick<LandingContent, "steps">;
 
-export function SimpleSteps({ steps, faqs }: Props) {
+export function SimpleSteps({ steps }: Props) {
   return (
     <div className={styles.stepsArea}>
       <div className={styles.stepsCard} id="how-it-works">
@@ -19,12 +19,6 @@ export function SimpleSteps({ steps, faqs }: Props) {
           ))}
         </ol>
       </div>
-      <details className={styles.faq} id="faq">
-        <summary>คำถามที่พบบ่อย</summary>
-        <dl className={styles.faqAnswers}>
-          {faqs.map((faq) => <div className={styles.faqAnswer} key={faq.question}><dt>{faq.question}</dt><dd>{faq.answer}</dd></div>)}
-        </dl>
-      </details>
     </div>
   );
 }

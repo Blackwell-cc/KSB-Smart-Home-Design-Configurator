@@ -87,9 +87,7 @@
 .stepsArea { grid-area: steps; display: grid; gap: 10px; align-self: start; }
 .stepsCard { padding: 15px 18px; border: 1px solid var(--hero-line); border-radius: 14px; background: rgba(20, 18, 15, 0.55); }
 .stepsCard ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; list-style: none; }
-.faq { border-bottom: 1px solid var(--hero-line); color: var(--hero-muted); }
-.faq summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--hero-gold-soft); }
-#house-preview, #how-it-works, #faq { scroll-margin-top: 108px; }
+#house-preview, #how-it-works { scroll-margin-top: 108px; }
 
 @keyframes cardFloat { from { transform: translate3d(0, -3px, 0); } to { transform: translate3d(0, 3px, 0); } }
 
@@ -127,10 +125,6 @@
 .stepList li > div { display: grid; gap: 2px; }
 .stepList strong { font-size: 0.78rem; }
 .stepList li > div > span { color: var(--hero-muted); font-size: 0.62rem; line-height: 1.35; }
-.faqAnswers { display: grid; gap: 12px; padding: 4px 0 16px; }
-.faqAnswer { display: grid; gap: 4px; }
-.faqAnswer dt { color: var(--hero-ivory); font-size: 0.8rem; font-weight: 500; }
-.faqAnswer dd { color: var(--hero-muted); font-size: 0.76rem; line-height: 1.55; }
 
 @media (max-width: 1199px) {
   .header { grid-template-columns: 150px 1fr auto; gap: 18px; }
@@ -181,7 +175,7 @@
   .stepsCard ol { grid-template-columns: 1fr; }
 }
 
-.brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible, .faq summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   .cardFloat, .previewCard, .primaryCta, .secondaryCta, .headerCta { animation: none; transition: none; }

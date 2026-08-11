@@ -13,13 +13,13 @@ test("provides the approved consumer hero content and safe demo budget", () => {
     "เริ่มต้น",
     "แบบบ้าน",
     "วิธีใช้งาน",
-    "คำถามที่พบบ่อย",
   ]);
   expect(content.benefits).toHaveLength(3);
   expect(content.steps).toHaveLength(3);
+  expect(content.navigation).toHaveLength(3);
+  expect("faqs" in content).toBe(false);
   expect(content.showcase.budget.disclaimer).toBe("ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน");
   expect(content.showcase.budget.value).toBe("5.8 – 6.9 ล้านบาท");
-  expect(content.faqs).toHaveLength(3);
 });
 
 test("falls back to Thai for an untranslated locale", () => {
