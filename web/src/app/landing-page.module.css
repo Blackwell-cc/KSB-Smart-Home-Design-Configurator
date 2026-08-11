@@ -58,6 +58,7 @@
 .explanation { max-width: 560px; margin-top: 26px; padding-top: 24px; color: var(--hero-muted); border-top: 1px solid var(--hero-line); line-height: 1.65; }
 .heroActions { display: flex; gap: 16px; margin-top: 28px; }
 .primaryCta, .secondaryCta { min-width: 210px; display: inline-flex; align-items: center; justify-content: center; gap: 20px; padding: 0 24px; border-radius: 10px; font-weight: 500; transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease; }
+.primaryCta svg, .secondaryCta svg { flex: 0 0 24px; width: 24px; height: 24px; }
 .primaryCta { min-height: 48px; color: #17120b; border: 1px solid var(--hero-gold); background: linear-gradient(135deg, var(--hero-gold-soft), var(--hero-gold)); }
 .secondaryCta { min-height: 48px; color: var(--hero-ivory); border: 1px solid var(--hero-gold); background: rgba(9, 9, 8, 0.5); }
 .primaryCta:hover, .secondaryCta:hover { transform: translateY(-2px); }
