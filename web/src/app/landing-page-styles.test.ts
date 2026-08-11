@@ -3,20 +3,60 @@ import { expect, test } from "vitest";
 
 const css = readFileSync("src/app/landing-page.module.css", "utf8");
 
-test("defines the approved floating-card motion and reduced-motion fallback", () => {
-  expect(css).toMatch(/@keyframes\s+cardFloat/);
-  expect(css).toMatch(/\.cardFloat\s*\{[^}]*animation:/);
-  expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*animation:\s*none/);
+function rule(source: string, selector: string) {
+  const start = source.indexOf(`${selector} {`);
+  expect(start, `missing ${selector}`).toBeGreaterThanOrEqual(0);
+  const end = source.indexOf("}", start);
+  return source.slice(start, end + 1);
+}
+
+function mediaBlock(query: string) {
+  const marker = `@media ${query} {`;
+  const start = css.indexOf(marker);
+  expect(start, `missing ${marker}`).toBeGreaterThanOrEqual(0);
+  const end = css.indexOf("\n@media", start + marker.length);
+  return css.slice(start, end === -1 ? undefined : end);
+}
+
+function cardDuration(selector: string) {
+  const match = rule(css, selector).match(/animation-duration: (\d+(?:\.\d+)?)s/);
+  if (!match) throw new Error(`missing animation duration for ${selector}`);
+  return Number(match[1]);
+}
+
+test("keeps floating-card motion within the approved travel, duration, and reduced-motion limits", () => {
+  const keyframes = css.slice(css.indexOf("@keyframes cardFloat"), css.indexOf("\n\n", css.indexOf("@keyframes cardFloat")));
+  expect(keyframes).toContain("translate3d(0, -3px, 0)");
+  expect(keyframes).toContain("translate3d(0, 3px, 0)");
+  expect(rule(css, ".cardFloat")).toContain("animation: cardFloat 9s");
+
+  for (const selector of [".stylePosition", ".areaPosition", ".materialPosition", ".budgetPosition", ".sharePosition"]) {
+    expect(cardDuration(selector)).toBeGreaterThanOrEqual(7);
+    expect(cardDuration(selector)).toBeLessThanOrEqual(11);
+  }
+
+  const reducedMotion = mediaBlock("(prefers-reduced-motion: reduce)");
+  const reducedMotionCards = rule(reducedMotion, ".cardFloat, .previewCard, .primaryCta, .secondaryCta");
+  expect(reducedMotionCards).toContain("animation: none");
+  expect(reducedMotionCards).toContain("transition: none");
 });
 
-test("switches floating cards into normal flow below 900px", () => {
-  const mobile = css.slice(css.indexOf("@media (max-width: 899px)"));
-  expect(mobile).toMatch(/\.previewCards\s*\{[^}]*position:\s*static/);
-  expect(mobile).toMatch(/\.cardFloat\s*\{[^}]*position:\s*static/);
-  expect(mobile).toMatch(/\.hero\s*\{[^}]*grid-template-areas:\s*"content"\s*"house"\s*"benefits"\s*"steps"/);
+test("switches constrained layouts to normal flow before desktop tracks overflow", () => {
+  const mobile = mediaBlock("(max-width: 1023px)");
+  expect(rule(mobile, ".previewCards")).toContain("position: static");
+  expect(rule(mobile, ".cardFloat")).toContain("position: static");
+
+  const mobileHero = rule(mobile, ".hero");
+  expect(mobileHero).toContain('grid-template-areas: "content" "house" "benefits" "steps"');
+  expect(mobileHero).toContain("grid-template-columns: minmax(0, 1fr)");
 });
 
-test("keeps touch targets and visible focus rings", () => {
-  expect(css).toMatch(/\.primaryCta[\s\S]*min-height:\s*48px/);
-  expect(css).toMatch(/:focus-visible[\s\S]*outline:/);
+test("uses a one-column card grid at 375px", () => {
+  const narrow = mediaBlock("(max-width: 599px)");
+  expect(rule(narrow, ".previewCards")).toContain("grid-template-columns: 1fr");
+});
+
+test("scopes the primary touch target and visible focus ring", () => {
+  expect(rule(css, ".primaryCta")).toContain("min-height: 48px");
+  expect(rule(css, ".brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible, .faq summary:focus-visible")).toContain("outline:");
 });
