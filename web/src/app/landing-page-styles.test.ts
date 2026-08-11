@@ -56,6 +56,16 @@ test("uses a one-column card grid at 375px", () => {
   expect(rule(narrow, ".previewCards")).toContain("grid-template-columns: 1fr");
 });
 
+test("fits the desktop homepage to one viewport and centers the logo", () => {
+  const desktop = mediaBlock("(min-width: 1200px)");
+  expect(rule(desktop, ".page")).toContain("height: 100svh");
+  expect(rule(desktop, ".page")).toContain("overflow: hidden");
+  expect(rule(desktop, ".hero")).toContain("height: 100%");
+  expect(rule(desktop, ".hero")).toContain("min-height: 0");
+  expect(rule(css, ".brand")).toContain("align-self: center");
+  expect(rule(css, ".brandLogo")).toContain("object-fit: cover");
+});
+
 test("scopes the primary touch target and visible focus ring", () => {
   expect(rule(css, ".primaryCta")).toContain("min-height: 48px");
   expect(rule(css, ".brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible")).toContain("outline:");

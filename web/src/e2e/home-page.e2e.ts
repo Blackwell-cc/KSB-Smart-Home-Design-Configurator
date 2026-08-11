@@ -25,6 +25,25 @@ test("communicates the consumer value and enters the configurator", async ({ pag
   await expect(page.getByRole("heading", { name: "เลือกสไตล์บ้าน" })).toBeVisible();
 });
 
+test("fits the desktop homepage to the viewport and vertically centers the logo", async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 900 });
+  await page.goto("/");
+
+  const dimensions = await page.evaluate(() => ({
+    innerHeight: window.innerHeight,
+    scrollHeight: document.documentElement.scrollHeight,
+  }));
+  expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.innerHeight);
+
+  const [header, logo] = await Promise.all([
+    page.locator("header").boundingBox(),
+    page.getByRole("link", { name: "KSB Architect หน้าแรก" }).boundingBox(),
+  ]);
+  expect(header).not.toBeNull();
+  expect(logo).not.toBeNull();
+  expect(Math.abs((header!.y + header!.height / 2) - (logo!.y + logo!.height / 2))).toBeLessThanOrEqual(1);
+});
+
 for (const viewport of [{ width: 960, height: 1024 }, { width: 768, height: 1024 }, { width: 375, height: 812 }]) {
   test(`keeps the hero usable at ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport);

@@ -26,7 +26,7 @@
   backdrop-filter: blur(12px);
 }
 
-.brand { position: relative; width: 172px; height: 70px; overflow: hidden; }
+.brand { position: relative; width: 172px; height: 70px; align-self: center; overflow: hidden; }
 .brandLogo { object-fit: cover; object-position: 50% 60%; }
 .desktopNav { display: flex; justify-content: center; gap: clamp(28px, 4vw, 72px); }
 .desktopNav a { position: relative; min-height: 44px; display: inline-flex; align-items: center; color: var(--hero-muted); }
@@ -173,6 +173,29 @@
   .benefitRow { align-items: stretch; flex-direction: column; }
   .benefitRow > div { width: 100%; padding: 7px 0; border-right: 0; border-bottom: 1px solid var(--hero-line); }
   .stepsCard ol { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 1200px) {
+  .page { height: 100svh; min-height: 0; display: grid; grid-template-rows: 92px minmax(0, 1fr); overflow: hidden; }
+  .page main { min-height: 0; }
+  .header { position: relative; height: 92px; min-height: 0; }
+  .hero {
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    gap: 16px clamp(30px, 3.5vw, 66px);
+    align-content: stretch;
+    padding: clamp(20px, 2.8vh, 28px) clamp(24px, 3.6vw, 64px);
+  }
+  .heroContent { align-self: center; }
+  .heroContent h1 { font-size: clamp(3.8rem, 4.35vw, 5.25rem); line-height: 1.02; }
+  .supportingCopy { margin-top: 16px; font-size: clamp(1.05rem, 1.25vw, 1.35rem); line-height: 1.5; }
+  .explanation { margin-top: 18px; padding-top: 16px; font-size: 0.92rem; line-height: 1.55; }
+  .heroActions { margin-top: 20px; }
+  .houseArea { min-height: 0; }
+  .benefitRow > div { min-height: 32px; }
+  .stepsCard { padding: 12px 16px; }
+  .stepsCard ol { margin-top: 8px; }
 }
 
 .brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
