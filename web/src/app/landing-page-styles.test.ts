@@ -64,6 +64,8 @@ test("fits the desktop homepage to one viewport and centers the logo", () => {
   expect(rule(desktop, ".hero")).toContain("min-height: 0");
   expect(rule(css, ".brand")).toContain("align-self: center");
   expect(rule(css, ".brandLogo")).toContain("object-fit: cover");
+  expect(rule(css, ".page")).toContain('url("/backgrounds/bg-01.png")');
+  expect(rule(desktop, ".houseImage")).toContain("display: none");
 });
 
 test("scopes the primary touch target and visible focus ring", () => {

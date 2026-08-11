@@ -14,7 +14,10 @@ test("communicates the consumer value and enters the configurator", async ({ pag
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "บ้านในฝันของคุณ ราคาเท่าไหร่?" })).toBeVisible();
-  await expect(page.getByRole("img", { name: /บ้านร่วมสมัยแสงอบอุ่น/ })).toBeVisible();
+  const pageBackground = await page.locator("main").evaluate((main) =>
+    getComputedStyle(main.parentElement!).backgroundImage,
+  );
+  expect(pageBackground).toContain("bg-01.png");
   await expect(page.getByText("ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน")).toBeVisible();
   await expect(page.getByRole("heading", { name: "3 ขั้นตอนง่าย ๆ เพื่อบ้านในฝัน" })).toBeInViewport();
 

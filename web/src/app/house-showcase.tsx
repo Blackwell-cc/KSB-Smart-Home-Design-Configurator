@@ -7,7 +7,7 @@ export function HouseShowcase({ showcase }: { showcase: LandingContent["showcase
   return (
     <div className={styles.houseArea} id="house-preview">
       <div className={styles.houseImage}>
-        <Image alt={showcase.imageAlt} fill preload sizes="(max-width: 1023px) 100vw, 60vw" src="/concepts/contemporary-warm-luxury.png" />
+        <Image alt={showcase.imageAlt} fill preload sizes="(max-width: 1023px) 100vw, 60vw" src="/backgrounds/bg-01.png" />
       </div>
       <FloatingPreviewCards showcase={showcase} />
     </div>

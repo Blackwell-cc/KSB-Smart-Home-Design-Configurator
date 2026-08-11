@@ -10,4 +10,8 @@ test("treats the one-column tablet layout as a full-width responsive image", () 
     "sizes",
     "(max-width: 1023px) 100vw, 60vw",
   );
+  expect(screen.getByRole("img", { name: showcase.imageAlt })).toHaveAttribute(
+    "src",
+    expect.stringContaining("%2Fbackgrounds%2Fbg-01.png"),
+  );
 });

@@ -8,7 +8,10 @@
   --hero-line: rgba(215, 182, 111, 0.3);
   min-height: 100svh;
   color: var(--hero-ivory);
-  background: radial-gradient(circle at 58% 28%, rgba(215, 182, 111, 0.08), transparent 30%), var(--hero-bg);
+  background:
+    linear-gradient(90deg, rgba(9, 9, 8, 0.78) 0%, rgba(9, 9, 8, 0.58) 32%, rgba(9, 9, 8, 0.08) 62%),
+    linear-gradient(180deg, rgba(9, 9, 8, 0.08), rgba(9, 9, 8, 0.3)),
+    url("/backgrounds/bg-01.png") center / cover no-repeat;
 }
 
 .header {
@@ -193,6 +196,7 @@
   .explanation { margin-top: 18px; padding-top: 16px; font-size: 0.92rem; line-height: 1.55; }
   .heroActions { margin-top: 20px; }
   .houseArea { min-height: 0; }
+  .houseImage { display: none; }
   .benefitRow > div { min-height: 32px; }
   .stepsCard { padding: 12px 16px; }
   .stepsCard ol { margin-top: 8px; }
