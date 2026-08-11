@@ -47,6 +47,17 @@ for (const viewport of [{ width: 960, height: 1024 }, { width: 768, height: 1024
   });
 }
 
+for (const [width, expectedPosition] of [[1023, "static"], [1024, "absolute"]] as const) {
+  test(`switches preview cards to ${expectedPosition} positioning at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1024 });
+    await page.goto("/");
+
+    const card = page.getByRole("group", { name: "ตัวอย่างหน้าจอวางแผนบ้าน" }).locator("[class*='cardFloat']").first();
+    await expect(card).toBeVisible();
+    expect(await card.evaluate((element) => getComputedStyle(element).position)).toBe(expectedPosition);
+  });
+}
+
 test("exposes focus and disables decorative motion when requested", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 900 });

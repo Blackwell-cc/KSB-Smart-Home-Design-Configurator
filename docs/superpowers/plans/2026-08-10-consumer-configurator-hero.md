@@ -372,7 +372,7 @@ export function HouseShowcase({ showcase }: { showcase: LandingContent["showcase
   return (
     <div className={styles.houseArea} id="house-preview">
       <div className={styles.houseImage}>
-        <Image alt={showcase.imageAlt} fill preload sizes="(max-width: 899px) 100vw, 60vw" src="/concepts/contemporary-warm-luxury.png" />
+        <Image alt={showcase.imageAlt} fill preload sizes="(max-width: 1023px) 100vw, 60vw" src="/concepts/contemporary-warm-luxury.png" />
       </div>
       <FloatingPreviewCards showcase={showcase} />
     </div>
@@ -629,7 +629,7 @@ Rewrite `landing-page.module.css` with these exact structural rules, then add co
   .previewCard { padding: 13px; }
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1023px) {
   .header { min-height: 78px; grid-template-columns: 130px 1fr; padding-inline: 20px; }
   .brand { width: 128px; height: 60px; }
   .desktopNav, .phoneLink { display: none; }

@@ -36,7 +36,7 @@ test("keeps floating-card motion within the approved travel, duration, and reduc
   }
 
   const reducedMotion = mediaBlock("(prefers-reduced-motion: reduce)");
-  const reducedMotionCards = rule(reducedMotion, ".cardFloat, .previewCard, .primaryCta, .secondaryCta");
+  const reducedMotionCards = rule(reducedMotion, ".cardFloat, .previewCard, .primaryCta, .secondaryCta, .headerCta");
   expect(reducedMotionCards).toContain("animation: none");
   expect(reducedMotionCards).toContain("transition: none");
 });
@@ -64,4 +64,14 @@ test("scopes the primary touch target and visible focus ring", () => {
 test("gives every hero call-to-action a visible pressed state", () => {
   const pressedCtas = rule(css, ".primaryCta:active, .secondaryCta:active, .headerCta:active");
   expect(pressedCtas).toContain("transform: translateY(1px)");
+});
+
+test("overrides every transformed hover or pressed state when motion is reduced", () => {
+  const reducedMotion = mediaBlock("(prefers-reduced-motion: reduce)");
+  const motionShutdown = rule(reducedMotion, ".cardFloat, .previewCard, .primaryCta, .secondaryCta, .headerCta");
+  expect(motionShutdown).toContain("animation: none");
+  expect(motionShutdown).toContain("transition: none");
+
+  const transformReset = rule(reducedMotion, ".previewCard:hover, .primaryCta:hover, .secondaryCta:hover, .primaryCta:active, .secondaryCta:active, .headerCta:active");
+  expect(transformReset).toContain("transform: none");
 });

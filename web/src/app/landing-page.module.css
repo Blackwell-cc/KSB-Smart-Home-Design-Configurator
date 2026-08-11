@@ -179,5 +179,6 @@
 .brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible, .faq summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cardFloat, .previewCard, .primaryCta, .secondaryCta { animation: none; transition: none; transform: none; }
+  .cardFloat, .previewCard, .primaryCta, .secondaryCta, .headerCta { animation: none; transition: none; }
+  .previewCard:hover, .primaryCta:hover, .secondaryCta:hover, .primaryCta:active, .secondaryCta:active, .headerCta:active { transform: none; }
 }
