@@ -199,7 +199,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   };
 
   return (
-    <main className={styles.page} data-responsive-layout="split-preview" data-testid="configurator-layout">
+    <main className={styles.page} data-responsive-layout="split-preview" data-step={CONFIGURATOR_STEPS[state.currentStep].id} data-testid="configurator-layout">
       <ConfiguratorHeader currentStep={state.currentStep} onSave={() => store.getState().flushPendingDraft()} steps={CONFIGURATOR_STEPS} />
       <div className={styles.shell} data-step={CONFIGURATOR_STEPS[state.currentStep].id}>
         <section aria-labelledby="step-heading" className={styles.formPanel} data-choice-canvas="true">

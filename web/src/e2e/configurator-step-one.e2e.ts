@@ -84,3 +84,26 @@ test("updates only the dynamic house mockup when a style is selected", async ({ 
   await expect(page.getByText("โซนสวน")).toBeVisible();
   await expect(page.getByText("โซนสระว่ายน้ำ")).toBeVisible();
 });
+
+test("restores the original document flow after leaving step one", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/configurator");
+
+  const style = page.getByRole("radio", { name: "Contemporary Warm Luxury" });
+  await style.locator("..").click();
+  await page.getByRole("button", { name: "ถัดไป" }).click();
+  await page.getByRole("button", { name: "ถัดไป" }).click();
+  await page.getByLabel("จังหวัด").selectOption("10");
+  await page.getByRole("button", { name: "ถัดไป" }).click();
+
+  const layout = page.getByTestId("configurator-layout");
+  await expect(layout).toHaveAttribute("data-step", "materials");
+  const metrics = await layout.evaluate((element) => ({
+    documentHeight: document.documentElement.scrollHeight,
+    overflowY: getComputedStyle(element).overflowY,
+    viewportHeight: window.innerHeight,
+  }));
+  expect(metrics.overflowY).toBe("visible");
+  expect(metrics.documentHeight).toBeGreaterThan(metrics.viewportHeight);
+  await page.screenshot({ fullPage: true, path: testInfo.outputPath("step-four-restored.png") });
+});

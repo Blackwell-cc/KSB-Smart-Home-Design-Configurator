@@ -3,13 +3,21 @@ import { readFileSync } from "node:fs";
 const stylesheet = readFileSync("src/features/configurator/components/configurator-shell.module.css", "utf8");
 
 test("locks the desktop configurator to one viewport and scrolls only the style list", () => {
-  expect(stylesheet).toMatch(/\.page\s*\{[^}]*width:\s*100%;[^}]*height:\s*100svh;[^}]*overflow:\s*hidden;/);
+  expect(stylesheet).toMatch(/\.page\s*\{[^}]*width:\s*100%;[^}]*min-height:\s*100svh;/);
+  expect(stylesheet).toMatch(/\.page\[data-step="style"\]\s*\{[^}]*height:\s*100svh;[^}]*overflow:\s*hidden;/);
   expect(stylesheet).toMatch(/\.masthead\s*\{[^}]*min-height:\s*78px;/);
   expect(stylesheet).toMatch(/\.shell\[data-step="style"\]\s*\{[^}]*height:\s*calc\(100svh - 78px\);[^}]*grid-template-columns:\s*450px minmax\(0, 1fr\);/);
   expect(stylesheet).toMatch(/\.shell\[data-step="style"\] \.formPanel\s*\{[^}]*display:\s*flex;[^}]*overflow:\s*hidden;/);
   expect(stylesheet).toMatch(/\.shell\[data-step="style"\] \.conceptGrid\s*\{[^}]*overflow-y:\s*auto;/);
   expect(stylesheet).toContain("--config-gold: #d8ad62");
   expect(stylesheet).toMatch(/\.formPanel h1:focus-visible\s*\{[^}]*border-left:/);
+});
+
+test("does not apply the step-one viewport lock to steps two through five", () => {
+  expect(stylesheet).not.toMatch(/^\.shell\s*\{[^}]*height:/m);
+  expect(stylesheet).not.toMatch(/^\.shell\s*\{[^}]*overflow:\s*hidden;/m);
+  expect(stylesheet).not.toMatch(/^\.formPanel\s*\{[^}]*max-height:/m);
+  expect(stylesheet).not.toMatch(/^\.formPanel\s*\{[^}]*overflow-y:/m);
 });
 
 test("fills the right stage with the house image and renders zones as labels only", () => {

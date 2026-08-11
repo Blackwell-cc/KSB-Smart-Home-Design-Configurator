@@ -8,13 +8,14 @@
   --config-muted: #8f8a82;
   --config-line: rgba(216, 173, 98, 0.24);
   width: 100%;
-  height: 100svh;
-  overflow: hidden;
+  min-height: 100svh;
   color: var(--config-ivory);
   background:
     radial-gradient(circle at 72% 28%, rgba(31, 46, 52, 0.22), transparent 34%),
     linear-gradient(135deg, #04080a, var(--config-bg) 48%, #070706);
 }
+
+.page[data-step="style"] { height: 100svh; overflow: hidden; }
 
 .masthead {
   position: sticky;
@@ -57,14 +58,12 @@
 
 .shell {
   width: min(1480px, 100%);
-  height: calc(100svh - 78px);
   display: grid;
   grid-template-areas: "form preview";
   grid-template-columns: minmax(0, 48fr) minmax(0, 52fr);
   gap: clamp(28px, 5vw, 80px);
   align-items: start;
   margin: 0 auto;
-  overflow: hidden;
   padding: clamp(28px, 4vw, 54px) clamp(20px, 4.7vw, 74px) 48px;
 }
 
@@ -74,10 +73,11 @@
   grid-template-columns: 450px minmax(0, 1fr);
   gap: 0;
   align-items: stretch;
+  overflow: hidden;
   padding: 0;
 }
 
-.formPanel { grid-area: form; min-width: 0; max-height: 100%; overflow-y: auto; padding-top: clamp(0px, 1.5vw, 18px); }
+.formPanel { grid-area: form; min-width: 0; padding-top: clamp(0px, 1.5vw, 18px); }
 .shell[data-step="style"] .formPanel {
   height: 100%;
   max-height: none;

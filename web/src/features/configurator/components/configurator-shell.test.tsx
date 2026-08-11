@@ -89,15 +89,18 @@ test("renders the premium step-one workspace from the approved reference", () =>
 
 test("gates required steps, describes validation errors, and focuses the new step heading", async () => {
   const { user } = renderConfigurator();
+  const layout = screen.getByTestId("configurator-layout");
   const next = screen.getByRole("button", { name: "ถัดไป" });
   const styleChoices = screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
 
   expect(next).toBeDisabled();
+  expect(layout).toHaveAttribute("data-step", "style");
   expect(styleChoices).toHaveAttribute("aria-describedby", "style-error");
   expect(screen.getByRole("alert")).toHaveAttribute("id", "style-error");
 
   await chooseStyleAndContinue(user);
 
+  expect(layout).toHaveAttribute("data-step", "functions");
   expect(screen.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toHaveFocus();
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
   expect(screen.getByRole("heading", { name: "ทำเลและงบประมาณ" })).toHaveFocus();
