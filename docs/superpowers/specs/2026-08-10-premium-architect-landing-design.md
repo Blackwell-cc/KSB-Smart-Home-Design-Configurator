@@ -214,8 +214,8 @@ Simple Steps ต้องดูเบากว่า CTA และไม่แ�
 ### Tablet `768–1199px`
 
 - Header ลดช่องว่างและย่อ navigation ตามพื้นที่
-- ที่ `900–1199px` ยังคง split layout แต่ย่อการ์ดและลดระยะลอย
-- ที่ `<900px` เปลี่ยนเป็น one-column: content ก่อน house visual และ demo cards ย้ายออกจาก overlay เป็น grid ปกติใต้ภาพ
+- ที่ `1024–1199px` ใช้ split layout และย่อการ์ด/ระยะลอยให้พอดีกับพื้นที่
+- ที่ `768–1023px` เปลี่ยนเป็น one-column: content ก่อน house visual และ demo cards ย้ายออกจาก overlay เป็น grid ปกติใต้ภาพ; เป็นการ reposition บน tablet ตามขอบเขตคำขอเดิม โดยไม่กำหนด 900px split
 
 ### Mobile `<600px`
 

@@ -62,6 +62,7 @@
 .primaryCta { min-height: 48px; color: #17120b; border: 1px solid var(--hero-gold); background: linear-gradient(135deg, var(--hero-gold-soft), var(--hero-gold)); }
 .secondaryCta { min-height: 48px; color: var(--hero-ivory); border: 1px solid var(--hero-gold); background: rgba(9, 9, 8, 0.5); }
 .primaryCta:hover, .secondaryCta:hover { transform: translateY(-2px); }
+.primaryCta:active, .secondaryCta:active, .headerCta:active { transform: translateY(1px); }
 
 .houseArea { position: relative; grid-area: house; min-width: 0; min-height: 650px; align-self: stretch; }
 .houseImage { position: absolute; inset: 0; overflow: hidden; border-radius: 0 0 0 64px; }

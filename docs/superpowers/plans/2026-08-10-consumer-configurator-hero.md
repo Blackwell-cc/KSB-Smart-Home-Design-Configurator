@@ -486,7 +486,7 @@ git commit -m "feat: build consumer configurator hero"
 
 **Interfaces:**
 - Consumes: class names emitted by Task 2 components
-- Produces: 40/60 desktop layout, static-card placement, mobile normal flow, visible focus and reduced-motion fallback
+- Produces: 40/60 desktop layout from 1024px, static-card placement, tablet/mobile normal flow through 1023px, visible focus and reduced-motion fallback
 
 - [ ] **Step 1: Write the failing CSS contract test**
 
@@ -504,8 +504,8 @@ test("defines the approved floating-card motion and reduced-motion fallback", ()
   expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*animation:\s*none/);
 });
 
-test("switches floating cards into normal flow below 900px", () => {
-  const mobile = css.slice(css.indexOf("@media (max-width: 899px)"));
+test("switches floating cards into normal flow through 1023px", () => {
+  const mobile = css.slice(css.indexOf("@media (max-width: 1023px)"));
   expect(mobile).toMatch(/\.previewCards\s*\{[^}]*position:\s*static/s);
   expect(mobile).toMatch(/\.cardFloat\s*\{[^}]*position:\s*static/s);
   expect(mobile).toMatch(/\.hero\s*\{[^}]*grid-template-areas:\s*"content"\s*"house"\s*"benefits"\s*"steps"/s);
@@ -828,7 +828,7 @@ Start the local app, then capture `/` at `1440×900`, `768×1024`, and `375×812
 - `document.documentElement.scrollWidth <= clientWidth`
 - computed body font includes `Prompt`
 - visible Hero H1 and primary CTA
-- five cards on desktop; normal-flow cards on tablet/mobile
+- five overlay cards at `>=1024px`; normal-flow cards through `1023px` on tablet/mobile
 - no card covers the main roofline, entry or headline
 - console contains no Landing-originated error/warning
 

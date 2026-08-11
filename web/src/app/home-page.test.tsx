@@ -17,7 +17,7 @@ test("renders the consumer acquisition header and one focused hero", () => {
 });
 
 test("renders five non-interactive demo cards with safe sample pricing", () => {
-  render(<HomePage />);
+  const { container } = render(<HomePage />);
 
   const showcase = screen.getByRole("group", { name: "ตัวอย่างหน้าจอวางแผนบ้าน" });
   expect(within(showcase).getAllByRole("article")).toHaveLength(5);
@@ -28,4 +28,11 @@ test("renders five non-interactive demo cards with safe sample pricing", () => {
   expect(screen.getAllByText(/ใช้เวลา 3–5 นาที/)).toHaveLength(1);
   expect(screen.getByRole("heading", { name: "3 ขั้นตอนง่าย ๆ เพื่อบ้านในฝัน" })).toBeInTheDocument();
   expect(screen.getByText("ตัวเลขที่เห็นเป็นราคาสุดท้ายหรือไม่?")).toBeInTheDocument();
+  const mobileMenuSummary = container.querySelector("details summary");
+  expect(mobileMenuSummary).toHaveAttribute("aria-label", "เมนูหลัก");
+  expect(mobileMenuSummary).not.toHaveAttribute("aria-label", "เปิดเมนูหลัก");
+
+  const swatches = container.querySelector("[class*='swatches']");
+  expect(swatches).toHaveAttribute("aria-hidden", "true");
+  expect(swatches?.querySelectorAll("[aria-label]")).toHaveLength(0);
 });

@@ -25,7 +25,7 @@ test("communicates the consumer value and enters the configurator", async ({ pag
   await expect(page.getByRole("heading", { name: "เลือกสไตล์บ้าน" })).toBeVisible();
 });
 
-for (const viewport of [{ width: 768, height: 1024 }, { width: 375, height: 812 }]) {
+for (const viewport of [{ width: 960, height: 1024 }, { width: 768, height: 1024 }, { width: 375, height: 812 }]) {
   test(`keeps the hero usable at ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto("/");

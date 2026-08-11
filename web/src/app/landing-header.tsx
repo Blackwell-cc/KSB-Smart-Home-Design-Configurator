@@ -19,7 +19,7 @@ export function LandingHeader({ content }: { content: LandingContent }) {
         <a aria-label={`${content.header.phoneLabel} ${content.header.phoneNumber}`} className={styles.phoneLink} href="tel:0919914592"><LandingIcon name="phone" /><span>{content.header.phoneNumber}</span></a>
         <Link className={styles.headerCta} href="/configurator">{content.header.ctaLabel}</Link>
         <details className={styles.mobileMenu}>
-          <summary aria-label="เปิดเมนูหลัก"><LandingIcon name="menu" /></summary>
+          <summary aria-label="เมนูหลัก"><LandingIcon name="menu" /></summary>
           <nav aria-label="เมนูหลักบนมือถือ">{links}<a href="tel:0919914592">{content.header.phoneNumber}</a></nav>
         </details>
       </div>

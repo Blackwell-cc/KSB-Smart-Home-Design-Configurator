@@ -60,3 +60,8 @@ test("scopes the primary touch target and visible focus ring", () => {
   expect(rule(css, ".primaryCta")).toContain("min-height: 48px");
   expect(rule(css, ".brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible, .faq summary:focus-visible")).toContain("outline:");
 });
+
+test("gives every hero call-to-action a visible pressed state", () => {
+  const pressedCtas = rule(css, ".primaryCta:active, .secondaryCta:active, .headerCta:active");
+  expect(pressedCtas).toContain("transform: translateY(1px)");
+});
