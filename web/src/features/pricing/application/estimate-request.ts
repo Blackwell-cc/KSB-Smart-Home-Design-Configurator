@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { HouseConfiguration } from "@/features/configurator/domain/configuration";
 import { THAI_PROVINCE_CODES } from "@/features/configurator/domain/provinces";
+import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 
 export const EstimateRequestSchema = z.object({
   styleId: z.enum(["contemporary-warm-luxury", "modern-tropical-resort", "timeless-contemporary-luxury", "not-sure"]),
@@ -20,8 +21,11 @@ export const EstimateRequestSchema = z.object({
 export type EstimateRequest = z.infer<typeof EstimateRequestSchema>;
 
 export function projectEstimateRequest(configuration: HouseConfiguration): EstimateRequest {
+  const pricingStyleId = CONCEPT_CATALOG.find((concept) => concept.id === configuration.styleId)?.pricingStyleId
+    ?? configuration.styleId
+    ?? "not-sure";
   const request = EstimateRequestSchema.safeParse({
-    styleId: configuration.styleId ?? "not-sure",
+    styleId: pricingStyleId,
     residents: configuration.residents, floors: configuration.floors, bedrooms: configuration.bedrooms,
     bathrooms: configuration.bathrooms, parkingSpaces: configuration.parkingSpaces, functions: configuration.functions,
     usableAreaOverrideM2: configuration.usableAreaOverrideM2, provinceCode: configuration.provinceCode!,

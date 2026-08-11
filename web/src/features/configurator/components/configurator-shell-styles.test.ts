@@ -2,6 +2,15 @@ import { readFileSync } from "node:fs";
 
 const stylesheet = readFileSync("src/features/configurator/components/configurator-shell.module.css", "utf8");
 
+test("defines the full-screen step-one sidebar and architectural preview stage", () => {
+  expect(stylesheet).toMatch(/\.page\s*\{[^}]*width:\s*100%;[^}]*min-height:\s*100svh;/);
+  expect(stylesheet).toMatch(/\.masthead\s*\{[^}]*min-height:\s*78px;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="style"\]\s*\{[^}]*grid-template-columns:\s*450px minmax\(0, 1fr\);/);
+  expect(stylesheet).toMatch(/\.previewStage\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*10;/);
+  expect(stylesheet).toContain("--config-gold: #d8ad62");
+  expect(stylesheet).toMatch(/\.formPanel h1:focus-visible\s*\{[^}]*border-left:/);
+});
+
 test("reserves mobile clearance below the form for the sticky action bar", () => {
   expect(stylesheet).toMatch(/@media \(max-width: 560px\)[\s\S]*?\.formPanel\s*\{[^}]*padding-bottom:/);
 });

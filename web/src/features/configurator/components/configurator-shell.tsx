@@ -4,26 +4,27 @@ import Image from "next/image";
 import { type CSSProperties, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { ProgressStepper } from "@/components/ui/progress-stepper";
 import { calculateArea } from "@/features/area-planning/domain/calculate-area";
 import { QA_AREA_CATALOG } from "@/features/area-planning/domain/area-catalog";
 import { HouseConfigurationSchema, type HouseConfiguration } from "../domain/configuration";
 import { buildLivePreview } from "../presentation/live-preview";
 import { createConfiguratorStore } from "../state/configurator-store";
 import { createDraftStorage, type DraftStorage } from "../state/draft-storage";
+import { ConfiguratorHeader } from "./configurator-header";
 import { FunctionsStep } from "./functions-step";
 import { MaterialFeaturesStep } from "./material-features-step";
 import { ReviewStep } from "./review-step";
 import { SiteBudgetStep } from "./site-budget-step";
+import { StylePreviewStage } from "./style-preview-stage";
 import { StyleStep } from "./style-step";
 import styles from "./configurator-shell.module.css";
 
 export const CONFIGURATOR_STEPS = [
-  { id: "style", label: "สไตล์บ้าน" },
+  { id: "style", label: "เลือกรูปแบบบ้าน" },
   { id: "functions", label: "พื้นที่และฟังก์ชัน" },
-  { id: "site-budget", label: "ทำเลและงบประมาณ" },
+  { id: "site-budget", label: "กำหนดงบประมาณ" },
   { id: "materials", label: "วัสดุและส่วนพิเศษ" },
-  { id: "review", label: "ตรวจทาน" },
+  { id: "review", label: "ตรวจสอบและสรุป" },
 ] as const;
 
 const StyleStepSchema = z.object({ styleId: z.string().nullable() }).refine((value) => value.styleId !== null, {
@@ -45,7 +46,7 @@ const CompletionSchema = HouseConfigurationSchema.superRefine((value, context) =
 });
 
 const STEP_HEADINGS = [
-  "เลือกสไตล์บ้าน",
+  "เลือกรูปแบบบ้าน",
   "พื้นที่และฟังก์ชัน",
   "ทำเลและงบประมาณ",
   "วัสดุและส่วนพิเศษ",
@@ -144,6 +145,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   const budgetDraft = budgetDraftOverride ?? budgetDraftFor(state.configuration.targetBudget);
   const areaDraft = areaDraftOverride ?? areaDraftFor(state.configuration.usableAreaOverrideM2);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const hasMountedStep = useRef(false);
   const stepSchemaValid = validationForStep(state.configuration, state.currentStep).success;
   const budgetError = budgetErrorFor(budgetDraft);
   const areaError = areaErrorFor(areaDraft);
@@ -154,6 +156,10 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   const livePreview = buildLivePreview(state.configuration, area);
 
   useEffect(() => {
+    if (!hasMountedStep.current) {
+      hasMountedStep.current = true;
+      return;
+    }
     headingRef.current?.focus();
   }, [state.currentStep]);
 
@@ -194,15 +200,12 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
 
   return (
     <main className={styles.page} data-responsive-layout="split-preview" data-testid="configurator-layout">
-      <header className={styles.masthead}>
-        <p>KSB ARCHITECT / PRIVATE BRIEF</p>
-        <ProgressStepper currentStep={state.currentStep} steps={CONFIGURATOR_STEPS} />
-      </header>
-      <div className={styles.shell}>
+      <ConfiguratorHeader currentStep={state.currentStep} onSave={() => store.getState().flushPendingDraft()} steps={CONFIGURATOR_STEPS} />
+      <div className={styles.shell} data-step={CONFIGURATOR_STEPS[state.currentStep].id}>
         <section aria-labelledby="step-heading" className={styles.formPanel} data-choice-canvas="true">
           <p className={styles.eyebrow}>ขั้นตอน {state.currentStep + 1} / {CONFIGURATOR_STEPS.length}</p>
           <h1 id="step-heading" ref={headingRef} tabIndex={-1}>{STEP_HEADINGS[state.currentStep]}</h1>
-          <p className={styles.intro}>ให้ข้อมูลเท่าที่สะดวก เพื่อจัดกรอบความต้องการเบื้องต้นก่อนคุยกับสถาปนิก</p>
+          <p className={styles.intro} id="configurator-help">{state.currentStep === 0 ? "เลือกสไตล์ที่ใช่ เพื่อเริ่มออกแบบบ้านในแบบของคุณ" : "ให้ข้อมูลเท่าที่สะดวก เพื่อจัดกรอบความต้องการเบื้องต้นก่อนคุยกับสถาปนิก"}</p>
           <div className={styles.stepContent}>
             {state.currentStep === 0 ? <StyleStep error={error} errorId={errorId} onChange={(styleId) => updateConfiguration({ styleId })} selectedStyleId={state.configuration.styleId} /> : null}
             {state.currentStep === 1 ? <FunctionsStep areaDraft={areaDraft} areaError={areaError} configuration={state.configuration} onAreaChange={updateArea} onChange={updateConfiguration} /> : null}
@@ -210,16 +213,24 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             {state.currentStep === 3 ? <MaterialFeaturesStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
             {state.currentStep === 4 ? <ReviewStep configuration={state.configuration} onEdit={(step) => state.setCurrentStep(step)} /> : null}
           </div>
-          <div className={styles.actions}>
+          {state.currentStep > 0 ? <div className={styles.actions}>
             {state.currentStep > 0 ? <Button onClick={moveBack} variant="ghost">ย้อนกลับ</Button> : <span />}
             {state.currentStep === CONFIGURATOR_STEPS.length - 1 ? (
               <Button onClick={openPreview}>ดู Preview</Button>
             ) : (
               <Button disabled={!isValid} onClick={moveNext}>ถัดไป</Button>
             )}
-          </div>
+          </div> : null}
         </section>
-        <aside aria-label="ภาพตัวอย่างบ้าน" className={styles.preview} data-mobile-preview-ratio="16:10" data-preview-material={livePreview.material.level} data-preview-style={livePreview.concept.id}>
+        {state.currentStep === 0 ? (
+          <StylePreviewStage
+            configuration={state.configuration}
+            isValid={isValid}
+            livePreview={livePreview}
+            onNext={moveNext}
+            onReset={() => updateConfiguration({ styleId: null })}
+          />
+        ) : <aside aria-label="ภาพตัวอย่างบ้าน" className={styles.preview} data-mobile-preview-ratio="16:10" data-preview-material={livePreview.material.level} data-preview-style={livePreview.concept.id}>
           <div className={styles.imageFrame} data-preview-tone={livePreview.material.level}>
             <Image alt={`ภาพอ้างอิง ${livePreview.concept.thaiLabel} (${livePreview.concept.englishLabel})`} fill key={livePreview.concept.id} preload sizes="(max-width: 899px) 100vw, 50vw" src={livePreview.concept.image} />
           </div>
@@ -248,7 +259,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             {livePreview.activeFeatures.length > 0 ? <span className={styles.previewFeatures}>ส่วนพิเศษ {livePreview.activeFeatures.map((feature) => feature.label).join(" · ")}</span> : null}
             <span className={styles.previewDisclaimer} data-preview-disclaimer="always-visible">ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง</span>
           </div>
-        </aside>
+        </aside>}
       </div>
     </main>
   );

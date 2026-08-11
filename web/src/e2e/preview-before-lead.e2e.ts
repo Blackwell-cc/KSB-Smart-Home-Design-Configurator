@@ -10,16 +10,18 @@ test("shows a useful free preview before asking for contact details", async ({ p
   await page.goto("/configurator");
 
   const styleCards = page.locator('[data-style-card="true"]');
-  await expect(styleCards).toHaveCount(4);
-  await expect(styleCards.locator("img")).toHaveCount(4);
+  await expect(styleCards).toHaveCount(6);
+  await expect(styleCards.locator("img")).toHaveCount(6);
   await expect(styleCards.first().locator("img")).toHaveAttribute("src", /contemporary-warm-luxury/);
 
-  const livePreview = page.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
-  await expect(livePreview).toContainText("จำนวนชั้น 2 ชั้น");
+  const stylePreview = page.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
+  await expect(stylePreview).toContainText("จำนวนชั้น");
+  await expect(stylePreview).toContainText("2 ชั้น");
   await selectStyleWithKeyboard(page, "Modern Tropical Resort");
-  await expect(livePreview.getByRole("img", { name: /Modern Tropical Resort/i })).toBeVisible();
+  await expect(stylePreview.getByRole("img", { name: /Modern Tropical Resort/i })).toBeVisible();
   await selectStyleWithKeyboard(page, "Contemporary Warm Luxury");
   await page.getByRole("button", { name: "ถัดไป" }).click();
+  const livePreview = page.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
   await page.getByRole("button", { name: "จำนวนห้องนอน เพิ่ม" }).click();
   await expect(livePreview).toContainText("ห้องนอน 4 ห้อง");
   await page.getByRole("button", { name: "ย้อนกลับ" }).click();

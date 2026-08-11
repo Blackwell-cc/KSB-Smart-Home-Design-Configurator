@@ -25,7 +25,7 @@ test("communicates the consumer value and enters the configurator", async ({ pag
   await expect(primary).toBeInViewport();
   await primary.click();
   await expect(page).toHaveURL(/\/configurator$/);
-  await expect(page.getByRole("heading", { name: "เลือกสไตล์บ้าน" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "เลือกรูปแบบบ้าน" })).toBeVisible();
 });
 
 test("fits the desktop homepage to the viewport and vertically centers the logo", async ({ page }) => {

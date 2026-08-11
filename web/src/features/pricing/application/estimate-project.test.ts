@@ -30,3 +30,13 @@ test("keeps the production estimation path free from the QA area catalog", () =>
   expect(applicationSource).not.toContain("QA_AREA_CATALOG");
   expect(areaSource).not.toContain("QA_AREA_CATALOG");
 });
+
+test("maps placeholder presentation styles to an approved pricing style", () => {
+  const request = projectEstimateRequest({
+    ...createDefaultConfiguration(),
+    styleId: "minimal-nordic",
+    provinceCode: "10",
+  });
+
+  expect(request.styleId).toBe("contemporary-warm-luxury");
+});

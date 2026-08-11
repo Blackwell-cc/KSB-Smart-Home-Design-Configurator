@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { act } from "react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
+import { VISIBLE_CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import { createConfiguratorStore } from "../state/configurator-store";
 import type { DraftStorage } from "../state/draft-storage";
 import { ConfiguratorShell } from "./configurator-shell";
@@ -48,7 +48,7 @@ async function continueToReview(user: ReturnType<typeof userEvent.setup>) {
 test("moves through five PII-free steps and navigates to the preview only after review", async () => {
   const { onPreview, user } = renderConfigurator();
 
-  expect(screen.getByRole("heading", { name: "เลือกสไตล์บ้าน" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "เลือกรูปแบบบ้าน" })).toBeInTheDocument();
   expect(screen.queryByLabelText(/เบอร์โทร|อีเมล|LINE/i)).not.toBeInTheDocument();
 
   await continueToReview(user);
@@ -56,6 +56,35 @@ test("moves through five PII-free steps and navigates to the preview only after 
   expect(screen.getByRole("heading", { name: "ตรวจทานความต้องการ" })).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "ดู Preview" }));
   expect(onPreview).toHaveBeenCalledWith("/preview");
+});
+
+test("renders the premium step-one workspace from the approved reference", () => {
+  renderConfigurator();
+
+  expect(screen.getByText("SMART HOME DESIGN CONFIGURATOR")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "เลือกรูปแบบบ้าน" })).not.toHaveFocus();
+  expect(screen.getByText("เลือกสไตล์ที่ใช่ เพื่อเริ่มออกแบบบ้านในแบบของคุณ")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "คู่มือการใช้งาน" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "บันทึกแบบร่าง" })).toBeInTheDocument();
+
+  const filters = screen.getByRole("group", { name: "กรองรูปแบบบ้าน" });
+  expect(within(filters).getAllByRole("button")).toHaveLength(5);
+  expect(within(filters).getByRole("button", { name: "ทั้งหมด" })).toHaveAttribute("aria-pressed", "true");
+
+  const choices = screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
+  expect(within(choices).getAllByRole("radio")).toHaveLength(6);
+  expect(screen.getByText("TROPICAL RESORT 02")).toBeInTheDocument();
+
+  const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
+  expect(within(preview).getByText("ประเภทบ้าน")).toBeInTheDocument();
+  expect(within(preview).getByText("โซนสวน")).toBeInTheDocument();
+  expect(within(preview).getByText("โซนสระว่ายน้ำ")).toBeInTheDocument();
+  expect(within(preview).getByText("สเป็กที่แนะนำสำหรับบ้านสไตล์นี้")).toBeInTheDocument();
+  expect(within(preview).getByRole("button", { name: "แชร์แบบร่าง" })).toBeDisabled();
+  expect(within(preview).getByRole("button", { name: "รีเซ็ตตัวเลือก" })).toBeInTheDocument();
+  const next = within(preview).getByRole("button", { name: "ถัดไป" });
+  expect(next).toBeDisabled();
+  expect(within(next).getByText("ขั้นตอนที่ 2")).toBeInTheDocument();
 });
 
 test("gates required steps, describes validation errors, and focuses the new step heading", async () => {
@@ -105,21 +134,17 @@ test("back navigation preserves previous choices and the live preview reflects t
   expect(screen.getByRole("radio", { name: "Modern Tropical Resort" })).toBeChecked();
 });
 
-test("renders the live architect material board from the current configuration", async () => {
+test("renders the architectural planning stage from the current style", async () => {
   const { user } = renderConfigurator();
-  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
+  const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
 
   await user.click(screen.getByRole("radio", { name: "Modern Tropical Resort" }));
 
-  expect(within(preview).getByText("โมเดิร์น ทรอปิคอล รีสอร์ต")).toBeInTheDocument();
-  expect(within(preview).getByText("จำนวนชั้น 2 ชั้น")).toBeInTheDocument();
-  expect(within(preview).getByText(/CFA 198/)).toBeInTheDocument();
-  expect(within(preview).getByText("จังหวัด ยังไม่ได้เลือกจังหวัด")).toBeInTheDocument();
-  expect(within(preview).getByText("ระดับวัสดุ Premium")).toBeInTheDocument();
-  const palette = within(preview).getByRole("list", { name: "ตัวอย่างวัสดุระดับ Premium" });
-  expect(within(palette).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["ผนัง", "ไม้", "โลหะและกระจก"]);
-  expect(within(palette).getByText("ผนัง").parentElement).toHaveStyle("--swatch-color: #E5DDD1");
-  expect(within(preview).getByText("ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง")).toBeInTheDocument();
+  expect(within(preview).getByRole("heading", { name: "ทรอปิคอล รีสอร์ต" })).toBeInTheDocument();
+  expect(within(preview).getByText("200–300 ตร.ม.")).toBeInTheDocument();
+  expect(within(preview).getByText("ครอบครัวที่ชอบธรรมชาติ")).toBeInTheDocument();
+  expect(within(preview).getByRole("img", { name: /Modern Tropical Resort/i })).toBeInTheDocument();
+  expect(within(preview).getByText("ภาพ Mockup สำหรับวางแผนเบื้องต้น ไม่ใช่แบบก่อสร้าง")).toBeInTheDocument();
 });
 
 test("exposes ordered progress, named counter controls, accessible choice groups, and responsive layout semantics", async () => {
@@ -292,7 +317,7 @@ test("supports arrow-key material selection and blocks preview for an incomplete
 
   await user.click(screen.getByRole("button", { name: "ดู Preview" }));
   expect(onPreview).not.toHaveBeenCalled();
-  expect(screen.getByRole("heading", { name: "เลือกสไตล์บ้าน" })).toHaveFocus();
+  expect(screen.getByRole("heading", { name: "เลือกรูปแบบบ้าน" })).toHaveFocus();
 
   await act(async () => {
     store.getState().updateConfiguration({ styleId: "contemporary-warm-luxury", provinceCode: "10" });
@@ -316,8 +341,8 @@ test("presents every house style as an image-backed architect card", () => {
   const choices = screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
   const cards = within(choices).getAllByRole("radio");
 
-  expect(cards).toHaveLength(CONCEPT_CATALOG.length);
-  CONCEPT_CATALOG.forEach((concept) => {
+  expect(cards).toHaveLength(VISIBLE_CONCEPT_CATALOG.length);
+  VISIBLE_CONCEPT_CATALOG.forEach((concept) => {
     const card = within(choices).getByRole("radio", { name: concept.label }).closest("label");
     expect(card).toHaveAttribute("data-style-card", "true");
     expect(card?.querySelector("img")).toHaveAttribute("src", expect.stringContaining(encodeURIComponent(concept.image)));
@@ -328,8 +353,8 @@ test("presents every house style as an image-backed architect card", () => {
 test("marks preview data, material boards, and mobile-safe landmarks for the active selection", async () => {
   const { store } = renderConfigurator();
 
-  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
-  const form = screen.getByRole("region", { name: "เลือกสไตล์บ้าน" });
+  const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
+  const form = screen.getByRole("region", { name: "เลือกรูปแบบบ้าน" });
   expect(preview).toHaveAttribute("data-preview-style", "contemporary-warm-luxury");
   expect(preview).toHaveAttribute("data-preview-material", "premium");
   expect(preview).toHaveAttribute("data-mobile-preview-ratio", "16:10");
@@ -347,19 +372,19 @@ test("marks preview data, material boards, and mobile-safe landmarks for the act
   expect(within(premium).getByText("โลหะและกระจก")).toBeInTheDocument();
 });
 
-test("keeps the mobile 2-up style contract and the construction-image disclaimer visible", () => {
+test("keeps the mobile vertical-list contract and the mockup disclaimer visible", () => {
   renderConfigurator();
 
-  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
-  const form = screen.getByRole("region", { name: "เลือกสไตล์บ้าน" });
-  expect(screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" })).toHaveAttribute("data-style-layout", "two-columns-until-mobile");
-  expect(screen.getByText("ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง")).toHaveAttribute("data-preview-disclaimer", "always-visible");
+  const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
+  const form = screen.getByRole("region", { name: "เลือกรูปแบบบ้าน" });
+  expect(screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" })).toHaveAttribute("data-style-layout", "vertical-list");
+  expect(screen.getByText("ภาพ Mockup สำหรับวางแผนเบื้องต้น ไม่ใช่แบบก่อสร้าง")).toHaveAttribute("data-preview-disclaimer", "always-visible");
   expect(form.compareDocumentPosition(preview) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 
 test("updates the preview tone contract when the material level changes", async () => {
   const { store } = renderConfigurator();
-  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างบ้าน" });
+  const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
 
   await act(async () => {
     store.getState().updateConfiguration({ materialLevel: "signature" });

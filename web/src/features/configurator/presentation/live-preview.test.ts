@@ -18,8 +18,8 @@ test("builds an architect concept and active room metrics from the configuration
 
   expect(preview.concept).toMatchObject({
     id: "modern-tropical-resort",
-    thaiLabel: "โมเดิร์น ทรอปิคอล รีสอร์ต",
-    englishLabel: "Modern Tropical Resort",
+    thaiLabel: "ทรอปิคอล รีสอร์ต",
+    englishLabel: "Tropical Resort",
     image: "/concepts/modern-tropical-resort.png",
   });
   expect(preview.metricRows).toEqual(expect.arrayContaining([

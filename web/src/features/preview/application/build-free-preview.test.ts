@@ -42,3 +42,18 @@ test("maps construction and design ranges from immutable snapshot line codes whi
   });
   expect(frozenSnapshot).toEqual(snapshot);
 });
+
+test("keeps placeholder house styles compatible with the public preview allowlist", () => {
+  const configuration = { ...createDefaultConfiguration(), styleId: "luxury-courtyard", provinceCode: "10" as const };
+  const area = calculateArea(configuration, {
+    bedroomM2: 14, bathroomM2: 5, livingDiningBaseM2: 28, livingDiningPerResidentM2: 2,
+    entryStorageM2: 8, kitchenM2: 14, serviceM2: 9, circulationPerFloorM2: 20,
+    officeM2: 12, elderlyRoomM2: 16, thaiKitchenM2: 12, multipurposeRoomM2: 15,
+    coveredParkingPerSpaceM2: 15, coveredServiceM2: 4,
+  });
+
+  const preview = buildFreePreview(configuration, area, snapshot);
+
+  expect(preview.conceptAssetId).toBe("modern-tropical-resort");
+  expect(preview.styleLabel).toBe("Modern Tropical Resort");
+});

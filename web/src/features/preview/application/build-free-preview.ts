@@ -41,8 +41,8 @@ export function buildFreePreview(
   if (!concept) throw new Error("CONCEPT_NOT_FOUND");
 
   return {
-    conceptAssetId: concept.id,
-    styleLabel: concept.label,
+    conceptAssetId: concept.publicAssetId,
+    styleLabel: concept.publicLabel,
     floors: configuration.floors,
     bedrooms: configuration.bedrooms,
     bathrooms: configuration.bathrooms,

@@ -21,7 +21,7 @@ export function ProgressStepper({ currentStep, steps }: ProgressStepperProps) {
   }, [currentStep]);
 
   return (
-    <nav aria-label="ขั้นตอนการออกแบบบ้าน" className={styles.navigation}>
+    <nav aria-label="ขั้นตอนการออกแบบบ้าน" className={styles.navigation} tabIndex={0}>
       <ol aria-label="ขั้นตอนการออกแบบบ้าน" className={styles.steps}>
         {steps.map((step, index) => {
           const state = index === currentStep ? "current" : index < currentStep ? "complete" : "upcoming";
