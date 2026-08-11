@@ -30,6 +30,42 @@ for (const viewport of viewports) {
   });
 }
 
+test("fits desktop to one viewport with a full-bleed preview and an independently scrolling style list", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/configurator");
+
+  const pageMetrics = await page.evaluate(() => ({
+    innerHeight: window.innerHeight,
+    scrollHeight: document.documentElement.scrollHeight,
+  }));
+  expect(pageMetrics.scrollHeight).toBeLessThanOrEqual(pageMetrics.innerHeight);
+
+  const styleList = page.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
+  const listMetrics = await styleList.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    overflowY: getComputedStyle(element).overflowY,
+    scrollHeight: element.scrollHeight,
+  }));
+  expect(listMetrics.overflowY).toBe("auto");
+  expect(listMetrics.scrollHeight).toBeGreaterThan(listMetrics.clientHeight);
+
+  const stage = page.locator('[data-render-size="860x520"]');
+  const house = stage.locator("[data-preview-tone]");
+  const [stageBox, houseBox] = await Promise.all([stage.boundingBox(), house.boundingBox()]);
+  expect(stageBox).not.toBeNull();
+  expect(houseBox).not.toBeNull();
+  expect(Math.abs(stageBox!.width - houseBox!.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(stageBox!.height - houseBox!.height)).toBeLessThanOrEqual(1);
+
+  for (const label of ["โซนสวน", "โซนสระว่ายน้ำ"]) {
+    const zone = page.getByText(label).locator("..");
+    const style = await zone.evaluate((element) => getComputedStyle(element));
+    expect(style.borderTopWidth).toBe("0px");
+    expect(style.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+  }
+  await expect(page.getByText("TROPICAL RESORT 02")).toHaveCount(0);
+});
+
 test("updates only the dynamic house mockup when a style is selected", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/configurator");

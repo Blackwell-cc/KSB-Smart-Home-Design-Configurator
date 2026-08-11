@@ -73,7 +73,7 @@ test("renders the premium step-one workspace from the approved reference", () =>
 
   const choices = screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
   expect(within(choices).getAllByRole("radio")).toHaveLength(6);
-  expect(screen.getByText("TROPICAL RESORT 02")).toBeInTheDocument();
+  expect(screen.queryByText("TROPICAL RESORT 02")).not.toBeInTheDocument();
 
   const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
   expect(within(preview).getByText("ประเภทบ้าน")).toBeInTheDocument();

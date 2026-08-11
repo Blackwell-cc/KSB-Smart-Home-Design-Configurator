@@ -80,10 +80,6 @@ export function StyleStep({ error, errorId, selectedStyleId, onChange }: StyleSt
         })}
       </div>
 
-      <div className={styles.templateCard}>
-        <span>เทมเพลต</span>
-        <strong>TROPICAL RESORT 02</strong>
-      </div>
       {error ? <FieldError className={styles.error} id={errorId}>{error}</FieldError> : null}
     </fieldset>
   );

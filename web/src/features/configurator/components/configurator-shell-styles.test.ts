@@ -2,13 +2,20 @@ import { readFileSync } from "node:fs";
 
 const stylesheet = readFileSync("src/features/configurator/components/configurator-shell.module.css", "utf8");
 
-test("defines the full-screen step-one sidebar and architectural preview stage", () => {
-  expect(stylesheet).toMatch(/\.page\s*\{[^}]*width:\s*100%;[^}]*min-height:\s*100svh;/);
+test("locks the desktop configurator to one viewport and scrolls only the style list", () => {
+  expect(stylesheet).toMatch(/\.page\s*\{[^}]*width:\s*100%;[^}]*height:\s*100svh;[^}]*overflow:\s*hidden;/);
   expect(stylesheet).toMatch(/\.masthead\s*\{[^}]*min-height:\s*78px;/);
-  expect(stylesheet).toMatch(/\.shell\[data-step="style"\]\s*\{[^}]*grid-template-columns:\s*450px minmax\(0, 1fr\);/);
-  expect(stylesheet).toMatch(/\.previewStage\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*10;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="style"\]\s*\{[^}]*height:\s*calc\(100svh - 78px\);[^}]*grid-template-columns:\s*450px minmax\(0, 1fr\);/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="style"\] \.formPanel\s*\{[^}]*display:\s*flex;[^}]*overflow:\s*hidden;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="style"\] \.conceptGrid\s*\{[^}]*overflow-y:\s*auto;/);
   expect(stylesheet).toContain("--config-gold: #d8ad62");
   expect(stylesheet).toMatch(/\.formPanel h1:focus-visible\s*\{[^}]*border-left:/);
+});
+
+test("fills the right stage with the house image and renders zones as labels only", () => {
+  expect(stylesheet).toMatch(/\.mainHousePreviewPlaceholder\s*\{[^}]*inset:\s*0;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*transform:\s*none;/);
+  expect(stylesheet).toMatch(/\.reservedZone\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/);
+  expect(stylesheet).not.toContain(".templateCard");
 });
 
 test("reserves mobile clearance below the form for the sticky action bar", () => {
