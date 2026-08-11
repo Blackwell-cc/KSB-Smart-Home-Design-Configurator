@@ -12,7 +12,7 @@ export function LandingHeader({ content }: { content: LandingContent }) {
   return (
     <header className={styles.header}>
       <Link aria-label={content.brand.homeLabel} className={styles.brand} href="/">
-        <Image alt={content.brand.logoAlt} className={styles.brandLogo} fill preload sizes="(max-width: 760px) 128px, 172px" src="/brand/ksb-architect-logo.png" />
+        <Image alt={content.brand.logoAlt} className={styles.brandLogo} fill preload sizes="(max-width: 1023px) 122px, 148px" src="/brand/ksb-architect-logo.png" />
       </Link>
       <nav aria-label="เมนูหลัก" className={styles.desktopNav}>{links}</nav>
       <div className={styles.headerActions}>

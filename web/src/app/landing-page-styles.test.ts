@@ -68,6 +68,24 @@ test("fits the desktop homepage to one viewport and centers the logo", () => {
   expect(rule(desktop, ".houseImage")).toContain("display: none");
 });
 
+test("uses a compact glass header over the full-screen house background", () => {
+  const desktop = mediaBlock("(min-width: 1200px)");
+  const page = rule(css, ".page");
+  const header = rule(css, ".header");
+
+  expect(page).toContain('url("/backgrounds/bg-01.png") center / cover no-repeat');
+  expect(page).not.toContain("linear-gradient(180deg");
+  expect(header).toContain("min-height: 72px");
+  expect(header).toContain("background: rgba(9, 9, 8, 0.5)");
+  expect(header).toContain("backdrop-filter: blur(16px) saturate(115%)");
+  expect(rule(css, ".brand")).toContain("width: 148px");
+  expect(rule(css, ".brand")).toContain("height: 54px");
+  expect(rule(css, ".brandLogo")).toContain("object-position: 50% 54%");
+  expect(rule(css, ".headerCta::before")).toContain("width: 1px");
+  expect(rule(desktop, ".page")).toContain("grid-template-rows: 72px minmax(0, 1fr)");
+  expect(rule(desktop, ".header")).toContain("height: 72px");
+});
+
 test("scopes the primary touch target and visible focus ring", () => {
   expect(rule(css, ".primaryCta")).toContain("min-height: 48px");
   expect(rule(css, ".brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible")).toContain("outline:");
