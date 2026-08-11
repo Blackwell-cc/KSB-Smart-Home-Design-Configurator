@@ -58,6 +58,26 @@ for (const [width, expectedPosition] of [[1023, "static"], [1024, "absolute"]] a
   });
 }
 
+test("contains split-boundary hero actions before the house preview", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 1024 });
+  await page.goto("/");
+
+  const [primary, secondary, house] = await Promise.all([
+    page.getByRole("link", { name: "เริ่มประเมินฟรี" }).boundingBox(),
+    page.getByRole("link", { name: "ดูตัวอย่างบ้าน" }).boundingBox(),
+    page.locator("#house-preview").boundingBox(),
+  ]);
+
+  expect(primary).not.toBeNull();
+  expect(secondary).not.toBeNull();
+  expect(house).not.toBeNull();
+  expect(primary!.y).toBe(secondary!.y);
+  expect(primary!.x + primary!.width).toBeLessThanOrEqual(house!.x);
+  expect(secondary!.x + secondary!.width).toBeLessThanOrEqual(house!.x);
+  expect(primary!.height).toBeGreaterThanOrEqual(48);
+  expect(secondary!.height).toBeGreaterThanOrEqual(48);
+});
+
 test("exposes focus and disables decorative motion when requested", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 900 });

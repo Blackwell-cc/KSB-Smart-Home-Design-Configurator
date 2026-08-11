@@ -140,6 +140,11 @@
   .previewCard { padding: 13px; }
 }
 
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .heroActions { gap: 12px; }
+  .primaryCta, .secondaryCta { min-width: 0; flex: 1 1 0; gap: 10px; padding-inline: 16px; }
+}
+
 @media (max-width: 1023px) {
   .header { min-height: 78px; grid-template-columns: 130px 1fr; padding-inline: 20px; }
   .brand { width: 128px; height: 60px; }

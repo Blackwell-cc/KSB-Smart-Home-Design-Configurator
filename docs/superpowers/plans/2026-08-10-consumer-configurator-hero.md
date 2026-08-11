@@ -312,7 +312,7 @@ export function LandingHeader({ content }: { content: LandingContent }) {
         <a aria-label={`${content.header.phoneLabel} ${content.header.phoneNumber}`} className={styles.phoneLink} href="tel:0919914592"><LandingIcon name="phone" /><span>{content.header.phoneNumber}</span></a>
         <Link className={styles.headerCta} href="/configurator">{content.header.ctaLabel}</Link>
         <details className={styles.mobileMenu}>
-          <summary aria-label="เปิดเมนูหลัก"><LandingIcon name="menu" /></summary>
+          <summary aria-label="เมนูหลัก"><LandingIcon name="menu" /></summary>
           <nav aria-label="เมนูหลักบนมือถือ">{links}<a href="tel:0919914592">{content.header.phoneNumber}</a></nav>
         </details>
       </div>
@@ -339,19 +339,19 @@ export function FloatingPreviewCards({ showcase }: { showcase: Showcase }) {
     <div aria-label="ตัวอย่างหน้าจอวางแผนบ้าน" className={styles.previewCards} role="group">
       <div className={`${styles.cardFloat} ${styles.stylePosition}`}><article className={styles.previewCard}>
         <p>{showcase.style.label}</p><strong>{showcase.style.selected}</strong>
-        <div className={styles.styleChoices}>{showcase.style.choices.map((choice, index) => <span className={styles.styleChoice} data-selected={index === 0} key={choice.label}><Image alt={`ตัวอย่างสไตล์ ${choice.label}`} fill sizes="92px" src={choice.image} />{index === 0 ? <i aria-hidden="true">✓</i> : null}</span>)}</div>
+        <div className={styles.styleChoices}>{showcase.style.choices.map((choice, index) => <span className={styles.styleChoice} data-selected={index === 0} key={choice.label}><Image alt={`ตัวอย่างสไตล์ ${choice.label}`} fill sizes="(max-width: 1023px) 30vw, 92px" src={choice.image} />{index === 0 ? <i aria-hidden="true">✓</i> : null}</span>)}</div>
       </article></div>
       <div className={`${styles.cardFloat} ${styles.areaPosition}`}><article className={styles.previewCard}>
         <p>{showcase.area.label}</p><div className={styles.areaValue}><LandingIcon name="space" /><strong>{showcase.area.value}<small>{showcase.area.unit}</small></strong></div><span aria-hidden="true" className={styles.demoSlider}><i /></span>
       </article></div>
       <div className={`${styles.cardFloat} ${styles.materialPosition}`}><article className={styles.previewCard}>
-        <p>{showcase.material.label}</p><strong>{showcase.material.selected}</strong><div className={styles.swatches}>{showcase.material.swatches.map((swatch, index) => <span aria-label={swatch.label} className={styles.swatch} data-selected={index === 0} key={swatch.label} style={{ "--swatch": swatch.color } as CSSProperties}>{index === 0 ? <i aria-hidden="true">✓</i> : null}</span>)}</div>
+        <p>{showcase.material.label}</p><strong>{showcase.material.selected}</strong><div aria-hidden="true" className={styles.swatches}>{showcase.material.swatches.map((swatch, index) => <span className={styles.swatch} data-selected={index === 0} key={swatch.label} style={{ "--swatch": swatch.color } as CSSProperties}>{index === 0 ? <i aria-hidden="true">✓</i> : null}</span>)}</div>
       </article></div>
       <div className={`${styles.cardFloat} ${styles.budgetPosition}`}><article className={`${styles.previewCard} ${styles.budgetCard}`}>
         <p>{showcase.budget.label}</p><strong>{showcase.budget.value}</strong><span>{showcase.budget.supporting}</span><span className={styles.detailAffordance}>{showcase.budget.detailLabel} →</span><small>{showcase.budget.disclaimer}</small>
       </article></div>
       <div className={`${styles.cardFloat} ${styles.sharePosition}`}><article className={`${styles.previewCard} ${styles.shareCard}`}>
-        <div><strong>{showcase.share.title}</strong><span>{showcase.share.supporting}</span><LandingIcon name="share" /></div><span className={styles.shareThumb}><Image alt={showcase.share.imageAlt} fill sizes="160px" src="/concepts/contemporary-warm-luxury.png" /></span>
+        <div><strong>{showcase.share.title}</strong><span>{showcase.share.supporting}</span><LandingIcon name="share" /></div><span className={styles.shareThumb}><Image alt={showcase.share.imageAlt} fill sizes="(max-width: 1023px) 52vw, 160px" src="/concepts/contemporary-warm-luxury.png" /></span>
       </article></div>
     </div>
   );
@@ -629,6 +629,11 @@ Rewrite `landing-page.module.css` with these exact structural rules, then add co
   .previewCard { padding: 13px; }
 }
 
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .heroActions { gap: 12px; }
+  .primaryCta, .secondaryCta { min-width: 0; flex: 1 1 0; gap: 10px; padding-inline: 16px; }
+}
+
 @media (max-width: 1023px) {
   .header { min-height: 78px; grid-template-columns: 130px 1fr; padding-inline: 20px; }
   .brand { width: 128px; height: 60px; }
@@ -668,7 +673,8 @@ Rewrite `landing-page.module.css` with these exact structural rules, then add co
 .brand:focus-visible, .desktopNav a:focus-visible, .phoneLink:focus-visible, .headerCta:focus-visible, .mobileMenu summary:focus-visible, .mobileMenu nav a:focus-visible, .primaryCta:focus-visible, .secondaryCta:focus-visible, .faq summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cardFloat, .previewCard, .primaryCta, .secondaryCta { animation: none; transition: none; transform: none; }
+  .cardFloat, .previewCard, .primaryCta, .secondaryCta, .headerCta { animation: none; transition: none; }
+  .previewCard:hover, .primaryCta:hover, .secondaryCta:hover, .primaryCta:active, .secondaryCta:active, .headerCta:active { transform: none; }
 }
 ```
 
