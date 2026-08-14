@@ -13,6 +13,7 @@ import { createDraftStorage, type DraftStorage } from "../state/draft-storage";
 import { ConfiguratorHeader } from "./configurator-header";
 import { FunctionsStep } from "./functions-step";
 import { MaterialFeaturesStep } from "./material-features-step";
+import { MaterialsPreview } from "./materials-preview";
 import { ReviewStep } from "./review-step";
 import { SiteBudgetStep } from "./site-budget-step";
 import { StylePreviewStage } from "./style-preview-stage";
@@ -39,7 +40,6 @@ const SiteBudgetStepSchema = z.object({ provinceCode: z.string().nullable() }).r
   { message: "โปรดเลือกจังหวัดก่อนดำเนินการต่อ", path: ["provinceCode"] },
 );
 
-const MaterialsStepSchema = z.object({ materialLevel: z.enum(["select", "premium", "signature"]), specialFeatures: z.array(z.string()) });
 const CompletionSchema = HouseConfigurationSchema.superRefine((value, context) => {
   if (value.styleId === null) context.addIssue({ code: "custom", path: ["styleId"], message: "ต้องเลือกสไตล์บ้าน" });
   if (value.provinceCode === null) context.addIssue({ code: "custom", path: ["provinceCode"], message: "ต้องเลือกจังหวัด" });
@@ -120,12 +120,7 @@ function validationForStep(configuration: HouseConfiguration, step: number) {
     });
   }
   if (step === 2) return SiteBudgetStepSchema.safeParse({ provinceCode: configuration.provinceCode });
-  if (step === 3) {
-    return MaterialsStepSchema.safeParse({
-      materialLevel: configuration.materialLevel,
-      specialFeatures: configuration.specialFeatures,
-    });
-  }
+  if (step === 3) return HouseConfigurationSchema.safeParse(configuration);
   return z.object({}).safeParse({});
 }
 
@@ -205,7 +200,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
         <section aria-labelledby="step-heading" className={styles.formPanel} data-choice-canvas="true">
           <p className={styles.eyebrow}>ขั้นตอน {state.currentStep + 1} / {CONFIGURATOR_STEPS.length}</p>
           <h1 id="step-heading" ref={headingRef} tabIndex={-1}>{STEP_HEADINGS[state.currentStep]}</h1>
-          <p className={styles.intro} id="configurator-help">{state.currentStep === 0 ? "เลือกสไตล์ที่ใช่ เพื่อเริ่มออกแบบบ้านในแบบของคุณ" : "ให้ข้อมูลเท่าที่สะดวก เพื่อจัดกรอบความต้องการเบื้องต้นก่อนคุยกับสถาปนิก"}</p>
+          <p className={styles.intro} id="configurator-help">{state.currentStep === 0 ? "เลือกสไตล์ที่ใช่ เพื่อเริ่มออกแบบบ้านในแบบของคุณ" : state.currentStep === 3 ? "เลือกวัสดุและรายละเอียดพิเศษ เพื่อกำหนดคุณภาพและกรอบงบประมาณให้สอดคล้องกับบ้านของคุณ" : "ให้ข้อมูลเท่าที่สะดวก เพื่อจัดกรอบความต้องการเบื้องต้นก่อนคุยกับสถาปนิก"}</p>
           <div className={styles.stepContent}>
             {state.currentStep === 0 ? <StyleStep error={error} errorId={errorId} onChange={(styleId) => updateConfiguration({ styleId })} selectedStyleId={state.configuration.styleId} /> : null}
             {state.currentStep === 1 ? <FunctionsStep areaDraft={areaDraft} areaError={areaError} configuration={state.configuration} onAreaChange={updateArea} onChange={updateConfiguration} /> : null}
@@ -230,6 +225,8 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             onNext={moveNext}
             onReset={() => updateConfiguration({ styleId: null })}
           />
+        ) : state.currentStep === 3 ? (
+          <MaterialsPreview configuration={state.configuration} />
         ) : <aside aria-label="ภาพตัวอย่างบ้าน" className={styles.preview} data-mobile-preview-ratio="16:10" data-preview-material={livePreview.material.level} data-preview-style={livePreview.concept.id}>
           <div className={styles.imageFrame} data-preview-tone={livePreview.material.level}>
             <Image alt={`ภาพอ้างอิง ${livePreview.concept.thaiLabel} (${livePreview.concept.englishLabel})`} fill key={livePreview.concept.id} preload sizes="(max-width: 899px) 100vw, 50vw" src={livePreview.concept.image} />

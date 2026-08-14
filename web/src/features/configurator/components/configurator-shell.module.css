@@ -16,6 +16,7 @@
 }
 
 .page[data-step="style"] { height: 100svh; overflow: hidden; }
+.page[data-step="materials"] { height: 100svh; overflow: hidden; }
 
 .masthead {
   position: sticky;
@@ -76,6 +77,30 @@
   overflow: hidden;
   padding: 0;
 }
+
+.shell[data-step="materials"] {
+  width: 100%;
+  height: calc(100svh - 78px);
+  grid-template-columns: minmax(0, 44fr) minmax(0, 56fr);
+  gap: 0;
+  align-items: stretch;
+  overflow: hidden;
+  padding: 0;
+}
+
+.shell[data-step="materials"] .formPanel {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  padding: 24px clamp(28px, 3vw, 50px) 20px;
+}
+.shell[data-step="materials"] .formPanel h1 { margin-top: 8px; font-size: clamp(2.35rem, 3vw, 3rem); line-height: 1.15; }
+.shell[data-step="materials"] .intro { max-width: 650px; margin-top: 5px; font-size: 0.8rem; line-height: 1.5; }
+.shell[data-step="materials"] .stepContent { min-height: 0; display: flex; flex: 1; margin-top: 16px; }
+.shell[data-step="materials"] .actions { flex-shrink: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 14px; margin-top: 14px; padding-top: 0; border-top: 0; }
+.shell[data-step="materials"] .actions button { min-height: 50px; border-radius: 13px; font-weight: 600; }
 
 .formPanel { grid-area: form; min-width: 0; padding-top: clamp(0px, 1.5vw, 18px); }
 .shell[data-step="style"] .formPanel {
@@ -323,6 +348,12 @@
   .recommendedSpecsCard { width: min(390px, 45%); }
 }
 
+@media (max-width: 1199px) {
+  .page[data-step="materials"] { height: auto; min-height: 100svh; overflow: visible; }
+  .shell[data-step="materials"] { height: auto; min-height: calc(100svh - 78px); grid-template-areas: "form" "preview"; grid-template-columns: minmax(0, 1fr); overflow: visible; }
+  .shell[data-step="materials"] .formPanel { overflow: visible; }
+}
+
 @media (max-width: 1120px) {
   .masthead { grid-template-columns: 180px minmax(0, 1fr) auto; }
   .configuratorBrand strong { font-size: 0.7rem; }
@@ -347,6 +378,9 @@
   .headerUtilities button:first-child { display: none; }
   .shell, .shell[data-step="style"] { width: 100%; height: auto; min-height: 0; grid-template-areas: "form" "preview"; grid-template-columns: minmax(0, 1fr); gap: 0; overflow: visible; padding: 0; }
   .shell:not([data-step="style"]) { gap: 30px; padding: 26px 18px 40px; }
+  .shell[data-step="materials"] { gap: 0; padding: 0; }
+  .shell[data-step="materials"] .formPanel { padding: 34px 28px 30px; }
+  .shell[data-step="materials"] .formPanel h1 { font-size: 2.8rem; }
   .shell[data-step="style"] .formPanel { height: auto; max-height: none; display: block; overflow: visible; padding: 28px 20px 34px; border-right: 0; }
   .shell[data-step="style"] .stepContent { display: block; }
   .shell[data-step="style"] .choiceFieldset { display: grid; }
@@ -376,6 +410,8 @@
   .headerUtilities button { min-width: 44px; padding: 0; font-size: 0; }
   .headerUtilities svg { width: 20px; }
   .shell[data-step="style"] .formPanel h1 { font-size: 2rem; }
+  .shell[data-step="materials"] .formPanel { padding: 26px 18px 20px; }
+  .shell[data-step="materials"] .formPanel h1 { font-size: 2.25rem; }
   .styleFilters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
   .filterChip { flex: 0 0 auto; }
   .conceptOption { grid-template-columns: 102px minmax(0, 1fr) 22px; gap: 10px; min-height: 108px; padding: 8px; border-radius: 14px; }
@@ -401,6 +437,7 @@
   .imageFrame { aspect-ratio: 16 / 10; }
   .formPanel { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   .actions { position: sticky; z-index: 2; bottom: 0; margin-top: 28px; padding: 14px 0 calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(var(--config-bg) 75%, transparent); }
+  .shell[data-step="materials"] .actions { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-bottom: 0; background: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

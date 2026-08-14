@@ -1,6 +1,9 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const stylesheet = readFileSync("src/features/configurator/components/configurator-shell.module.css", "utf8");
+const materialSelectorStylesheet = readFileSync("src/features/configurator/components/material-features-step.module.css", "utf8");
+const materialsPreviewPath = "src/features/configurator/components/materials-preview.module.css";
+const materialsPreviewStylesheet = existsSync(materialsPreviewPath) ? readFileSync(materialsPreviewPath, "utf8") : "";
 
 test("locks the desktop configurator to one viewport and scrolls only the style list", () => {
   expect(stylesheet).toMatch(/\.page\s*\{[^}]*width:\s*100%;[^}]*min-height:\s*100svh;/);
@@ -42,4 +45,21 @@ test("keeps usable area in the visible right column on compact previews", () => 
 test("does not redisplay optional metrics at the narrow mobile breakpoint", () => {
   expect(stylesheet).not.toContain(".metricList > div { display: grid; }");
   expect(stylesheet).toMatch(/\.metricList\s*>\s*\.mobileOptionalMetric\s*\{\s*display:\s*none;/);
+});
+
+test("scopes Step 4 to a 44/56 viewport with one divider and fixed controls", () => {
+  expect(stylesheet).toMatch(/\.page\[data-step="materials"\]\s*\{[^}]*height:\s*100svh;[^}]*overflow:\s*hidden;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="materials"\]\s*\{[^}]*height:\s*calc\(100svh - 78px\);[^}]*grid-template-columns:\s*minmax\(0, 44fr\) minmax\(0, 56fr\);[^}]*gap:\s*0;/);
+  expect(materialSelectorStylesheet).toMatch(/\.scrollArea\s*\{[^}]*overflow-y:\s*auto;/);
+  expect(materialSelectorStylesheet).toMatch(/\.qualityFieldset\s*\{[^}]*flex-shrink:\s*0;/);
+  expect(materialSelectorStylesheet).not.toMatch(/\.section\s*\+\s*\.section[^{]*\{[^}]*margin-top:\s*24px;/);
+  expect(materialsPreviewStylesheet.match(/\.preview::before/g)).toHaveLength(1);
+  expect(materialsPreviewStylesheet).not.toContain(".preview::after");
+  expect(materialsPreviewStylesheet).toMatch(/\.preview::before\s*\{[^}]*width:\s*1px;[^}]*radial-gradient[^}]*background-size:\s*100% (?:1[0-5]\d|100)px,/);
+});
+
+test("restores Step 4 document flow and two-column choices on compact viewports", () => {
+  expect(stylesheet).toMatch(/@media \(max-width:\s*1199px\)[\s\S]*?\.page\[data-step="materials"\]\s*\{[^}]*height:\s*auto;[^}]*overflow:\s*visible;/);
+  expect(stylesheet).toMatch(/@media \(max-width:\s*1199px\)[\s\S]*?\.shell\[data-step="materials"\]\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*overflow:\s*visible;/);
+  expect(materialSelectorStylesheet).toMatch(/@media \(max-width:\s*1199px\)[\s\S]*?\.optionGrid,[\s\S]*?\.featureGrid\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\);/);
 });

@@ -441,3 +441,33 @@ test("explains how function and special-feature choices affect the planning brie
   });
   expect(screen.getByText("มีผลต่อ allowance และหมวดงบประมาณ")).toBeInTheDocument();
 });
+
+test("keeps every special-feature placeholder empty", () => {
+  const { store } = renderConfigurator();
+  act(() => store.getState().setCurrentStep(3));
+
+  const featurePlaceholders = screen.getAllByTestId("feature-asset-placeholder");
+  expect(featurePlaceholders).toHaveLength(15);
+  featurePlaceholders.forEach((placeholder) => expect(placeholder).toBeEmptyDOMElement());
+});
+
+test("renders exactly four material quality radios", () => {
+  const { store } = renderConfigurator();
+  act(() => store.getState().setCurrentStep(3));
+
+  const qualityGroup = screen.getByRole("radiogroup", { name: "ระดับคุณภาพวัสดุ" });
+  expect(within(qualityGroup).getAllByRole("radio")).toHaveLength(4);
+});
+
+test("shows a blank Step 4 preview and compact selection summary", () => {
+  const { store } = renderConfigurator();
+  act(() => store.getState().setCurrentStep(3));
+
+  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างวัสดุ" });
+  expect(within(preview).getByTestId("main-house-preview-placeholder")).toBeEmptyDOMElement();
+  expect(within(preview).getByRole("heading", { name: "สรุปวัสดุที่เลือก" })).toBeInTheDocument();
+  expect(preview).toHaveTextContent("Concrete Tile");
+  expect(preview).toHaveTextContent("PREMIUM");
+  expect(within(preview).queryByText("CONCEPT PREVIEW")).not.toBeInTheDocument();
+  expect(within(preview).queryByRole("img")).not.toBeInTheDocument();
+});
