@@ -464,7 +464,9 @@ test("shows a blank Step 4 preview and compact selection summary", () => {
   act(() => store.getState().setCurrentStep(3));
 
   const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างวัสดุ" });
-  expect(within(preview).getByTestId("main-house-preview-placeholder")).toBeEmptyDOMElement();
+  const placeholder = within(preview).getByTestId("main-house-preview-placeholder");
+  expect(placeholder).toBeEmptyDOMElement();
+  expect(placeholder).toHaveAttribute("data-placeholder-type", "preview");
   expect(within(preview).getByRole("heading", { name: "สรุปวัสดุที่เลือก" })).toBeInTheDocument();
   expect(preview).toHaveTextContent("Concrete Tile");
   expect(preview).toHaveTextContent("PREMIUM");
