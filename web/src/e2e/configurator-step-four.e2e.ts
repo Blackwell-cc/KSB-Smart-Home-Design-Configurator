@@ -21,7 +21,9 @@ async function openStepFour(page: Page) {
 for (const viewport of viewports) {
   test(`keeps Step 4 usable at ${viewport.name}`, async ({ page }, testInfo) => {
     const consoleErrors: string[] = [];
+    const pageErrors: string[] = [];
     page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
+    page.on("pageerror", (error) => { pageErrors.push(error.message); });
     await page.setViewportSize(viewport);
     await openStepFour(page);
 
@@ -38,6 +40,7 @@ for (const viewport of viewports) {
     await expect(page.getByRole("complementary", { name: "ภาพตัวอย่างวัสดุ" }).getByRole("img")).toHaveCount(0);
     await page.screenshot({ fullPage: true, path: testInfo.outputPath(`step-four-${viewport.name}.png`) });
     expect(consoleErrors).toEqual([]);
+    expect(pageErrors).toEqual([]);
   });
 }
 
@@ -61,12 +64,18 @@ test("matches the reference desktop structure while only the catalog scrolls", a
 
   const materialCards = page.getByTestId("material-asset-placeholder");
   await expect(materialCards).toHaveCount(32);
+  for (const label of ["หลังคา", "ผนังภายนอก", "หน้าต่าง", "ประตูทางเข้า", "พื้น", "ฝ้าเพดาน", "รายละเอียดฟาซาด", "แสงและบรรยากาศ"]) {
+    const materialGroup = page.getByRole("radiogroup", { name: label });
+    await expect(materialGroup).toHaveCount(1);
+    await expect(materialGroup.getByRole("radio")).toHaveCount(4);
+  }
   const firstRow = await Promise.all([0, 1, 2, 3].map((index) => materialCards.nth(index).boundingBox()));
   expect(firstRow.every((box) => box !== null && Math.abs(box.y - firstRow[0]!.y) < 1)).toBe(true);
   expect(firstRow[0]!.width).toBeGreaterThanOrEqual(110);
   expect(firstRow[0]!.width).toBeLessThanOrEqual(125);
 
   const featureCards = page.getByTestId("feature-asset-placeholder");
+  await expect(featureCards).toHaveCount(15);
   const featureRow = await Promise.all([0, 1, 2, 3, 4].map((index) => featureCards.nth(index).boundingBox()));
   expect(featureRow.every((box) => box !== null && Math.abs(box.y - featureRow[0]!.y) < 1)).toBe(true);
   expect(featureRow[0]!.width).toBeGreaterThanOrEqual(95);
@@ -78,19 +87,59 @@ test("matches the reference desktop structure while only the catalog scrolls", a
   expect(previewPlaceholderBox!.width / previewPlaceholderBox!.height).toBeCloseTo(1.6, 1);
   expect(previewPlaceholderBox!.width).toBeGreaterThanOrEqual(760);
 
+  const allPlaceholders = page.locator("[data-placeholder-type]");
+  const placeholderStates = await allPlaceholders.evaluateAll((nodes) => nodes.map((node) => ({
+    backgroundImage: window.getComputedStyle(node).backgroundImage,
+    childElementCount: node.childElementCount,
+    descendantImages: node.querySelectorAll("img").length,
+    text: node.textContent?.trim() ?? "",
+  })));
+  expect(placeholderStates.length).toBeGreaterThanOrEqual(48);
+  for (const state of placeholderStates) {
+    expect(state.childElementCount).toBe(0);
+    expect(state.descendantImages).toBe(0);
+    expect(state.text).toBe("");
+    expect(state.backgroundImage.toLowerCase()).not.toContain("url(");
+  }
+
+  await expect(preview.locator("img, button, input, select, [role=toolbar], [data-preview-control], [data-overlay]")).toHaveCount(0);
+  const summary = preview.getByRole("region", { name: "สรุปวัสดุที่เลือก" });
+  await expect(summary).toBeVisible();
+  await expect(preview.locator(":scope > section")).toHaveCount(1);
+  await expect(previewPlaceholder.locator("section")).toHaveCount(0);
+  expect(await previewPlaceholder.evaluate((node) => !node.contains(node.closest("aside")?.querySelector("section") ?? null))).toBe(true);
+
   const scrollArea = page.getByTestId("material-scroll-area");
   const quality = page.getByRole("radiogroup", { name: "ระดับคุณภาพวัสดุ" });
-  const actions = page.getByRole("button", { name: "ถัดไป" });
+  const backAction = page.getByRole("button", { name: "ย้อนกลับ" });
+  const nextAction = page.getByRole("button", { name: "ถัดไป" });
+  const scrollMetrics = await scrollArea.evaluate((node) => ({
+    clientHeight: node.clientHeight,
+    scrollHeight: node.scrollHeight,
+  }));
+  expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
   const before = await quality.boundingBox();
-  await scrollArea.evaluate((node) => { node.scrollTop = node.scrollHeight; });
+  expect(before).not.toBeNull();
+  const resultingScrollTop = await scrollArea.evaluate((node) => {
+    node.scrollTop = node.scrollHeight;
+    return node.scrollTop;
+  });
+  expect(resultingScrollTop).toBeGreaterThan(0);
+  await expect(page.getByRole("checkbox", { name: "พื้นที่สำหรับสัตว์เลี้ยง" })).toBeVisible();
   await expect(quality).toBeVisible();
-  await expect(actions).toBeVisible();
+  await expect(backAction).toBeVisible();
+  await expect(nextAction).toBeVisible();
   const after = await quality.boundingBox();
+  expect(after).not.toBeNull();
   expect(after!.y).toBeCloseTo(before!.y, 0);
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(941);
 });
 
 test("supports keyboard material selection and persists special features", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
+  page.on("pageerror", (error) => { pageErrors.push(error.message); });
   await page.setViewportSize({ width: 1440, height: 900 });
   await openStepFour(page);
 
@@ -107,4 +156,6 @@ test("supports keyboard material selection and persists special features", async
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("button", { name: "แก้ไขวัสดุและส่วนพิเศษ" }).click();
   await expect(pool).toBeChecked();
+  expect(consoleErrors).toEqual([]);
+  expect(pageErrors).toEqual([]);
 });
