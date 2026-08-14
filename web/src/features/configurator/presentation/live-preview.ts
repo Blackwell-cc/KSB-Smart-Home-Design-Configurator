@@ -1,4 +1,5 @@
 import type { AreaRecommendation } from "@/features/area-planning/domain/calculate-area";
+import { MATERIAL_QUALITY_CATALOG, SPECIAL_FEATURE_CATALOG } from "../domain/material-catalog";
 import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import type { HouseConfiguration } from "../domain/configuration";
 import { THAI_PROVINCES } from "../domain/provinces";
@@ -44,16 +45,6 @@ const MATERIAL_BOARDS = {
   },
 } as const satisfies Record<HouseConfiguration["materialLevel"], MaterialBoard>;
 
-const SPECIAL_FEATURE_LABELS = {
-  pool: "สระว่ายน้ำ",
-  lift: "ลิฟต์",
-  "smart-home": "ระบบ Smart Home",
-  solar: "โซลาร์เซลล์",
-  "ev-charger": "ที่ชาร์จรถ EV",
-  "double-volume": "โถง Double Volume",
-  "large-glazing": "ผนังกระจกขนาดใหญ่",
-} as const satisfies Record<HouseConfiguration["specialFeatures"][number], string>;
-
 export type LivePreviewModel = {
   concept: (typeof CONCEPT_CATALOG)[number];
   material: {
@@ -69,11 +60,12 @@ export type LivePreviewModel = {
 export function buildLivePreview(configuration: HouseConfiguration, area: AreaRecommendation): LivePreviewModel {
   const concept = CONCEPT_CATALOG.find((item) => item.id === configuration.styleId) ?? CONCEPT_CATALOG[0];
   const material = MATERIAL_BOARDS[configuration.materialLevel];
+  const materialQuality = MATERIAL_QUALITY_CATALOG.find((quality) => quality.id === configuration.materialQualityId);
   const provinceName = THAI_PROVINCES.find((province) => province.code === configuration.provinceCode)?.name ?? "ยังไม่ได้เลือกจังหวัด";
 
   return {
     concept,
-    material: { level: configuration.materialLevel, ...material },
+    material: { level: configuration.materialLevel, ...material, label: materialQuality?.label ?? material.label, description: materialQuality?.description ?? material.description },
     metricRows: [
       { id: "floors", label: "จำนวนชั้น", value: `${configuration.floors} ชั้น` },
       { id: "bedrooms", label: "ห้องนอน", value: `${configuration.bedrooms} ห้อง` },
@@ -83,6 +75,9 @@ export function buildLivePreview(configuration: HouseConfiguration, area: AreaRe
       { id: "construction-floor-area", label: "พื้นที่ก่อสร้างรวม (CFA)", value: `${area.constructionFloorAreaM2} ตร.ม.` },
       { id: "province", label: "จังหวัด", value: provinceName },
     ],
-    activeFeatures: configuration.specialFeatures.map((code) => ({ code, label: SPECIAL_FEATURE_LABELS[code] })),
+    activeFeatures: configuration.specialFeatures.map((code) => ({
+      code,
+      label: SPECIAL_FEATURE_CATALOG.find((feature) => feature.id === code)?.label ?? code,
+    })),
   };
 }

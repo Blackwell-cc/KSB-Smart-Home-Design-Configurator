@@ -36,6 +36,7 @@ test("uses the chosen material board and labels only the active special features
   const configuration = {
     ...createDefaultConfiguration(),
     styleId: "contemporary-warm-luxury",
+    materialQualityId: "bespoke",
     materialLevel: "signature",
     specialFeatures: ["pool", "smart-home", "ev-charger"],
   } satisfies HouseConfiguration;
@@ -44,7 +45,7 @@ test("uses the chosen material board and labels only the active special features
 
   expect(preview.material).toMatchObject({
     level: "signature",
-    label: "Signature",
+    label: "BESPOKE",
   });
   expect(preview.material.swatches).toHaveLength(3);
   expect(preview.material.swatches.map((swatch) => swatch.label)).toEqual(["ผนัง", "ไม้", "โลหะและกระจก"]);
@@ -52,6 +53,19 @@ test("uses the chosen material board and labels only the active special features
     { code: "pool", label: "สระว่ายน้ำ" },
     { code: "smart-home", label: "ระบบ Smart Home" },
     { code: "ev-charger", label: "ที่ชาร์จรถ EV" },
+  ]);
+});
+
+test("labels design-only special features from the central catalog", () => {
+  const configuration = {
+    ...createDefaultConfiguration(),
+    specialFeatures: ["internal-garden"],
+  } satisfies HouseConfiguration;
+
+  const preview = buildLivePreview(configuration, calculateArea(configuration, QA_AREA_CATALOG));
+
+  expect(preview.activeFeatures).toEqual([
+    { code: "internal-garden", label: "สวนภายในบ้าน" },
   ]);
 });
 

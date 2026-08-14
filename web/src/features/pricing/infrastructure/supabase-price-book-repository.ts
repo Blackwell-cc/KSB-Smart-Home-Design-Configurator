@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { SPECIAL_FEATURE_CODES } from "@/features/configurator/domain/configuration";
+import { PRICING_SPECIAL_FEATURE_CODES } from "@/features/configurator/domain/material-catalog";
 import { THAI_PROVINCE_CODES } from "@/features/configurator/domain/provinces";
 import type { AreaCatalog } from "@/features/area-planning/domain/area-catalog";
 import type { PriceBook } from "../domain/price-book";
@@ -44,7 +44,7 @@ function parseEntries(rows: unknown[], book: z.infer<typeof metadata>): { priceB
   const floorFactors = factorRecord("floor-factor", floorKeys) as PriceBook["floorFactors"];
   const siteAccessFactors = factorRecord("site-access-factor", accessKeys) as PriceBook["siteAccessFactors"];
   const siteRisk = rangeRecord("site-risk", accessKeys) as PriceBook["siteRisk"];
-  const featureAllowances = rangeRecord("feature-allowance", SPECIAL_FEATURE_CODES);
+  const featureAllowances = rangeRecord("feature-allowance", PRICING_SPECIAL_FEATURE_CODES);
   const designFeeRates = rateRange.safeParse(take("design-fee-rates", "default"));
   const tax = factor.safeParse(take("tax-rate", "default"));
   const approvedArea = areaCatalog.safeParse(take("area-catalog", "default"));

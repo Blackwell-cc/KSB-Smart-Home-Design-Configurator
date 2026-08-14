@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 import {
   createDefaultConfiguration,
-  SPECIAL_FEATURE_CODES,
   type HouseConfiguration,
 } from "@/features/configurator/domain/configuration";
+import { PRICING_SPECIAL_FEATURE_CODES } from "@/features/configurator/domain/material-catalog";
 import { calculateEstimate } from "./calculate-estimate";
 import type { MoneyRange, PriceBook } from "./price-book";
 import { qaPriceBook } from "../fixtures/qa-price-book";
@@ -141,7 +141,7 @@ describe("calculateEstimate", () => {
     expectSnapshotInvariants(calculateEstimate(estimateInput({}, cfa), qaPriceBook));
   });
 
-  test.each(SPECIAL_FEATURE_CODES)("maps the %s special feature to its QA allowance", (specialFeature) => {
+  test.each(PRICING_SPECIAL_FEATURE_CODES)("maps the %s special feature to its QA allowance", (specialFeature) => {
     const snapshot = calculateEstimate(
       estimateInput({ specialFeatures: [specialFeature] }),
       qaPriceBook,
@@ -155,7 +155,7 @@ describe("calculateEstimate", () => {
 
   test("aggregates every special feature allowance and keeps supervision excluded", () => {
     const snapshot = calculateEstimate(
-      estimateInput({ specialFeatures: [...SPECIAL_FEATURE_CODES] }),
+      estimateInput({ specialFeatures: [...PRICING_SPECIAL_FEATURE_CODES] }),
       qaPriceBook,
     );
 
@@ -168,9 +168,9 @@ describe("calculateEstimate", () => {
     expectSnapshotInvariants(snapshot);
   });
 
-  test("keeps QA allowance keys exactly aligned with canonical feature codes", () => {
+  test("keeps QA allowance keys exactly aligned with pricing feature codes", () => {
     expect(Object.keys(qaPriceBook.featureAllowances).sort()).toEqual(
-      [...SPECIAL_FEATURE_CODES].sort(),
+      [...PRICING_SPECIAL_FEATURE_CODES].sort(),
     );
   });
 
