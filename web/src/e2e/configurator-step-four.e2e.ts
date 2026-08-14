@@ -125,7 +125,7 @@ test("matches the reference desktop structure while only the catalog scrolls", a
     return node.scrollTop;
   });
   expect(resultingScrollTop).toBeGreaterThan(0);
-  await expect(page.getByRole("checkbox", { name: "พื้นที่สำหรับสัตว์เลี้ยง" })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "พื้นที่สำหรับสัตว์เลี้ยง" })).toBeInViewport();
   await expect(quality).toBeVisible();
   await expect(backAction).toBeVisible();
   await expect(nextAction).toBeVisible();
