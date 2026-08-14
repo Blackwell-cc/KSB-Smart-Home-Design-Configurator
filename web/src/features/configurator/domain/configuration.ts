@@ -4,6 +4,7 @@ import {
   MATERIAL_CATALOG,
   MATERIAL_QUALITY_IDS,
   SPECIAL_FEATURE_CATALOG,
+  type MaterialCategoryId,
   type MaterialSelections,
   type SpecialFeatureId,
 } from "./material-catalog";
@@ -14,15 +15,27 @@ export const SPECIAL_FEATURE_CODES = SPECIAL_FEATURE_CATALOG.map(({ id }) => id)
   ...SpecialFeatureId[],
 ];
 
+function materialOptionSchema(categoryId: MaterialCategoryId): z.ZodType<string> {
+  const category = MATERIAL_CATALOG.find(({ id }) => id === categoryId);
+  if (!category) throw new Error(`MATERIAL_CATEGORY_NOT_FOUND:${categoryId}`);
+
+  const [first, second, third, fourth] = category.options;
+  return z.enum([first.id, second.id, third.id, fourth.id]);
+}
+
+const materialSelectionShape = {
+  roof: materialOptionSchema("roof"),
+  wall: materialOptionSchema("wall"),
+  window: materialOptionSchema("window"),
+  door: materialOptionSchema("door"),
+  flooring: materialOptionSchema("flooring"),
+  ceiling: materialOptionSchema("ceiling"),
+  facade: materialOptionSchema("facade"),
+  lighting: materialOptionSchema("lighting"),
+} satisfies Record<MaterialCategoryId, z.ZodType<string>>;
+
 const MaterialSelectionsSchema: z.ZodType<MaterialSelections> = z
-  .object(
-    Object.fromEntries(
-      MATERIAL_CATALOG.map((category) => [
-        category.id,
-        z.enum(category.options.map(({ id }) => id) as [string, ...string[]]),
-      ]),
-    ) as Record<keyof MaterialSelections, z.ZodType<string>>,
-  )
+  .object(materialSelectionShape)
   .strict();
 
 function hasUniqueValues(values: readonly string[]): boolean {
