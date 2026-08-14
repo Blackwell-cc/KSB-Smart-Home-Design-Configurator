@@ -1,0 +1,26 @@
+/* material 800×450 (16:9) */
+/* feature 800×450 (16:9) */
+/* preview 2000×1250 minimum 1600×1000 (16:10) */
+/* summary 400×400 (1:1) */
+
+.placeholder {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(216, 173, 98, 0.2);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.placeholder[data-placeholder-type="material"],
+.placeholder[data-placeholder-type="feature"] {
+  aspect-ratio: 16 / 9;
+}
+
+.placeholder[data-placeholder-type="preview"] {
+  aspect-ratio: 16 / 10;
+}
+
+.placeholder[data-placeholder-type="summary"] {
+  aspect-ratio: 1;
+}

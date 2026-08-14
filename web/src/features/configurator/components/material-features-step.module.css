@@ -1,0 +1,204 @@
+.step {
+  min-height: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.scrollArea {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(216, 173, 98, 0.56) rgba(255, 255, 255, 0.035);
+  scrollbar-width: thin;
+}
+
+.scrollArea::-webkit-scrollbar {
+  width: 7px;
+}
+
+.scrollArea::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.scrollArea::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(216, 173, 98, 0.56);
+}
+
+.materialSections {
+  display: grid;
+  gap: 24px;
+}
+
+.section {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.section + .section,
+.materialSections + .section {
+  margin-top: 24px;
+}
+
+.section legend {
+  padding: 0;
+  color: var(--config-ivory);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.optionGrid,
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.featureGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.assetChoice {
+  position: relative;
+  min-width: 0;
+  min-height: 44px;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 8px;
+  color: var(--config-muted);
+  border: 1px solid var(--config-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.assetChoice:hover {
+  border-color: rgba(240, 209, 143, 0.55);
+  transform: translateY(-1px);
+}
+
+.assetChoice[data-selected="true"] {
+  color: var(--config-ivory);
+  border-color: var(--config-gold);
+  background: rgba(216, 173, 98, 0.08);
+}
+
+.assetChoice input {
+  position: absolute;
+  z-index: 1;
+  top: 12px;
+  right: 12px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--config-gold);
+  cursor: pointer;
+}
+
+.assetChoice:has(input:focus-visible),
+.qualityChoice:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.assetChoice > span:last-child {
+  overflow-wrap: anywhere;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.impact {
+  margin-top: 4px;
+  color: var(--config-muted);
+  font-size: 0.68rem;
+}
+
+.qualityFieldset {
+  flex-shrink: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--config-line);
+}
+
+.qualityGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.qualityChoice {
+  position: relative;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--config-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  cursor: pointer;
+}
+
+.qualityChoice[data-selected="true"] {
+  border-color: var(--config-gold);
+  background: rgba(216, 173, 98, 0.09);
+}
+
+.qualityChoice input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 0;
+  accent-color: var(--config-gold);
+}
+
+.qualityChoice > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.qualityChoice strong {
+  color: var(--config-gold-light);
+  font: 600 0.66rem var(--font-data);
+  letter-spacing: 0.04em;
+}
+
+.qualityChoice small {
+  overflow: hidden;
+  color: var(--config-muted);
+  font-size: 0.56rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .optionGrid,
+  .qualityGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featureGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollArea {
+    scroll-behavior: auto;
+  }
+
+  .assetChoice {
+    transition: none;
+  }
+}

@@ -41,7 +41,7 @@ async function continueToReview(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
   await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
-  await user.click(screen.getByRole("radio", { name: /Premium/ }));
+  await user.click(screen.getByRole("radio", { name: /PREMIUM/i }));
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
 }
 
@@ -311,7 +311,7 @@ test("flushes the latest edit on pagehide before unmount", () => {
   expect(restored.configuration.residents).toBe(6);
 });
 
-test("supports arrow-key material selection and blocks preview for an incomplete restored review", async () => {
+test("supports native arrow-key quality selection and blocks preview for an incomplete restored review", async () => {
   const store = createConfiguratorStore(createMemoryDraftStorage(), 0);
   store.getState().setCurrentStep(4);
   const onPreview = vi.fn();
@@ -326,16 +326,16 @@ test("supports arrow-key material selection and blocks preview for an incomplete
     store.getState().updateConfiguration({ styleId: "contemporary-warm-luxury", provinceCode: "10" });
     store.getState().setCurrentStep(3);
   });
-  const premium = screen.getByRole("radio", { name: /Premium/ });
+  const premium = screen.getByRole("radio", { name: /PREMIUM/i });
   premium.focus();
   await user.keyboard("{ArrowRight}");
-  expect(screen.getByRole("radio", { name: /Signature/ })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByRole("radio", { name: /SIGNATURE/i })).toBeChecked();
   await user.keyboard("{ArrowLeft}");
-  expect(screen.getByRole("radio", { name: /Premium/ })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByRole("radio", { name: /PREMIUM/i })).toBeChecked();
   await user.keyboard("{ArrowUp}");
-  expect(screen.getByRole("radio", { name: /Select/ })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByRole("radio", { name: /STANDARD/i })).toBeChecked();
   await user.keyboard("{ArrowDown}");
-  expect(screen.getByRole("radio", { name: /Premium/ })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByRole("radio", { name: /PREMIUM/i })).toBeChecked();
 });
 
 test("presents every house style as an image-backed architect card", () => {
@@ -353,7 +353,7 @@ test("presents every house style as an image-backed architect card", () => {
   });
 });
 
-test("marks preview data, material boards, and mobile-safe landmarks for the active selection", async () => {
+test("marks preview data and mobile-safe landmarks for the active selection", () => {
   const { store } = renderConfigurator();
 
   const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
@@ -363,16 +363,47 @@ test("marks preview data, material boards, and mobile-safe landmarks for the act
   expect(preview).toHaveAttribute("data-mobile-preview-ratio", "16:10");
   expect(form).toHaveAttribute("data-choice-canvas", "true");
 
-  await act(async () => {
+  act(() => {
     store.getState().setCurrentStep(3);
   });
 
-  const premium = screen.getByRole("radio", { name: /Premium/ });
-  expect(premium).toHaveAttribute("data-material-board", "premium");
-  expect(within(premium).getAllByTestId("material-swatch")).toHaveLength(3);
-  expect(within(premium).getByText("ผนัง")).toBeInTheDocument();
-  expect(within(premium).getByText("ไม้")).toBeInTheDocument();
-  expect(within(premium).getByText("โลหะและกระจก")).toBeInTheDocument();
+  expect(screen.getByTestId("material-scroll-area")).toBeInTheDocument();
+});
+
+test("renders eight four-option material groups using blank placeholders", () => {
+  const { store } = renderConfigurator();
+  act(() => store.getState().setCurrentStep(3));
+
+  const scrollArea = screen.getByTestId("material-scroll-area");
+  const materialGroups = within(scrollArea).getAllByRole("radiogroup");
+  expect(materialGroups).toHaveLength(8);
+  materialGroups.forEach((group) => expect(within(group).getAllByRole("radio")).toHaveLength(4));
+
+  const materialPlaceholders = within(scrollArea).getAllByTestId("material-asset-placeholder");
+  expect(materialPlaceholders).toHaveLength(32);
+  materialPlaceholders.forEach((placeholder) => expect(placeholder).toBeEmptyDOMElement());
+  expect(within(scrollArea).queryByRole("img")).not.toBeInTheDocument();
+});
+
+test("selects materials, multiple features, and bespoke quality", async () => {
+  const { store, user } = renderConfigurator();
+  act(() => store.getState().setCurrentStep(3));
+
+  const scrollArea = screen.getByTestId("material-scroll-area");
+  const qualityGroup = screen.getByRole("radiogroup", { name: "ระดับคุณภาพวัสดุ" });
+  expect(scrollArea).not.toContainElement(qualityGroup);
+
+  await user.click(screen.getByRole("radio", { name: "Metal Roof" }));
+  await user.click(screen.getByRole("checkbox", { name: "สระว่ายน้ำ" }));
+  await user.click(screen.getByRole("checkbox", { name: "สวนภายในบ้าน" }));
+  await user.click(screen.getByRole("radio", { name: /BESPOKE/ }));
+
+  expect(store.getState().configuration).toMatchObject({
+    materialSelections: { roof: "metal-roof" },
+    specialFeatures: ["pool", "internal-garden"],
+    materialQualityId: "bespoke",
+    materialLevel: "signature",
+  });
 });
 
 test("keeps the mobile vertical-list contract and the mockup disclaimer visible", () => {
