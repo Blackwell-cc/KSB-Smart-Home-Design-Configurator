@@ -3,7 +3,13 @@ import {
   HouseConfigurationSchema,
   type HouseConfiguration,
 } from "../domain/configuration";
-import { DEFAULT_MATERIAL_SELECTIONS } from "../domain/material-catalog";
+import {
+  DEFAULT_MATERIAL_SELECTIONS,
+  MATERIAL_QUALITY_IDS,
+  materialLevelForQuality,
+  materialQualityForLevel,
+  type MaterialQualityId,
+} from "../domain/material-catalog";
 
 const STORAGE_KEY = "ksb-configurator-draft-v1";
 
@@ -42,15 +48,20 @@ function migrateLegacyConfiguration(value: unknown): unknown {
   const envelope = value as Record<string, unknown>;
   if (!envelope.configuration || typeof envelope.configuration !== "object") return value;
   const configuration = envelope.configuration as Record<string, unknown>;
+  const materialQualityId = configuration.materialQualityId
+    ?? (configuration.materialLevel === "select" || configuration.materialLevel === "premium" || configuration.materialLevel === "signature"
+      ? materialQualityForLevel(configuration.materialLevel)
+      : undefined);
+  const hasExactMaterialQuality = MATERIAL_QUALITY_IDS.includes(materialQualityId as MaterialQualityId);
   return {
     ...envelope,
     configuration: {
       ...configuration,
       materialSelections: configuration.materialSelections ?? DEFAULT_MATERIAL_SELECTIONS,
-      materialQualityId: configuration.materialQualityId
-        ?? (configuration.materialLevel === "select"
-          ? "standard"
-          : configuration.materialLevel === "signature" ? "signature" : "premium"),
+      materialQualityId,
+      materialLevel: hasExactMaterialQuality
+        ? materialLevelForQuality(materialQualityId as MaterialQualityId)
+        : configuration.materialLevel,
     },
   };
 }

@@ -6,12 +6,16 @@ import { z } from "zod";
 import { FreePreview } from "@/features/preview/components/free-preview";
 import { SoftGateForm } from "@/features/leads/components/soft-gate-form";
 import { createDraftStorage } from "@/features/configurator/state/draft-storage";
+import {
+  projectDesignBriefConfiguration,
+  type DesignBriefConfiguration,
+} from "@/features/configurator/domain/configuration";
 import type { FreePreviewPayload } from "@/features/preview/application/build-free-preview";
-import { projectEstimateRequest, type EstimateRequest } from "@/features/pricing/application/estimate-request";
+import { projectEstimateRequest } from "@/features/pricing/application/estimate-request";
 
 type PreviewState =
   | { status: "loading" }
-  | { status: "ready"; preview: FreePreviewPayload; configuration: EstimateRequest }
+  | { status: "ready"; preview: FreePreviewPayload; configuration: DesignBriefConfiguration }
   | { status: "no-draft" | "invalid-draft" | "unavailable" };
 const FreePreviewPayloadSchema = z.object({
   conceptAssetId: z.string(), styleLabel: z.string(), floors: z.number().int(), bedrooms: z.number().int(), bathrooms: z.number().int(), parkingSpaces: z.number().int(), usableAreaM2: z.number(), constructionFloorAreaM2: z.number(), materialLevel: z.enum(["select", "premium", "signature"]), constructionRange: z.object({ low: z.number(), high: z.number() }).strict(), designFeeRange: z.object({ low: z.number(), high: z.number() }).strict(), budgetRange: z.object({ low: z.number(), high: z.number() }).strict(), confidence: z.literal("C"), estimateMode: z.enum(["published", "development-demo"]), disclaimer: z.string(),
@@ -27,8 +31,9 @@ export default function PreviewPage() {
       if (stored.status === "unavailable") { if (!cancelled) setState({ status: "unavailable" }); return; }
       if (stored.status !== "valid") { if (!cancelled) setState({ status: "invalid-draft" }); return; }
       try {
-        const configuration = projectEstimateRequest(stored.draft.configuration);
-        const response = await fetch("/api/estimate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(configuration), signal: controller.signal });
+        const configuration = projectDesignBriefConfiguration(stored.draft.configuration);
+        const estimateRequest = projectEstimateRequest(stored.draft.configuration);
+        const response = await fetch("/api/estimate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(estimateRequest), signal: controller.signal });
         const payload = await response.json(); const parsed = FreePreviewPayloadSchema.safeParse(payload?.preview);
         if (!response.ok || !parsed.success) throw new Error("ESTIMATE_UNAVAILABLE");
         if (!cancelled) setState({ status: "ready", preview: parsed.data, configuration });

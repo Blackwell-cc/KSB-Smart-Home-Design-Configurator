@@ -59,6 +59,33 @@ describe("DraftStorage", () => {
     });
   });
 
+  test.each([
+    ["bespoke", "select", "signature"],
+    ["standard", "signature", "select"],
+    ["premium", "signature", "premium"],
+  ] as const)(
+    "normalizes a mismatched %s quality draft from %s to %s pricing",
+    (materialQualityId, materialLevel, expectedMaterialLevel) => {
+      const storage = createMemoryStorage({
+        "ksb-configurator-draft-v1": JSON.stringify({
+          draftVersion: 1,
+          currentStep: 3,
+          configuration: {
+            ...createDefaultConfiguration(),
+            materialQualityId,
+            materialLevel,
+          },
+        }),
+      });
+
+      expect(createDraftStorage(storage).load()).toMatchObject({
+        status: "valid",
+        draft: {
+          configuration: { materialQualityId, materialLevel: expectedMaterialLevel },
+        },
+      });
+    },
+  );
   test("treats malformed, incompatible, and contact-bearing saved data as incompatible", () => {
     for (const raw of [
       "{not-json",

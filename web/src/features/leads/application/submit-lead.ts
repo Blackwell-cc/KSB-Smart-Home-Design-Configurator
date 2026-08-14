@@ -2,7 +2,7 @@ import { createHash, createHmac } from "node:crypto";
 import { calculateArea } from "@/features/area-planning/domain/calculate-area";
 import { calculateEstimate } from "@/features/pricing/domain/calculate-estimate";
 import type { PriceBookRepository } from "@/features/pricing/application/estimate-project";
-import { toCalculationConfiguration } from "@/features/pricing/application/estimate-request";
+import { projectEstimateRequest, toCalculationConfiguration } from "@/features/pricing/application/estimate-request";
 import { LeadSubmissionSchema, type LeadSubmissionResult } from "../domain/lead";
 import { buildPrivateAccessExchangeUrl } from "../domain/private-access";
 import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
@@ -38,16 +38,17 @@ export type SubmitLeadDependencies = {
 export async function submitLead(rawInput: unknown, dependencies: SubmitLeadDependencies): Promise<LeadSubmissionResult> {
   const input = LeadSubmissionSchema.parse(rawInput);
   const { priceBookId, priceBook, areaCatalog } = await dependencies.priceBookRepository.loadPublished();
-  const configuration = toCalculationConfiguration(input.configuration);
-  const area = calculateArea(configuration, areaCatalog);
-  const estimate = calculateEstimate({ configuration, constructionFloorAreaM2: area.constructionFloorAreaM2, production: true }, priceBook);
-  const concept = CONCEPT_CATALOG.find((item) => item.id === configuration.styleId);
+  const pricingConfiguration = projectEstimateRequest({ ...input.configuration, privateNotes: "" });
+  const calculationConfiguration = toCalculationConfiguration(pricingConfiguration);
+  const area = calculateArea(calculationConfiguration, areaCatalog);
+  const estimate = calculateEstimate({ configuration: calculationConfiguration, constructionFloorAreaM2: area.constructionFloorAreaM2, production: true }, priceBook);
+  const concept = CONCEPT_CATALOG.find((item) => item.id === input.configuration.styleId);
   if (!concept) throw new Error("CONCEPT_SNAPSHOT_UNAVAILABLE");
   const access = dependencies.createAccessToken(input.idempotencyKey);
   const expiresAt = new Date(dependencies.now().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
   const row = await dependencies.repository.submitOnce({
     configurationId: input.configurationId, configuration: input.configuration,
-    calculationSnapshot: { configuration: input.configuration, concept: { id: concept.id, label: concept.label, imageSrc: concept.image }, area, estimate, pricingVersion: priceBook.version, referenceDate: priceBook.referenceDate, assumptions: estimate.assumptions, includedItems: estimate.includedItems, excludedItems: estimate.excludedItems },
+    calculationSnapshot: { configuration: input.configuration, pricingConfiguration, concept: { id: concept.id, label: concept.label, imageSrc: concept.image }, area, estimate, pricingVersion: priceBook.version, referenceDate: priceBook.referenceDate, assumptions: estimate.assumptions, includedItems: estimate.includedItems, excludedItems: estimate.excludedItems },
     priceBookId,
     idempotencyKey: input.idempotencyKey, name: input.name, preferredContactMethod: input.preferredContactMethod,
     ...(input.preferredContactMethod === "phone" ? { phone: input.phone } : input.preferredContactMethod === "email" ? { email: input.email } : { lineId: input.lineId }),

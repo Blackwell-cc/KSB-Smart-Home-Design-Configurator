@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { EstimateRequest } from "@/features/pricing/application/estimate-request";
+import type { DesignBriefConfiguration } from "@/features/configurator/domain/configuration";
 import { FieldError } from "@/components/ui/field-error";
 import styles from "./soft-gate-form.module.css";
 
@@ -36,7 +36,7 @@ export function getOrCreateSubmissionIntent(storage: SubmissionStorage, createUu
 
 function clearIntent() { try { window.sessionStorage.removeItem(INTENT_STORAGE_KEY); } catch { /* retry metadata is optional */ } }
 
-export function SoftGateForm({ configuration, onSuccess }: { configuration: EstimateRequest; onSuccess: (reportUrl: string) => void }) {
+export function SoftGateForm({ configuration, onSuccess }: { configuration: DesignBriefConfiguration; onSuccess: (reportUrl: string) => void }) {
   const [intent] = useState<Intent>(() => getOrCreateSubmissionIntent(window.sessionStorage, () => crypto.randomUUID()));
   const [method, setMethod] = useState<ContactMethod>("phone"); const [name, setName] = useState(""); const [contact, setContact] = useState("");
   const [consentAccepted, setConsentAccepted] = useState(false); const [isSubmitting, setIsSubmitting] = useState(false); const [error, setError] = useState(""); const errorRef = useRef<HTMLParagraphElement>(null);

@@ -1,11 +1,14 @@
 import { describe, expect, test, vi } from "vitest";
+import { createDefaultConfiguration, projectDesignBriefConfiguration } from "@/features/configurator/domain/configuration";
+import { DEFAULT_MATERIAL_SELECTIONS } from "@/features/configurator/domain/material-catalog";
 import { createDeterministicAccessToken, ProjectAccessTokenSecretError, submitLead } from "./submit-lead";
 
-const configuration = {
-  styleId: "contemporary-warm-luxury", residents: 3, floors: 2, bedrooms: 3, bathrooms: 3,
-  parkingSpaces: 2, functions: { office: false, elderlyRoom: false, thaiKitchen: false, multipurposeRoom: false },
-  usableAreaOverrideM2: null, provinceCode: "10", siteAccess: "normal", materialLevel: "premium", specialFeatures: [],
-} as const;
+const configuration = projectDesignBriefConfiguration({
+  ...createDefaultConfiguration(),
+  styleId: "contemporary-warm-luxury",
+  residents: 3,
+  provinceCode: "10",
+});
 const validInput = {
   configurationId: "11111111-1111-4111-8111-111111111111", idempotencyKey: "22222222-2222-4222-8222-222222222222",
   configuration, preferredContactMethod: "email" as const, name: "  ผู้ทดสอบ  ", email: "owner@example.test",
@@ -58,6 +61,43 @@ describe("submitLead", () => {
     const captured = vi.fn(deps.repository.submitOnce); deps.repository.submitOnce = captured;
     await submitLead(validInput, deps);
     expect((captured.mock.calls[0]?.[0] as unknown as { calculationSnapshot: { concept: unknown } }).calculationSnapshot.concept).toEqual({ id: "contemporary-warm-luxury", label: "Contemporary Warm Luxury", imageSrc: "/concepts/contemporary-warm-luxury.png" });
+  });
+
+  test("saves the full Step 4 design brief while pricing uses only compatible values", async () => {
+    const { dependencies: deps } = dependencies();
+    const captured = vi.fn(deps.repository.submitOnce);
+    deps.repository.submitOnce = captured;
+    const stepFourConfiguration = {
+      ...configuration,
+      materialSelections: { ...DEFAULT_MATERIAL_SELECTIONS, roof: "metal-roof" },
+      materialQualityId: "bespoke",
+      materialLevel: "signature",
+      specialFeatures: ["pool", "internal-garden"],
+    };
+
+    await submitLead({ ...validInput, configuration: stepFourConfiguration }, deps);
+
+    const saved = captured.mock.calls[0]?.[0] as unknown as {
+      configuration: Record<string, unknown>;
+      calculationSnapshot: {
+        configuration: Record<string, unknown>;
+        pricingConfiguration: Record<string, unknown>;
+      };
+    };
+    expect(saved.configuration).toMatchObject({
+      materialSelections: { roof: "metal-roof" },
+      materialQualityId: "bespoke",
+      materialLevel: "signature",
+      specialFeatures: ["pool", "internal-garden"],
+    });
+    expect(saved.configuration).not.toHaveProperty("privateNotes");
+    expect(saved.calculationSnapshot.configuration).toEqual(saved.configuration);
+    expect(saved.calculationSnapshot.pricingConfiguration).toMatchObject({
+      materialLevel: "signature",
+      specialFeatures: ["pool"],
+    });
+    expect(saved.calculationSnapshot.pricingConfiguration).not.toHaveProperty("materialSelections");
+    expect(saved.calculationSnapshot.pricingConfiguration).not.toHaveProperty("materialQualityId");
   });
 
   test("allows the same contact to create another project with a different idempotency key", async () => {

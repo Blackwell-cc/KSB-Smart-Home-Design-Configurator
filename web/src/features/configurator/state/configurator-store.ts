@@ -4,6 +4,7 @@ import {
   createDefaultConfiguration,
   type HouseConfiguration,
 } from "../domain/configuration";
+import { materialLevelForQuality, materialQualityForLevel } from "../domain/material-catalog";
 import type { DraftLoadResult, DraftStorage } from "./draft-storage";
 
 export const CONFIGURATOR_DRAFT_DEBOUNCE_MS = 300;
@@ -90,9 +91,14 @@ export function createConfiguratorStore(
         scheduleDraftSave();
       },
       updateConfiguration(patch) {
+        const synchronizedPatch = patch.materialQualityId !== undefined
+          ? { ...patch, materialLevel: materialLevelForQuality(patch.materialQualityId) }
+          : patch.materialLevel !== undefined
+            ? { ...patch, materialQualityId: materialQualityForLevel(patch.materialLevel) }
+            : patch;
         const configuration = HouseConfigurationSchema.parse({
           ...get().configuration,
-          ...patch,
+          ...synchronizedPatch,
         });
         set({ configuration });
         scheduleDraftSave();

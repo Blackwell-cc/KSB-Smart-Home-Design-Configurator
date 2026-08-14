@@ -4,6 +4,7 @@ import {
   MATERIAL_CATALOG,
   MATERIAL_QUALITY_IDS,
   SPECIAL_FEATURE_CATALOG,
+  materialLevelForQuality,
   type MaterialCategoryId,
   type MaterialSelections,
   type SpecialFeatureId,
@@ -42,7 +43,7 @@ function hasUniqueValues(values: readonly string[]): boolean {
   return new Set(values).size === values.length;
 }
 
-export const HouseConfigurationSchema = z
+const HouseConfigurationObjectSchema = z
   .object({
     schemaVersion: z.literal(1),
     projectType: z.literal("new-house"),
@@ -75,14 +76,42 @@ export const HouseConfigurationSchema = z
       }),
     privateNotes: z.string().max(1000),
   })
-  .strict()
-  .superRefine((configuration, context) => {
-    if (configuration.targetBudget && configuration.targetBudget.min > configuration.targetBudget.max) {
-      context.addIssue({ code: "custom", path: ["targetBudget", "max"], message: "งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น" });
-    }
-  });
+  .strict();
+
+type ConfigurationInvariantShape = Pick<
+  z.infer<typeof HouseConfigurationObjectSchema>,
+  "targetBudget" | "materialQualityId" | "materialLevel"
+>;
+
+function enforceConfigurationInvariants(
+  configuration: ConfigurationInvariantShape,
+  context: z.RefinementCtx,
+) {
+  if (configuration.targetBudget && configuration.targetBudget.min > configuration.targetBudget.max) {
+    context.addIssue({ code: "custom", path: ["targetBudget", "max"], message: "งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น" });
+  }
+  if (configuration.materialLevel !== materialLevelForQuality(configuration.materialQualityId)) {
+    context.addIssue({ code: "custom", path: ["materialLevel"], message: "ระดับวัสดุสำหรับคำนวณต้องสอดคล้องกับระดับคุณภาพวัสดุ" });
+  }
+}
+
+export const HouseConfigurationSchema = HouseConfigurationObjectSchema
+  .superRefine(enforceConfigurationInvariants);
+
+export const DesignBriefConfigurationSchema = HouseConfigurationObjectSchema
+  .omit({ privateNotes: true })
+  .superRefine(enforceConfigurationInvariants);
 
 export type HouseConfiguration = z.infer<typeof HouseConfigurationSchema>;
+export type DesignBriefConfiguration = z.infer<typeof DesignBriefConfigurationSchema>;
+
+export function projectDesignBriefConfiguration(
+  configuration: HouseConfiguration,
+): DesignBriefConfiguration {
+  const designBrief: Partial<HouseConfiguration> = { ...configuration };
+  delete designBrief.privateNotes;
+  return DesignBriefConfigurationSchema.parse(designBrief);
+}
 
 export function createDefaultConfiguration(): HouseConfiguration {
   return {

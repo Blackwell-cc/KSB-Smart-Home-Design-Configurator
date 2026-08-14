@@ -51,6 +51,8 @@ test("does not redisplay optional metrics at the narrow mobile breakpoint", () =
 test("scopes Step 4 to a 44/56 viewport with one divider and fixed controls", () => {
   expect(stylesheet).toMatch(/\.page\[data-step="materials"\]\s*\{[^}]*height:\s*100svh;[^}]*display:\s*grid;[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\);[^}]*overflow:\s*hidden;/);
   expect(stylesheet).toMatch(/\.shell\[data-step="materials"\]\s*\{[^}]*height:\s*100%;[^}]*min-height:\s*0;[^}]*grid-template-columns:\s*minmax\(0, 44fr\) minmax\(0, 56fr\);[^}]*gap:\s*0;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="materials"\]\s*\{[^}]*grid-template-areas:\s*"form preview"\s*"actions preview";[^}]*grid-template-rows:\s*minmax\(0, 1fr\) auto;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="materials"\]\s*>\s*\.actions\s*\{[^}]*grid-area:\s*actions;/);
   expect(materialSelectorStylesheet).toMatch(/\.scrollArea\s*\{[^}]*overflow-y:\s*auto;/);
   expect(materialSelectorStylesheet).toMatch(/\.qualityFieldset\s*\{[^}]*flex-shrink:\s*0;/);
   expect(materialSelectorStylesheet).not.toMatch(/\.section\s*\+\s*\.section[^{]*\{[^}]*margin-top:\s*24px;/);
@@ -63,5 +65,6 @@ test("scopes Step 4 to a 44/56 viewport with one divider and fixed controls", ()
 test("restores Step 4 document flow and two-column choices on compact viewports", () => {
   expect(stylesheet).toMatch(/@media \(max-width:\s*1199px\)[\s\S]*?\.page\[data-step="materials"\]\s*\{[^}]*height:\s*auto;[^}]*overflow:\s*visible;/);
   expect(stylesheet).toMatch(/@media \(max-width:\s*1199px\)[\s\S]*?\.shell\[data-step="materials"\]\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*overflow:\s*visible;/);
+  expect(stylesheet).toMatch(/@media \(max-width:\s*1199px\)[\s\S]*?\.shell\[data-step="materials"\]\s*\{[^}]*grid-template-areas:\s*"form"\s*"preview"\s*"actions";/);
   expect(materialSelectorStylesheet).toMatch(/@media \(max-width:\s*1199px\)[\s\S]*?\.optionGrid,[\s\S]*?\.featureGrid\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\);/);
 });

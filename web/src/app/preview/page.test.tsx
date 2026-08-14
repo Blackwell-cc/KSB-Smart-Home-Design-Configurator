@@ -36,6 +36,13 @@ function saveValidDraft() {
       provinceCode: "10",
       district: "เขตทดสอบ",
       targetBudget: { min: 5_000_000, max: 8_000_000 },
+      materialSelections: {
+        ...createDefaultConfiguration().materialSelections,
+        roof: "metal-roof",
+      },
+      materialQualityId: "bespoke",
+      materialLevel: "signature",
+      specialFeatures: ["pool", "internal-garden"],
       privateNotes: "ข้อความส่วนตัวที่ห้ามส่ง",
     },
   }));
@@ -64,6 +71,43 @@ test("restores a validated anonymous draft and requests its server preview", asy
 
   await userEvent.setup().click(screen.getByRole("button", { name: "กลับไปแก้ไขข้อมูลบ้าน" }));
   expect(push).toHaveBeenCalledWith("/configurator");
+});
+
+test("keeps the full PII-safe design brief for lead submission after pricing projection", async () => {
+  saveValidDraft();
+  const fetchMock = vi.mocked(fetch);
+  fetchMock
+    .mockResolvedValueOnce(new Response(JSON.stringify({ preview }), { status: 200 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({
+      leadId: "lead",
+      projectId: "project",
+      reportUrl: "/report/access#project=project&token=token",
+    }), { status: 201 }));
+  const user = userEvent.setup();
+  render(<PreviewPage />);
+
+  await screen.findByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" });
+  await user.click(screen.getByRole("button", { name: "รับสรุปโครงการฉบับเต็ม" }));
+  await user.selectOptions(screen.getByLabelText("ช่องทางติดต่อที่ต้องการ"), "email");
+  await user.type(screen.getByLabelText("ชื่อ"), "ผู้ทดสอบ");
+  await user.type(screen.getByLabelText("อีเมล"), "owner@example.test");
+  await user.click(screen.getByLabelText(/ยินยอม/));
+  await user.click(screen.getByRole("button", { name: "ส่ง Project Report ฉบับเต็มให้ฉัน" }));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+  const estimateBody = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as Record<string, unknown>;
+  const leadBody = JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string) as {
+    configuration: Record<string, unknown>;
+  };
+  expect(estimateBody).toMatchObject({ materialLevel: "signature", specialFeatures: ["pool"] });
+  expect(estimateBody).not.toHaveProperty("materialSelections");
+  expect(leadBody.configuration).toMatchObject({
+    materialSelections: { roof: "metal-roof" },
+    materialQualityId: "bespoke",
+    materialLevel: "signature",
+    specialFeatures: ["pool", "internal-garden"],
+  });
+  expect(leadBody.configuration).not.toHaveProperty("privateNotes");
 });
 
 test("rejects a preview response that omits either separated estimate range", async () => {

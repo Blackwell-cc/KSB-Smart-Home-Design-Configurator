@@ -154,6 +154,10 @@ export function materialLevelForQuality(quality: MaterialQualityId): "select" | 
   return quality === "standard" ? "select" : quality === "bespoke" ? "signature" : quality;
 }
 
+export function materialQualityForLevel(level: "select" | "premium" | "signature"): Exclude<MaterialQualityId, "bespoke"> {
+  return level === "select" ? "standard" : level;
+}
+
 export function isPricingSpecialFeature(value: string): value is PricingSpecialFeature {
   return (PRICING_SPECIAL_FEATURE_CODES as readonly string[]).includes(value);
 }

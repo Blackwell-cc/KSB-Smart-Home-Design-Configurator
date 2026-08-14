@@ -73,7 +73,7 @@ export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeatur
 
         <fieldset className={styles.section}>
           <legend>ส่วนพิเศษที่อยากพิจารณา</legend>
-          <p className={styles.impact}>มีผลต่อ allowance และหมวดงบประมาณ</p>
+          <p className={styles.impact}>รายการที่เลือกจะบันทึกเป็นความต้องการในการออกแบบ โดยเฉพาะรายการที่ยังไม่มีเกณฑ์ราคา</p>
           <div className={styles.featureGrid}>
             {SPECIAL_FEATURE_CATALOG.map((feature) => {
               const selected = configuration.specialFeatures.includes(feature.id);
@@ -96,6 +96,7 @@ export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeatur
 
       <fieldset className={`${styles.section} ${styles.qualityFieldset}`}>
         <legend>ระดับคุณภาพวัสดุ</legend>
+        <p className={styles.impact}>ระดับคุณภาพวัสดุมีผลต่อคุณภาพโดยรวมและงบประมาณของโครงการ</p>
         <div className={styles.qualityGrid} role="radiogroup" aria-label="ระดับคุณภาพวัสดุ">
           {MATERIAL_QUALITY_CATALOG.map((quality) => {
             const selected = configuration.materialQualityId === quality.id;

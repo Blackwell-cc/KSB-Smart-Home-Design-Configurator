@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { EstimateRequestSchema } from "@/features/pricing/application/estimate-request";
+import { DesignBriefConfigurationSchema } from "@/features/configurator/domain/configuration";
 
 const shared = {
   configurationId: z.uuid(),
   idempotencyKey: z.uuid(),
-  configuration: EstimateRequestSchema,
+  configuration: DesignBriefConfigurationSchema,
   name: z.string().trim().min(1).max(120),
   consentAccepted: z.literal(true),
   consentVersion: z.string().trim().min(1).max(120),

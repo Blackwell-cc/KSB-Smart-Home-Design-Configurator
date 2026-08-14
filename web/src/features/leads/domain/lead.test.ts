@@ -1,7 +1,13 @@
 import { expect, test } from "vitest";
+import { createDefaultConfiguration, projectDesignBriefConfiguration } from "@/features/configurator/domain/configuration";
 import { LeadSubmissionSchema } from "./lead";
 
-const configuration = { styleId: "contemporary-warm-luxury", residents: 3, floors: 2, bedrooms: 3, bathrooms: 3, parkingSpaces: 2, functions: { office: false, elderlyRoom: false, thaiKitchen: false, multipurposeRoom: false }, usableAreaOverrideM2: null, provinceCode: "10", siteAccess: "normal", materialLevel: "premium", specialFeatures: [] };
+const configuration = projectDesignBriefConfiguration({
+  ...createDefaultConfiguration(),
+  styleId: "contemporary-warm-luxury",
+  residents: 3,
+  provinceCode: "10",
+});
 const base = { configurationId: "11111111-1111-4111-8111-111111111111", idempotencyKey: "22222222-2222-4222-8222-222222222222", configuration, name: " Name ", consentAccepted: true, consentVersion: "project-contact-v1" };
 
 test("accepts one selected contact field and trims name", () => {

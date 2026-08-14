@@ -1,7 +1,8 @@
 import { expect, test, vi } from "vitest";
+import { createDefaultConfiguration, projectDesignBriefConfiguration } from "@/features/configurator/domain/configuration";
 import { createLeadPostHandler } from "./route";
 
-const validBody = { configurationId: "11111111-1111-4111-8111-111111111111", idempotencyKey: "22222222-2222-4222-8222-222222222222", configuration: { styleId: "contemporary-warm-luxury", residents: 3, floors: 2, bedrooms: 3, bathrooms: 3, parkingSpaces: 2, functions: { office: false, elderlyRoom: false, thaiKitchen: false, multipurposeRoom: false }, usableAreaOverrideM2: null, provinceCode: "10", siteAccess: "normal", materialLevel: "premium", specialFeatures: [] }, preferredContactMethod: "email", name: "ผู้ทดสอบ", email: "owner@example.test", consentAccepted: true, consentVersion: "project-contact-v1" };
+const validBody = { configurationId: "11111111-1111-4111-8111-111111111111", idempotencyKey: "22222222-2222-4222-8222-222222222222", configuration: projectDesignBriefConfiguration({ ...createDefaultConfiguration(), styleId: "contemporary-warm-luxury", provinceCode: "10" }), preferredContactMethod: "email", name: "ผู้ทดสอบ", email: "owner@example.test", consentAccepted: true, consentVersion: "project-contact-v1" };
 
 test("rejects invalid content type and never reaches application services", async () => {
   const submit = vi.fn(); const handler = createLeadPostHandler({ submit });

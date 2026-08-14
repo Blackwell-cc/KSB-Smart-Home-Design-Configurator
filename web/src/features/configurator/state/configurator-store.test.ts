@@ -202,6 +202,25 @@ describe("ConfiguratorStore", () => {
     expect(drafts.save).not.toHaveBeenCalled();
   });
 
+  test("normalizes partial material updates before state can persist a mismatch", () => {
+    const store = createConfiguratorStore(createDraftStorageSpy());
+
+    store.getState().updateConfiguration({ materialLevel: "signature" });
+    expect(store.getState().configuration).toMatchObject({
+      materialQualityId: "signature",
+      materialLevel: "signature",
+    });
+
+    store.getState().updateConfiguration({
+      materialQualityId: "bespoke",
+      materialLevel: "select",
+    });
+    expect(store.getState().configuration).toMatchObject({
+      materialQualityId: "bespoke",
+      materialLevel: "signature",
+    });
+  });
+
   test("clears the pending and saved draft only after private project creation is confirmed", () => {
     vi.useFakeTimers();
     const drafts = createDraftStorageSpy();

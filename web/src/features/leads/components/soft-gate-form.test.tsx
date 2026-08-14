@@ -1,9 +1,20 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
+import { createDefaultConfiguration, projectDesignBriefConfiguration } from "@/features/configurator/domain/configuration";
+import { DEFAULT_MATERIAL_SELECTIONS } from "@/features/configurator/domain/material-catalog";
 import { getOrCreateSubmissionIntent, SoftGateForm } from "./soft-gate-form";
 
-const configuration = { styleId: "contemporary-warm-luxury", residents: 3, floors: 2, bedrooms: 3, bathrooms: 3, parkingSpaces: 2, functions: { office: false, elderlyRoom: false, thaiKitchen: false, multipurposeRoom: false }, usableAreaOverrideM2: null, provinceCode: "10", siteAccess: "normal", materialLevel: "premium", specialFeatures: [] } as const;
+const configuration = projectDesignBriefConfiguration({
+  ...createDefaultConfiguration(),
+  styleId: "contemporary-warm-luxury",
+  provinceCode: "10",
+  materialSelections: { ...DEFAULT_MATERIAL_SELECTIONS, roof: "metal-roof" },
+  materialQualityId: "bespoke",
+  materialLevel: "signature",
+  specialFeatures: ["pool", "internal-garden"],
+  privateNotes: "ห้ามส่งข้อความส่วนตัวนี้",
+});
 
 test("reveals the value first, changes contact field, submits once, and keeps PII out of web storage", async () => {
   const user = userEvent.setup(); const onSuccess = vi.fn(); const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ leadId: "lead", projectId: "project", reportUrl: "/report/access#project=project&token=token" }), { status: 201 }));
@@ -20,6 +31,13 @@ test("reveals the value first, changes contact field, submits once, and keeps PI
   expect(screen.getByRole("button", { name: /กำลังจัดทำ/ })).toBeDisabled();
   await waitFor(() => expect(onSuccess).toHaveBeenCalledWith("/report/access#project=project&token=token"));
   expect(fetchMock).toHaveBeenCalledTimes(1);
+  const body = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as { configuration: Record<string, unknown> };
+  expect(body.configuration).toMatchObject({
+    materialSelections: { roof: "metal-roof" },
+    materialQualityId: "bespoke",
+    specialFeatures: ["pool", "internal-garden"],
+  });
+  expect(body.configuration).not.toHaveProperty("privateNotes");
   expect(Array.from({ length: sessionStorage.length }, (_value, index) => sessionStorage.getItem(sessionStorage.key(index) ?? "")).join("\n")).not.toContain("owner@example.test");
   expect(JSON.stringify({ ...sessionStorage, ...localStorage })).not.toContain("owner@example.test");
 });

@@ -192,6 +192,14 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
     const firstInvalidStep = state.configuration.styleId === null ? 0 : state.configuration.provinceCode === null ? 2 : 0;
     state.setCurrentStep(firstInvalidStep);
   };
+  const navigationActions = state.currentStep > 0 ? <div className={styles.actions}>
+    <Button onClick={moveBack} variant="ghost">ย้อนกลับ</Button>
+    {state.currentStep === CONFIGURATOR_STEPS.length - 1 ? (
+      <Button onClick={openPreview}>ดู Preview</Button>
+    ) : (
+      <Button disabled={!isValid} onClick={moveNext}>ถัดไป</Button>
+    )}
+  </div> : null;
 
   return (
     <main className={styles.page} data-responsive-layout="split-preview" data-step={CONFIGURATOR_STEPS[state.currentStep].id} data-testid="configurator-layout">
@@ -208,14 +216,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             {state.currentStep === 3 ? <MaterialFeaturesStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
             {state.currentStep === 4 ? <ReviewStep configuration={state.configuration} onEdit={(step) => state.setCurrentStep(step)} /> : null}
           </div>
-          {state.currentStep > 0 ? <div className={styles.actions}>
-            {state.currentStep > 0 ? <Button onClick={moveBack} variant="ghost">ย้อนกลับ</Button> : <span />}
-            {state.currentStep === CONFIGURATOR_STEPS.length - 1 ? (
-              <Button onClick={openPreview}>ดู Preview</Button>
-            ) : (
-              <Button disabled={!isValid} onClick={moveNext}>ถัดไป</Button>
-            )}
-          </div> : null}
+          {state.currentStep === 3 ? null : navigationActions}
         </section>
         {state.currentStep === 0 ? (
           <StylePreviewStage
@@ -257,6 +258,7 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             <span className={styles.previewDisclaimer} data-preview-disclaimer="always-visible">ภาพอ้างอิงทิศทางการออกแบบ ไม่ใช่แบบก่อสร้าง</span>
           </div>
         </aside>}
+        {state.currentStep === 3 ? navigationActions : null}
       </div>
     </main>
   );

@@ -1,8 +1,11 @@
 import { describe, expect, test } from "vitest";
 import {
+  DesignBriefConfigurationSchema,
   HouseConfigurationSchema,
   SPECIAL_FEATURE_CODES,
   createDefaultConfiguration,
+  projectDesignBriefConfiguration,
+  type HouseConfiguration,
 } from "./configuration";
 import { THAI_PROVINCES, THAI_PROVINCE_CODES } from "./provinces";
 import { DEFAULT_MATERIAL_SELECTIONS, SPECIAL_FEATURE_CATALOG } from "./material-catalog";
@@ -163,5 +166,44 @@ describe("HouseConfigurationSchema", () => {
         targetBudget: { min: 1_000_000, max: 2_000_000, phone: "0919914592" },
       }).success,
     ).toBe(false);
+  });
+  test("rejects material quality and legacy pricing levels that disagree", () => {
+    const defaults = createDefaultConfiguration();
+
+    expect(HouseConfigurationSchema.safeParse({
+      ...defaults,
+      materialQualityId: "bespoke",
+      materialLevel: "select",
+    }).success).toBe(false);
+    expect(HouseConfigurationSchema.safeParse({
+      ...defaults,
+      materialQualityId: "standard",
+      materialLevel: "signature",
+    }).success).toBe(false);
+  });
+
+  test("projects a PII-safe full design brief without losing Step 4 identity", () => {
+    const configuration: HouseConfiguration = {
+      ...createDefaultConfiguration(),
+      materialSelections: {
+        ...DEFAULT_MATERIAL_SELECTIONS,
+        roof: "metal-roof",
+      },
+      materialQualityId: "bespoke",
+      materialLevel: "signature",
+      specialFeatures: ["pool", "internal-garden"],
+      privateNotes: "ห้ามส่งข้อความส่วนตัวนี้",
+    };
+
+    const snapshot = projectDesignBriefConfiguration(configuration);
+
+    expect(DesignBriefConfigurationSchema.parse(snapshot)).toEqual(snapshot);
+    expect(snapshot).toMatchObject({
+      materialSelections: { roof: "metal-roof" },
+      materialQualityId: "bespoke",
+      materialLevel: "signature",
+      specialFeatures: ["pool", "internal-garden"],
+    });
+    expect(snapshot).not.toHaveProperty("privateNotes");
   });
 });

@@ -406,6 +406,25 @@ test("selects materials, multiple features, and bespoke quality", async () => {
   });
 });
 
+test("orders compact Step 4 as selector, quality, preview, summary, then one action pair", () => {
+  const { store } = renderConfigurator();
+  act(() => store.getState().setCurrentStep(3));
+
+  const selector = screen.getByTestId("material-scroll-area");
+  const quality = screen.getByRole("radiogroup", { name: "ระดับคุณภาพวัสดุ" });
+  const preview = screen.getByTestId("main-house-preview-placeholder");
+  const summary = screen.getByRole("heading", { name: "สรุปวัสดุที่เลือก" });
+  const back = screen.getByRole("button", { name: "ย้อนกลับ" });
+  const next = screen.getByRole("button", { name: "ถัดไป" });
+
+  expect(selector.compareDocumentPosition(quality) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(quality.compareDocumentPosition(preview) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(preview.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(summary.compareDocumentPosition(back) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(back.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(screen.getAllByRole("button", { name: "ย้อนกลับ" })).toHaveLength(1);
+  expect(screen.getAllByRole("button", { name: "ถัดไป" })).toHaveLength(1);
+});
 test("keeps the mobile vertical-list contract and the mockup disclaimer visible", () => {
   renderConfigurator();
 
@@ -428,7 +447,7 @@ test("updates the preview tone contract when the material level changes", async 
   expect(within(preview).getByRole("img", { name: /Contemporary Warm Luxury/i }).parentElement).toHaveAttribute("data-preview-tone", "signature");
 });
 
-test("explains how function and special-feature choices affect the planning brief without showing prices", async () => {
+test("explains function and mixed-pricing Step 4 choices without showing prices", async () => {
   const { store } = renderConfigurator();
 
   await act(async () => {
@@ -439,7 +458,9 @@ test("explains how function and special-feature choices affect the planning brie
   await act(async () => {
     store.getState().setCurrentStep(3);
   });
-  expect(screen.getByText("มีผลต่อ allowance และหมวดงบประมาณ")).toBeInTheDocument();
+  expect(screen.queryByText("มีผลต่อ allowance และหมวดงบประมาณ")).not.toBeInTheDocument();
+  expect(screen.getByText("รายการที่เลือกจะบันทึกเป็นความต้องการในการออกแบบ โดยเฉพาะรายการที่ยังไม่มีเกณฑ์ราคา")).toBeInTheDocument();
+  expect(screen.getByText("ระดับคุณภาพวัสดุมีผลต่อคุณภาพโดยรวมและงบประมาณของโครงการ")).toBeInTheDocument();
 });
 
 test("keeps every special-feature placeholder empty", () => {
