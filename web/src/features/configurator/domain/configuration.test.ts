@@ -16,6 +16,35 @@ describe("HouseConfigurationSchema", () => {
     expect(value.materialLevel).toBe("premium");
   });
 
+  test("creates independent material-selection defaults", () => {
+    const first = createDefaultConfiguration();
+    const second = createDefaultConfiguration();
+
+    first.materialSelections.roof = "metal-roof";
+
+    expect(second.materialSelections).toEqual(DEFAULT_MATERIAL_SELECTIONS);
+  });
+
+  test("rejects an unknown material option", () => {
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...createDefaultConfiguration(),
+        materialSelections: { ...DEFAULT_MATERIAL_SELECTIONS, roof: "unknown-roof" },
+      }).success,
+    ).toBe(false);
+  });
+
+  test("rejects material selections missing a category", () => {
+    const { lighting: _lighting, ...materialSelections } = DEFAULT_MATERIAL_SELECTIONS;
+
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...createDefaultConfiguration(),
+        materialSelections,
+      }).success,
+    ).toBe(false);
+  });
+
   test("accepts the default new-house configuration and rejects renovation", () => {
     expect(HouseConfigurationSchema.safeParse(createDefaultConfiguration()).success).toBe(true);
     expect(

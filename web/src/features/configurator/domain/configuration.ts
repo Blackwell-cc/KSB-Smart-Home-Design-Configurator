@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   DEFAULT_MATERIAL_SELECTIONS,
-  MATERIAL_CATEGORY_IDS,
+  MATERIAL_CATALOG,
   MATERIAL_QUALITY_IDS,
   SPECIAL_FEATURE_CATALOG,
   type MaterialSelections,
@@ -14,10 +14,16 @@ export const SPECIAL_FEATURE_CODES = SPECIAL_FEATURE_CATALOG.map(({ id }) => id)
   ...SpecialFeatureId[],
 ];
 
-const MaterialSelectionsSchema: z.ZodType<MaterialSelections> = z.record(
-  z.enum(MATERIAL_CATEGORY_IDS),
-  z.string(),
-);
+const MaterialSelectionsSchema: z.ZodType<MaterialSelections> = z
+  .object(
+    Object.fromEntries(
+      MATERIAL_CATALOG.map((category) => [
+        category.id,
+        z.enum(category.options.map(({ id }) => id) as [string, ...string[]]),
+      ]),
+    ) as Record<keyof MaterialSelections, z.ZodType<string>>,
+  )
+  .strict();
 
 function hasUniqueValues(values: readonly string[]): boolean {
   return new Set(values).size === values.length;
@@ -86,7 +92,7 @@ export function createDefaultConfiguration(): HouseConfiguration {
     district: null,
     siteAccess: "normal",
     targetBudget: null,
-    materialSelections: DEFAULT_MATERIAL_SELECTIONS,
+    materialSelections: { ...DEFAULT_MATERIAL_SELECTIONS },
     materialQualityId: "premium",
     materialLevel: "premium",
     specialFeatures: [],
