@@ -37,6 +37,90 @@ describe("DraftStorage", () => {
     });
   });
 
+  test("migrates an existing v1 draft that predates requirement-only choices", () => {
+    const legacyConfiguration = { ...createDefaultConfiguration() } as Record<string, unknown>;
+    delete legacyConfiguration.additionalRequirements;
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 1,
+        configuration: legacyConfiguration,
+      }),
+    });
+
+    expect(createDraftStorage(storage).load()).toMatchObject({
+      status: "valid",
+      draft: { configuration: { additionalRequirements: [] } },
+    });
+  });
+
+  test("migrates legacy signature drafts without losing features", () => {
+    const legacyConfiguration = { ...createDefaultConfiguration() } as Record<string, unknown>;
+    delete legacyConfiguration.materialSelections;
+    delete legacyConfiguration.materialQualityId;
+    legacyConfiguration.materialLevel = "signature";
+    legacyConfiguration.specialFeatures = ["pool"];
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 3,
+        configuration: legacyConfiguration,
+      }),
+    });
+
+    const result = createDraftStorage(storage).load();
+
+    expect(result).toMatchObject({
+      status: "valid",
+      draft: { configuration: { materialQualityId: "signature", specialFeatures: ["pool"] } },
+    });
+  });
+
+  test("migrates legacy budget data without losing a custom range", () => {
+    const legacyConfiguration = {
+      ...createDefaultConfiguration(),
+      targetBudget: { min: 5_000_000, max: 7_000_000 },
+    } as Record<string, unknown>;
+    delete legacyConfiguration.budgetRangeId;
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 2,
+        configuration: legacyConfiguration,
+      }),
+    });
+
+    expect(createDraftStorage(storage).load()).toMatchObject({
+      status: "valid",
+      draft: {
+        configuration: {
+          budgetRangeId: "unspecified",
+          targetBudget: { min: 5_000_000, max: 7_000_000 },
+        },
+      },
+    });
+  });
+
+  test("recognizes a catalog range in a legacy budget draft", () => {
+    const legacyConfiguration = {
+      ...createDefaultConfiguration(),
+      targetBudget: { min: 20_000_000, max: 40_000_000 },
+    } as Record<string, unknown>;
+    delete legacyConfiguration.budgetRangeId;
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 2,
+        configuration: legacyConfiguration,
+      }),
+    });
+
+    expect(createDraftStorage(storage).load()).toMatchObject({
+      status: "valid",
+      draft: { configuration: { budgetRangeId: "20m_40m" } },
+    });
+  });
+
   test("treats malformed, incompatible, and contact-bearing saved data as incompatible", () => {
     for (const raw of [
       "{not-json",

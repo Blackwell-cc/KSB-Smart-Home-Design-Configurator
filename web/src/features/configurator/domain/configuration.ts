@@ -1,15 +1,39 @@
 import { z } from "zod";
+import { BUDGET_RANGE_IDS } from "./budget-ranges";
+import {
+  DEFAULT_MATERIAL_SELECTIONS,
+  MATERIAL_CATEGORY_IDS,
+  MATERIAL_QUALITY_IDS,
+  SPECIAL_FEATURE_CATALOG,
+  type MaterialSelections,
+  type SpecialFeatureId,
+} from "./material-catalog";
 import { THAI_PROVINCE_CODES } from "./provinces";
 
-export const SPECIAL_FEATURE_CODES = [
-  "pool",
-  "lift",
-  "smart-home",
-  "solar",
-  "ev-charger",
-  "double-volume",
-  "large-glazing",
+export const SPECIAL_FEATURE_CODES = SPECIAL_FEATURE_CATALOG.map(({ id }) => id) as [
+  SpecialFeatureId,
+  ...SpecialFeatureId[],
+];
+
+export const ADDITIONAL_REQUIREMENT_CODES = [
+  "prayer-room",
+  "laundry",
+  "home-theater",
+  "fitness",
+  "pantry",
+  "pet-area",
+  "maid-room",
+  "separate-living",
 ] as const;
+
+const MaterialSelectionsSchema: z.ZodType<MaterialSelections> = z.record(
+  z.enum(MATERIAL_CATEGORY_IDS),
+  z.string(),
+);
+
+function hasUniqueValues(values: readonly string[]): boolean {
+  return new Set(values).size === values.length;
+}
 
 export const HouseConfigurationSchema = z
   .object({
@@ -29,15 +53,24 @@ export const HouseConfigurationSchema = z
         multipurposeRoom: z.boolean(),
       })
       .strict(),
+    additionalRequirements: z
+      .array(z.enum(ADDITIONAL_REQUIREMENT_CODES))
+      .refine(hasUniqueValues, {
+        message: "เลือกรายการความต้องการซ้ำไม่ได้",
+      })
+      .default([]),
     usableAreaOverrideM2: z.number().min(60).max(1500).nullable(),
     provinceCode: z.enum(THAI_PROVINCE_CODES).nullable(),
     district: z.string().max(100).nullable(),
     siteAccess: z.enum(["normal", "restricted", "very-restricted"]),
+    budgetRangeId: z.enum(BUDGET_RANGE_IDS).default("unspecified"),
     targetBudget: z.object({ min: z.number().positive(), max: z.number().positive() }).strict().nullable(),
+    materialSelections: MaterialSelectionsSchema.default(DEFAULT_MATERIAL_SELECTIONS),
+    materialQualityId: z.enum(MATERIAL_QUALITY_IDS).default("premium"),
     materialLevel: z.enum(["select", "premium", "signature"]),
     specialFeatures: z
       .array(z.enum(SPECIAL_FEATURE_CODES))
-      .refine((features) => new Set(features).size === features.length, {
+      .refine(hasUniqueValues, {
         message: "เลือกรายการพิเศษซ้ำไม่ได้",
       }),
     privateNotes: z.string().max(1000),
@@ -67,11 +100,15 @@ export function createDefaultConfiguration(): HouseConfiguration {
       thaiKitchen: false,
       multipurposeRoom: false,
     },
+    additionalRequirements: [],
     usableAreaOverrideM2: null,
     provinceCode: null,
     district: null,
     siteAccess: "normal",
+    budgetRangeId: "unspecified",
     targetBudget: null,
+    materialSelections: DEFAULT_MATERIAL_SELECTIONS,
+    materialQualityId: "premium",
     materialLevel: "premium",
     specialFeatures: [],
     privateNotes: "",

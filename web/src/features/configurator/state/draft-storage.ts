@@ -3,6 +3,8 @@ import {
   HouseConfigurationSchema,
   type HouseConfiguration,
 } from "../domain/configuration";
+import { budgetRangeIdForTarget, type TargetBudget } from "../domain/budget-ranges";
+import { DEFAULT_MATERIAL_SELECTIONS } from "../domain/material-catalog";
 
 const STORAGE_KEY = "ksb-configurator-draft-v1";
 
@@ -36,6 +38,25 @@ export type DraftStorage = {
 
 type KeyValueStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
+function migrateLegacyConfiguration(value: unknown): unknown {
+  if (!value || typeof value !== "object") return value;
+  const envelope = value as Record<string, unknown>;
+  if (!envelope.configuration || typeof envelope.configuration !== "object") return value;
+  const configuration = envelope.configuration as Record<string, unknown>;
+  return {
+    ...envelope,
+    configuration: {
+      ...configuration,
+      budgetRangeId: configuration.budgetRangeId ?? budgetRangeIdForTarget(configuration.targetBudget as TargetBudget),
+      materialSelections: configuration.materialSelections ?? DEFAULT_MATERIAL_SELECTIONS,
+      materialQualityId: configuration.materialQualityId
+        ?? (configuration.materialLevel === "select"
+          ? "standard"
+          : configuration.materialLevel === "signature" ? "signature" : "premium"),
+    },
+  };
+}
+
 export function createDraftStorage(storage: KeyValueStorage): DraftStorage {
   return {
     load(): DraftLoadResult {
@@ -48,7 +69,7 @@ export function createDraftStorage(storage: KeyValueStorage): DraftStorage {
       if (raw === null) return { status: "none" };
 
       try {
-        const parsed = DraftEnvelopeSchema.safeParse(JSON.parse(raw));
+        const parsed = DraftEnvelopeSchema.safeParse(migrateLegacyConfiguration(JSON.parse(raw)));
         return parsed.success
           ? { status: "valid", draft: parsed.data }
           : { status: "incompatible" };
