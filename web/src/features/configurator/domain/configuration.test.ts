@@ -1,12 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
-  ADDITIONAL_REQUIREMENT_CODES,
   HouseConfigurationSchema,
   SPECIAL_FEATURE_CODES,
   createDefaultConfiguration,
 } from "./configuration";
 import { THAI_PROVINCES, THAI_PROVINCE_CODES } from "./provinces";
-import { BUDGET_RANGE_IDS } from "./budget-ranges";
 import { DEFAULT_MATERIAL_SELECTIONS, SPECIAL_FEATURE_CATALOG } from "./material-catalog";
 
 describe("HouseConfigurationSchema", () => {
@@ -16,15 +14,6 @@ describe("HouseConfigurationSchema", () => {
     expect(value.materialSelections).toEqual(DEFAULT_MATERIAL_SELECTIONS);
     expect(value.materialQualityId).toBe("premium");
     expect(value.materialLevel).toBe("premium");
-  });
-
-  test("uses an unspecified budget range by default and validates stable range identifiers", () => {
-    const defaults = createDefaultConfiguration();
-    expect(defaults.budgetRangeId).toBe("unspecified");
-    for (const budgetRangeId of BUDGET_RANGE_IDS) {
-      expect(HouseConfigurationSchema.safeParse({ ...defaults, budgetRangeId }).success).toBe(true);
-    }
-    expect(HouseConfigurationSchema.safeParse({ ...defaults, budgetRangeId: "custom" }).success).toBe(false);
   });
 
   test("accepts the default new-house configuration and rejects renovation", () => {
@@ -86,38 +75,6 @@ describe("HouseConfigurationSchema", () => {
         specialFeatures: SPECIAL_FEATURE_CODES,
       }).success,
     ).toBe(true);
-  });
-
-  test("stores requirement-only Step 2 choices separately from area-calculated functions", () => {
-    expect(ADDITIONAL_REQUIREMENT_CODES).toEqual([
-      "prayer-room",
-      "laundry",
-      "home-theater",
-      "fitness",
-      "pantry",
-      "pet-area",
-      "maid-room",
-      "separate-living",
-    ]);
-    expect(createDefaultConfiguration().additionalRequirements).toEqual([]);
-    expect(
-      HouseConfigurationSchema.safeParse({
-        ...createDefaultConfiguration(),
-        additionalRequirements: ADDITIONAL_REQUIREMENT_CODES,
-      }).success,
-    ).toBe(true);
-    expect(
-      HouseConfigurationSchema.safeParse({
-        ...createDefaultConfiguration(),
-        additionalRequirements: ["fitness", "fitness"],
-      }).success,
-    ).toBe(false);
-    expect(
-      HouseConfigurationSchema.safeParse({
-        ...createDefaultConfiguration(),
-        additionalRequirements: ["unknown-requirement"],
-      }).success,
-    ).toBe(false);
   });
 
   test("accepts every Thai province code and rejects values outside the allowlist", () => {

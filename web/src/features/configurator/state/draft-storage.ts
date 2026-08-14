@@ -3,7 +3,6 @@ import {
   HouseConfigurationSchema,
   type HouseConfiguration,
 } from "../domain/configuration";
-import { budgetRangeIdForTarget, type TargetBudget } from "../domain/budget-ranges";
 import { DEFAULT_MATERIAL_SELECTIONS } from "../domain/material-catalog";
 
 const STORAGE_KEY = "ksb-configurator-draft-v1";
@@ -47,7 +46,6 @@ function migrateLegacyConfiguration(value: unknown): unknown {
     ...envelope,
     configuration: {
       ...configuration,
-      budgetRangeId: configuration.budgetRangeId ?? budgetRangeIdForTarget(configuration.targetBudget as TargetBudget),
       materialSelections: configuration.materialSelections ?? DEFAULT_MATERIAL_SELECTIONS,
       materialQualityId: configuration.materialQualityId
         ?? (configuration.materialLevel === "select"
