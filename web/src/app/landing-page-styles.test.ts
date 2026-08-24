@@ -68,22 +68,26 @@ test("fits the desktop homepage to one viewport and centers the logo", () => {
   expect(rule(desktop, ".houseImage")).toContain("display: none");
 });
 
-test("uses a compact glass header over the full-screen house background", () => {
+test("matches the desktop configurator logo frame position and header height", () => {
   const desktop = mediaBlock("(min-width: 1200px)");
   const page = rule(css, ".page");
   const header = rule(css, ".header");
 
   expect(page).toContain('url("/backgrounds/bg-01.png") center / cover no-repeat');
   expect(page).not.toContain("linear-gradient(180deg");
-  expect(header).toContain("min-height: 72px");
+  expect(header).toContain("min-height: 78px");
+  expect(header).toContain("padding: 0 38px");
   expect(header).toContain("background: rgba(9, 9, 8, 0.5)");
   expect(header).toContain("backdrop-filter: blur(16px) saturate(115%)");
-  expect(rule(css, ".brand")).toContain("width: 148px");
-  expect(rule(css, ".brand")).toContain("height: 54px");
+  expect(rule(css, ".brand")).toContain("width: 132px");
+  expect(rule(css, ".brand")).toContain("height: 50px");
   expect(rule(css, ".brandLogo")).toContain("object-position: 50% 54%");
+  const compact = mediaBlock("(max-width: 1023px)");
+  expect(rule(compact, ".brand")).toContain("width: 118px");
+  expect(rule(compact, ".brand")).toContain("height: 44px");
   expect(rule(css, ".headerCta::before")).toContain("width: 1px");
-  expect(rule(desktop, ".page")).toContain("grid-template-rows: 72px minmax(0, 1fr)");
-  expect(rule(desktop, ".header")).toContain("height: 72px");
+  expect(rule(desktop, ".page")).toContain("grid-template-rows: 78px minmax(0, 1fr)");
+  expect(rule(desktop, ".header")).toContain("height: 78px");
 });
 
 test("scopes the primary touch target and visible focus ring", () => {

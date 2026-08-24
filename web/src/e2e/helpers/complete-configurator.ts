@@ -2,7 +2,7 @@ import { expect, type Page } from "@playwright/test";
 
 export const previewFixture = Object.freeze({
   conceptAssetId: "contemporary-warm-luxury",
-  styleLabel: "Contemporary Warm Luxury",
+  styleLabel: "Modern Style",
   floors: 2,
   bedrooms: 3,
   bathrooms: 3,
@@ -32,13 +32,13 @@ export async function selectStyleWithKeyboard(page: Page, style: string) {
 }
 
 export async function completeConfigurator(page: Page) {
-  await selectStyleWithKeyboard(page, "Contemporary Warm Luxury");
+  await selectStyleWithKeyboard(page, "Modern Style");
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await expect(page.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "พื้นที่และฟังก์ชัน", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByLabel("จังหวัด").selectOption("10");
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await page.getByRole("radio", { name: /Premium/ }).click();
+  await page.getByRole("radio", { name: /PREMIUM/i }).click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await page.getByRole("button", { name: "ดู Preview" }).click();
+  await page.getByRole("button", { name: "ไปยังหน้าสรุปค่าใช้จ่าย" }).click();
 }

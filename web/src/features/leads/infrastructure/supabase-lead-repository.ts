@@ -12,7 +12,7 @@ export class SupabaseLeadRepository implements LeadRepository {
       p_price_book_id: input.priceBookId,
       p_snapshot: input.calculationSnapshot, p_idempotency_key: input.idempotencyKey, p_name: input.name,
       p_preferred_contact_method: input.preferredContactMethod, p_phone: input.phone ?? null, p_email: input.email ?? null,
-      p_line_id: input.lineId ?? null, p_consent_version: input.consentVersion, p_token_hash_hex: input.tokenHash,
+      p_line_id: input.lineId ?? null, p_request_purpose: input.requestPurpose, p_consent_version: input.consentVersion, p_token_hash_hex: input.tokenHash,
       p_expires_at: input.expiresAt,
     });
     if (error || !Array.isArray(data) || data.length !== 1) throw new Error("LEAD_SUBMISSION_UNAVAILABLE");

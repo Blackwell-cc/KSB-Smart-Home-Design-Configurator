@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { STYLE_SELECTION_FLOORS } from "@/features/preview/domain/concept-catalog";
 import type { HouseConfiguration } from "../domain/configuration";
 import type { LivePreviewModel } from "../presentation/live-preview";
 import styles from "./configurator-shell.module.css";
@@ -33,7 +34,7 @@ export function StylePreviewStage({ configuration, isValid, livePreview, onNext,
   const specs = livePreview.concept.specs;
   const specItems = [
     { icon: "land" as const, label: "ขนาดที่ดินแนะนำ", value: specs.land },
-    { icon: "floor" as const, label: "จำนวนชั้น", value: specs.floors },
+    { icon: "floor" as const, label: "จำนวนชั้น", value: `${STYLE_SELECTION_FLOORS} ชั้น` },
     { icon: "bed" as const, label: "ห้องนอน", value: specs.bedrooms },
     { icon: "bath" as const, label: "ห้องน้ำ", value: specs.bathrooms },
     { icon: "car" as const, label: "ที่จอดรถ", value: specs.parking },
@@ -56,17 +57,12 @@ export function StylePreviewStage({ configuration, isValid, livePreview, onNext,
           <Image
             alt={`ภาพจำลองบ้านสไตล์ ${livePreview.concept.thaiLabel} (${livePreview.concept.label})`}
             fill
-            key={livePreview.concept.id}
+            key={`${livePreview.concept.id}-${STYLE_SELECTION_FLOORS}`}
             preload
             sizes="(max-width: 899px) 100vw, calc(100vw - 450px)"
             src={livePreview.concept.image}
           />
         </div>
-
-        {/* Future environment overlays use the same 2000×1250 canvas: pool, garden, driveway, courtyard and pavilion. */}
-        <div className={`${styles.reservedZone} ${styles.gardenZone}`}><span>โซนสวน</span><small>GARDEN AREA</small></div>
-        <div className={`${styles.reservedZone} ${styles.poolZone}`}><span>โซนสระว่ายน้ำ</span><small>POOL AREA</small></div>
-        <span aria-hidden="true" className={styles.plotDimension}>32.00 ม.</span>
 
         <section aria-labelledby="style-info-title" className={styles.previewInfoCard}>
           <span className={styles.infoIcon} aria-hidden="true">⌂</span>

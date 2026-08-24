@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import type { FullReportViewModel } from "../application/build-full-report";
 import { ProjectSummaryCard } from "./project-summary-card";
 
-const report: FullReportViewModel = {
+const report = {
   snapshotId: "snapshot-1",
   projectId: "project-1",
   concept: {
@@ -33,7 +33,7 @@ const report: FullReportViewModel = {
   disclaimer: "เป็นกรอบงบประมาณเพื่อใช้วางแผนเบื้องต้น",
   nextStepAdvice: "นัดพูดคุยกับสถาปนิกเพื่อยืนยันรายละเอียดโครงการ",
   budgetComparison: { status: "no-target" },
-};
+} as unknown as FullReportViewModel;
 
 test("renders a self-contained, share-safe project summary card", () => {
   render(<ProjectSummaryCard report={report} />);

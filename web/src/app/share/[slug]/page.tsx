@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
+import { CONCEPT_CATALOG, resolveConceptImage } from "@/features/preview/domain/concept-catalog";
 import type { PublicPreviewPayload } from "@/features/sharing/domain/public-preview";
 import { createSupabasePublicShareRepositoryFromEnvironment } from "@/features/sharing/infrastructure/supabase-public-share-repository";
 import styles from "./public-share.module.css";
@@ -17,7 +17,7 @@ export function PublicShareView({ preview }: { preview: PublicPreviewPayload }) 
     <header className={styles.masthead}><span>KSB ARCHITECT</span><span>PUBLIC CONCEPT PREVIEW</span></header>
     <article className={styles.sheet}>
       <section className={styles.imagePanel} aria-label="ภาพคอนเซปต์บ้าน">
-        <Image src={concept.image} alt={`บ้านสไตล์ ${preview.styleLabel}`} fill sizes="(max-width: 840px) 100vw, 60vw" priority />
+        <Image src={resolveConceptImage(concept, preview.floors)} alt={`บ้านสไตล์ ${preview.styleLabel}`} fill sizes="(max-width: 840px) 100vw, 60vw" priority />
         <div className={styles.imageNote}>แนวคิดเบื้องต้นเพื่อใช้เริ่มต้นวางแผนร่วมกับสถาปนิก</div>
       </section>
       <section className={styles.details}>

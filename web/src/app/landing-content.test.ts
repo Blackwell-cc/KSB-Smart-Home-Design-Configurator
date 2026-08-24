@@ -19,7 +19,7 @@ test("provides the approved consumer hero content and safe demo budget", () => {
   expect(content.navigation).toHaveLength(3);
   expect("faqs" in content).toBe(false);
   expect(content.showcase.budget.disclaimer).toBe("ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน");
-  expect(content.showcase.budget.value).toBe("5.8 – 6.9 ล้านบาท");
+  expect(content.showcase.budget.value).toBe("30 – 40 ล้านบาท");
 });
 
 test("falls back to Thai for an untranslated locale", () => {

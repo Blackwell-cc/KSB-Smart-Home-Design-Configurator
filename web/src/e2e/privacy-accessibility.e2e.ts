@@ -14,7 +14,7 @@ test("keeps the public journey accessible from landing through the Soft Gate", a
 
   await page.goto("/configurator");
   await expectNoSeriousAxeViolations(page);
-  await selectStyleWithKeyboard(page, "Contemporary Warm Luxury");
+  await selectStyleWithKeyboard(page, "Modern Style");
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await expectNoSeriousAxeViolations(page);
   await page.getByRole("button", { name: "ถัดไป" }).click();
@@ -24,11 +24,11 @@ test("keeps the public journey accessible from landing through the Soft Gate", a
   await expectNoSeriousAxeViolations(page);
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await expectNoSeriousAxeViolations(page);
-  await page.getByRole("button", { name: "ดู Preview" }).click();
-  await expect(page.getByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" })).toBeVisible();
+  await page.getByRole("button", { name: "ไปยังหน้าสรุปค่าใช้จ่าย" }).click();
+  await expect(page.getByRole("heading", { name: /ภาพรวมบ้าน\s+ที่คุณกำลังวางแผน/ })).toBeVisible();
   await expect(page.getByText("ข้อมูลทดสอบเพื่อพัฒนาระบบ")).toBeVisible();
   await expectNoSeriousAxeViolations(page);
-  await page.getByRole("button", { name: "รับสรุปโครงการฉบับเต็ม" }).click();
+  await page.getByRole("button", { name: "รับข้อมูลฉบับเต็ม" }).click();
   await expectNoSeriousAxeViolations(page);
 });
 

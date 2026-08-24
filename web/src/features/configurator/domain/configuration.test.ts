@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  ADDITIONAL_REQUIREMENT_CODES,
   DesignBriefConfigurationSchema,
   HouseConfigurationSchema,
   SPECIAL_FEATURE_CODES,
@@ -8,6 +9,7 @@ import {
   type HouseConfiguration,
 } from "./configuration";
 import { THAI_PROVINCES, THAI_PROVINCE_CODES } from "./provinces";
+import { BUDGET_RANGE_IDS } from "./budget-ranges";
 import { DEFAULT_MATERIAL_SELECTIONS, SPECIAL_FEATURE_CATALOG } from "./material-catalog";
 
 describe("HouseConfigurationSchema", () => {
@@ -38,7 +40,9 @@ describe("HouseConfigurationSchema", () => {
   });
 
   test("rejects material selections missing a category", () => {
-    const { lighting: _lighting, ...materialSelections } = DEFAULT_MATERIAL_SELECTIONS;
+    const materialSelections = Object.fromEntries(
+      Object.entries(DEFAULT_MATERIAL_SELECTIONS).filter(([categoryId]) => categoryId !== "flooring"),
+    );
 
     expect(
       HouseConfigurationSchema.safeParse({
@@ -46,6 +50,15 @@ describe("HouseConfigurationSchema", () => {
         materialSelections,
       }).success,
     ).toBe(false);
+  });
+
+  test("uses an unspecified budget range by default and validates stable range identifiers", () => {
+    const defaults = createDefaultConfiguration();
+    expect(defaults.budgetRangeId).toBe("unspecified");
+    for (const budgetRangeId of BUDGET_RANGE_IDS) {
+      expect(HouseConfigurationSchema.safeParse({ ...defaults, budgetRangeId }).success).toBe(true);
+    }
+    expect(HouseConfigurationSchema.safeParse({ ...defaults, budgetRangeId: "custom" }).success).toBe(false);
   });
 
   test("accepts the default new-house configuration and rejects renovation", () => {
@@ -109,6 +122,38 @@ describe("HouseConfigurationSchema", () => {
     ).toBe(true);
   });
 
+  test("stores requirement-only Step 2 choices separately from area-calculated functions", () => {
+    expect(ADDITIONAL_REQUIREMENT_CODES).toEqual([
+      "prayer-room",
+      "laundry",
+      "home-theater",
+      "fitness",
+      "pantry",
+      "pet-area",
+      "maid-room",
+      "separate-living",
+    ]);
+    expect(createDefaultConfiguration().additionalRequirements).toEqual([]);
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...createDefaultConfiguration(),
+        additionalRequirements: ADDITIONAL_REQUIREMENT_CODES,
+      }).success,
+    ).toBe(true);
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...createDefaultConfiguration(),
+        additionalRequirements: ["fitness", "fitness"],
+      }).success,
+    ).toBe(false);
+    expect(
+      HouseConfigurationSchema.safeParse({
+        ...createDefaultConfiguration(),
+        additionalRequirements: ["unknown-requirement"],
+      }).success,
+    ).toBe(false);
+  });
+
   test("accepts every Thai province code and rejects values outside the allowlist", () => {
     const defaults = createDefaultConfiguration();
 
@@ -167,6 +212,7 @@ describe("HouseConfigurationSchema", () => {
       }).success,
     ).toBe(false);
   });
+
   test("rejects material quality and legacy pricing levels that disagree", () => {
     const defaults = createDefaultConfiguration();
 

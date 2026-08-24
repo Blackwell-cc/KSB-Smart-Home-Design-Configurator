@@ -4,9 +4,15 @@
 }
 
 .counter > label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: var(--ivory);
-  font-weight: 700;
+  font-size: 0.94rem;
+  font-weight: 600;
 }
+
+.counter > label svg { width: 21px; height: 21px; color: var(--gold); fill: none; stroke: currentColor; stroke-width: 1.5; }
 
 .counter > p {
   color: var(--muted);
@@ -55,9 +61,13 @@
   color: var(--muted);
 }
 
-.controls input {
+.valueField { min-width: 0; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--line); border-left: 1px solid var(--line); }
+.valueField input {
   width: 100%;
+  min-width: 0;
+  padding-left: 18px;
   text-align: center;
-  border-right: 1px solid var(--line);
-  border-left: 1px solid var(--line);
+  font-size: 1.12rem;
+  font-weight: 600;
 }
+.valueField > span { margin-right: 14px; color: var(--muted); font-size: 0.68rem; white-space: nowrap; }

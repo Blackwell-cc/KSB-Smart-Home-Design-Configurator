@@ -1,0 +1,173 @@
+.workspace {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-areas:
+    "header preview"
+    "reviews preview"
+    "actions actions";
+  grid-template-columns: minmax(0, 49fr) minmax(0, 51fr);
+  grid-template-rows: auto minmax(0, 1fr) 74px;
+  column-gap: clamp(24px, 2.3vw, 42px);
+  padding: 30px clamp(30px, 3.2vw, 54px) 0;
+  overflow: hidden;
+}
+
+.reviewHeader { grid-area: header; min-width: 0; padding: 2px 0 20px; }
+.eyebrow { color: var(--config-gold-light); font-family: var(--font-data); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.13em; }
+.reviewHeader h1 { margin-top: 7px; color: var(--config-ivory); font-size: clamp(2.35rem, 3.2vw, 3.35rem); font-weight: 650; line-height: 1.08; letter-spacing: -0.035em; }
+.reviewHeader h1:focus-visible { padding-left: 10px; border-left: 2px solid var(--config-gold-light); outline: 0; }
+.reviewHeader > p:last-child { margin-top: 9px; color: var(--config-muted); font-size: 0.82rem; line-height: 1.55; }
+
+.reviewMosaic {
+  grid-area: reviews;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.12fr) minmax(0, 0.94fr);
+  gap: 10px;
+  overflow: hidden;
+  padding-bottom: 20px;
+}
+
+.compactStack, .detailStack { min-width: 0; min-height: 0; display: grid; gap: 10px; }
+.compactStack { grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.2fr) repeat(2, minmax(0, 0.95fr)); }
+.detailStack { grid-template-rows: minmax(0, 1.25fr) minmax(0, 0.75fr); }
+
+.reviewCard {
+  min-width: 0;
+  overflow: hidden;
+  padding: 13px 14px;
+  border: 1px solid rgba(210, 165, 82, 0.2);
+  border-radius: 14px;
+  background: rgba(10, 16, 20, 0.82);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.cardHeading { min-width: 0; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 8px; margin-bottom: 9px; }
+.cardHeading h2 { min-width: 0; color: var(--config-ivory); font-size: 0.8rem; font-weight: 600; line-height: 1.25; }
+.cardIcon { width: 24px; height: 24px; display: grid; place-items: center; color: var(--config-gold); }
+.cardIcon svg, .specialCard li svg, .checkList svg, .actions svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.55; }
+.editButton { min-height: 28px; padding: 2px 0; color: var(--config-gold-light); border: 0; border-bottom: 1px solid currentColor; background: transparent; font: inherit; font-size: 0.64rem; cursor: pointer; }
+.editButton:hover { color: #fff1c8; }
+.editButton:focus-visible { border-radius: 4px; outline: 2px solid var(--config-gold-light); outline-offset: 3px; }
+.reviewCard > strong { display: block; color: var(--config-ivory); font-size: 0.79rem; font-weight: 600; line-height: 1.45; }
+.reviewCard > span, .reviewCard > p { display: block; margin-top: 3px; color: var(--config-muted); font-size: 0.68rem; line-height: 1.4; }
+.reviewCard .mutedValue { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+
+.materialListCard { display: flex; flex-direction: column; }
+.materialList {
+  min-height: 0;
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1fr;
+  align-content: start;
+  gap: 4px;
+  padding-right: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(216, 173, 98, 0.58) transparent;
+  scrollbar-width: thin;
+}
+.materialList::-webkit-scrollbar { width: 5px; }
+.materialList::-webkit-scrollbar-track { background: transparent; }
+.materialList::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(216, 173, 98, 0.48); }
+.materialList::-webkit-scrollbar-thumb:hover { background: rgba(232, 188, 104, 0.72); }
+.materialList li { min-width: 0; display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 9px; padding: 3px 0; border-bottom: 1px solid rgba(210, 165, 82, 0.12); }
+.materialList li:last-child { border-bottom: 0; }
+.materialThumb { width: 52px; height: 52px; display: block; overflow: hidden; border-radius: 7px; }
+.materialThumb > span { height: 100%; border-radius: 7px; }
+.materialThumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.materialList li > span:last-child { min-width: 0; display: grid; gap: 1px; }
+.materialList small { color: var(--config-muted); font-size: 0.56rem; }
+.materialList strong { overflow: hidden; color: var(--config-ivory); font-size: 0.69rem; font-weight: 500; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+
+.specialCard ul { display: grid; gap: 8px; }
+.specialCard li { min-width: 0; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: 7px; color: var(--config-ivory); font-size: 0.72rem; line-height: 1.3; }
+.specialCard li svg { color: var(--config-gold); }
+.emptyValue { color: var(--config-muted); }
+.moreItems { color: var(--config-gold-light) !important; }
+.qualityCard > strong { color: var(--config-gold-light); font-size: 1rem; letter-spacing: 0.04em; }
+
+.previewColumn { grid-area: preview; min-width: 0; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); align-content: start; gap: 14px; }
+.housePreview { position: relative; width: 100%; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid rgba(210, 165, 82, 0.34); border-radius: 16px; background: #0b1115; box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2); }
+.housePreview img { object-fit: cover; object-position: center; }
+.housePreview > span { height: 100%; border: 0; border-radius: 0; }
+
+.confirmationPanels { min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr); gap: 10px; }
+.confirmationCard { min-width: 0; min-height: 0; overflow: hidden; padding: 13px 16px; border: 1px solid rgba(210, 165, 82, 0.2); border-radius: 15px; background: rgba(10, 16, 20, 0.8); }
+.confirmationCard h2 { color: var(--config-gold-light); font-size: 0.92rem; font-weight: 600; line-height: 1.3; }
+.confirmationCard > p { max-width: 48ch; margin-top: 5px; color: var(--config-muted); font-size: 0.69rem; line-height: 1.48; }
+.checkList, .benefitList { display: grid; gap: 6px; margin-top: 9px; }
+.checkList li { display: grid; grid-template-columns: 19px minmax(0, 1fr); align-items: center; gap: 7px; color: var(--config-ivory); font-size: 0.71rem; }
+.checkList svg { color: var(--config-gold); }
+.benefitList { counter-reset: benefits; }
+.benefitList li { display: grid; grid-template-columns: 26px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--config-ivory); font-size: 0.71rem; }
+.benefitList span { color: var(--config-gold); font-family: var(--font-data); font-size: 0.58rem; }
+.reviewWarning { display: grid; gap: 4px; margin-top: 13px; padding: 10px 12px; border-left: 2px solid var(--config-gold); background: rgba(216, 173, 98, 0.06); }
+.reviewWarning strong { color: var(--config-ivory); font-size: 0.72rem; }
+.reviewWarning span { color: var(--config-muted); font-size: 0.64rem; }
+
+.actions {
+  grid-area: actions;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(230px, 0.9fr) minmax(310px, 1.25fr);
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(210, 165, 82, 0.16);
+}
+.actions button { min-height: 52px; border-radius: 14px; font-weight: 600; }
+.actions button:nth-child(2), .actions button:nth-child(3) { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+.actions button:last-child { color: #15100a; background: linear-gradient(110deg, #f0d18f, #d8ad62); box-shadow: 0 8px 22px rgba(216, 173, 98, 0.1); }
+
+@media (min-width: 1200px) {
+  .actions { margin-top: 12px; padding-block: 6px; }
+  .actions button { min-height: 46px; }
+}
+
+@media (max-width: 1480px) {
+  .workspace { padding-inline: 32px; column-gap: 24px; }
+  .reviewHeader { padding-bottom: 15px; }
+  .reviewHeader h1 { font-size: 2.55rem; }
+  .reviewMosaic { gap: 8px; }
+  .compactStack, .detailStack { gap: 8px; }
+  .reviewCard { padding: 10px 11px; }
+  .cardHeading { margin-bottom: 7px; }
+  .materialList li { padding-block: 2px; }
+  .materialThumb { width: 34px; height: 34px; }
+  .confirmationCard { padding: 14px 15px; }
+}
+
+@media (max-width: 1199px) {
+  .workspace { height: auto; min-height: 0; grid-template-areas: "header" "preview" "reviews" "actions"; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; gap: 24px; padding: 30px 28px 34px; overflow: visible; }
+  .previewColumn { grid-template-rows: auto auto; }
+  .reviewMosaic { overflow: visible; padding-bottom: 0; }
+  .actions { position: sticky; z-index: 8; bottom: 0; padding: 12px; background: rgba(5, 9, 12, 0.96); backdrop-filter: blur(12px); }
+}
+
+@media (max-width: 899px) {
+  .reviewMosaic { grid-template-columns: minmax(0, 1fr); }
+  .compactStack, .detailStack { grid-template-rows: auto; }
+  .materialList { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
+  .confirmationPanels { grid-template-columns: minmax(0, 1fr); }
+  .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .actions button:last-child { grid-column: 1 / -1; grid-row: 1; }
+}
+
+@media (max-width: 560px) {
+  .workspace { gap: 20px; padding: 24px 16px 26px; }
+  .reviewHeader h1 { font-size: 2.18rem; }
+  .reviewHeader > p:last-child { font-size: 0.76rem; }
+  .housePreview { border-radius: 13px; }
+  .materialList { grid-template-columns: minmax(0, 1fr); }
+  .reviewCard { padding: 14px; }
+  .actions { margin-inline: -16px; padding-inline: 16px; }
+  .actions button { min-width: 0; min-height: 48px; padding-inline: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editButton, .actions button { transition: none; }
+}

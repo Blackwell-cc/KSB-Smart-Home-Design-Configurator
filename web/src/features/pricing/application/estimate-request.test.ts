@@ -29,6 +29,24 @@ test("derives pricing material level from the selected material quality", () => 
   expect(request.materialLevel).toBe("signature");
 });
 
+test.each([
+  ["classic-style", "timeless-contemporary-luxury"],
+  ["modern-style", "contemporary-warm-luxury"],
+  ["natural-style", "modern-tropical-resort"],
+  ["loft-style", "contemporary-warm-luxury"],
+  ["minimalist-style", "contemporary-warm-luxury"],
+  ["luxury-style", "timeless-contemporary-luxury"],
+  ["vintage-style", "timeless-contemporary-luxury"],
+] as const)("maps %s to the supported %s pricing family", (styleId, expectedPricingStyleId) => {
+  const request = projectEstimateRequest({
+    ...createDefaultConfiguration(),
+    styleId,
+    provinceCode: "10",
+  });
+
+  expect(request.styleId).toBe(expectedPricingStyleId);
+});
+
 test("expands pricing requests with catalog defaults and a matching display quality", () => {
   const configuration = toCalculationConfiguration({
     ...projectEstimateRequest({

@@ -35,15 +35,16 @@ test("keeps the same submission intent when the first Lead response is lost", as
 
   await page.goto("/configurator");
   await completeConfigurator(page);
-  await page.getByRole("button", { name: "รับสรุปโครงการฉบับเต็ม" }).click();
-  await page.getByLabel("ชื่อ").fill("ผู้ทดสอบระบบ");
-  await page.getByLabel("ช่องทางติดต่อที่ต้องการ").selectOption("email");
-  await page.getByLabel("อีเมล").fill("owner@example.test");
+  await page.getByRole("button", { name: "รับข้อมูลฉบับเต็ม" }).click();
+  await page.getByRole("textbox", { name: /^ชื่อ–นามสกุล/ }).fill("ผู้ทดสอบระบบ");
+  await page.getByRole("textbox", { name: /^เบอร์โทรศัพท์/ }).fill("0812345678");
+  await page.getByRole("textbox", { name: /^อีเมล/ }).fill("owner@example.test");
+  await page.getByRole("combobox", { name: /^วัตถุประสงค์ในการขอข้อมูล/ }).selectOption("view_full_report");
   await page.getByLabel(/ยินยอมให้ใช้ข้อมูล/).check();
 
-  await page.getByRole("button", { name: "ส่ง Project Report ฉบับเต็มให้ฉัน" }).click();
-  await expect(page.getByText(/ยังจัดทำสรุปโครงการไม่ได้/)).toBeVisible();
-  await page.getByRole("button", { name: "ส่ง Project Report ฉบับเต็มให้ฉัน" }).click();
+  await page.getByRole("button", { name: "รับรายงานฉบับเต็ม" }).click();
+  await expect(page.getByText(/ยังไม่สามารถจัดทำรายงานได้ในขณะนี้/)).toBeVisible();
+  await page.getByRole("button", { name: "รับรายงานฉบับเต็ม" }).click();
 
   await expect(page).toHaveURL(/\/report\/access$/);
   await expect(page.getByRole("heading", { name: "กำลังเปิดสรุปโครงการ" })).toBeVisible();
@@ -53,6 +54,6 @@ test("keeps the same submission intent when the first Lead response is lost", as
   expect(submittedBodies[0]?.configurationId).toBe(submittedBodies[1]?.configurationId);
   expect(new Set(submittedBodies.map((body) => body.idempotencyKey)).size).toBe(1);
   expect(exchangeBodies.every((body) => JSON.stringify(body) === JSON.stringify({ projectId, token: "a".repeat(48) }))).toBe(true);
-  await expect.poll(() => page.evaluate(() => localStorage.getItem("ksb-configurator-draft-v1"))).toBeNull();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("ksb-configurator-draft-v1"))).not.toBeNull();
   releaseExchange();
 });

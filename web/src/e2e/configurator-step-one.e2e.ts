@@ -57,12 +57,9 @@ test("fits desktop to one viewport with a full-bleed preview and an independentl
   expect(Math.abs(stageBox!.width - houseBox!.width)).toBeLessThanOrEqual(1);
   expect(Math.abs(stageBox!.height - houseBox!.height)).toBeLessThanOrEqual(1);
 
-  for (const label of ["โซนสวน", "โซนสระว่ายน้ำ"]) {
-    const zone = page.getByText(label).locator("..");
-    const style = await zone.evaluate((element) => getComputedStyle(element));
-    expect(style.borderTopWidth).toBe("0px");
-    expect(style.backgroundColor).toBe("rgba(0, 0, 0, 0)");
-  }
+  await expect(page.getByText("โซนสวน")).toHaveCount(0);
+  await expect(page.getByText("โซนสระว่ายน้ำ")).toHaveCount(0);
+  await expect(page.getByText("32.00 ม.")).toHaveCount(0);
   await expect(page.getByText("TROPICAL RESORT 02")).toHaveCount(0);
 });
 
@@ -71,25 +68,25 @@ test("updates only the dynamic house mockup when a style is selected", async ({ 
   await page.goto("/configurator");
 
   const stage = page.getByLabel("พื้นที่แสดงแบบบ้าน");
-  const modernLuxury = page.getByRole("radio", { name: "Contemporary Warm Luxury" });
+  const modernLuxury = page.getByRole("radio", { name: "Modern Style" });
   await modernLuxury.locator("..").click();
   await expect(modernLuxury).toBeChecked();
-  await expect(stage).toHaveAttribute("data-preview-style", "contemporary-warm-luxury");
+  await expect(stage).toHaveAttribute("data-preview-style", "modern-style");
   await expect(page.getByRole("button", { name: "ถัดไป" })).toBeEnabled();
 
-  const courtyard = page.getByRole("radio", { name: "Luxury Courtyard" });
-  await courtyard.locator("..").click();
-  await expect(courtyard).toBeChecked();
-  await expect(stage).toHaveAttribute("data-preview-style", "luxury-courtyard");
-  await expect(page.getByText("โซนสวน")).toBeVisible();
-  await expect(page.getByText("โซนสระว่ายน้ำ")).toBeVisible();
+  const tropical = page.getByRole("radio", { name: "Tropical" });
+  await tropical.locator("..").click();
+  await expect(tropical).toBeChecked();
+  await expect(stage).toHaveAttribute("data-preview-style", "luxury-style");
+  await expect(page.getByText("โซนสวน")).toHaveCount(0);
+  await expect(page.getByText("โซนสระว่ายน้ำ")).toHaveCount(0);
 });
 
-test("restores the original document flow after leaving step one", async ({ page }, testInfo) => {
+test("keeps the compact workspace after leaving step one", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/configurator");
 
-  const style = page.getByRole("radio", { name: "Contemporary Warm Luxury" });
+  const style = page.getByRole("radio", { name: "Modern Style" });
   await style.locator("..").click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
@@ -103,7 +100,7 @@ test("restores the original document flow after leaving step one", async ({ page
     overflowY: getComputedStyle(element).overflowY,
     viewportHeight: window.innerHeight,
   }));
-  expect(metrics.overflowY).toBe("visible");
-  expect(metrics.documentHeight).toBeGreaterThan(metrics.viewportHeight);
-  await page.screenshot({ fullPage: true, path: testInfo.outputPath("step-four-restored.png") });
+  expect(metrics.overflowY).toBe("hidden");
+  expect(metrics.documentHeight).toBeLessThanOrEqual(metrics.viewportHeight);
+  await page.screenshot({ fullPage: true, path: testInfo.outputPath("step-four-compact.png") });
 });

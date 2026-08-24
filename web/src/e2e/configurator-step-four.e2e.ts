@@ -10,7 +10,7 @@ const viewports = [
 
 async function openStepFour(page: Page) {
   await page.goto("/configurator");
-  await page.getByRole("radio", { name: "Contemporary Warm Luxury" }).locator("..").click();
+  await page.getByRole("radio", { name: "Modern Style" }).locator("..").click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByLabel("จังหวัด").selectOption("10");
@@ -63,20 +63,59 @@ test("matches the reference desktop structure while only the catalog scrolls", a
   expect(formBox!.width / (formBox!.width + previewBox!.width)).toBeLessThanOrEqual(0.45);
 
   const materialCards = page.getByTestId("material-asset-placeholder");
-  await expect(materialCards).toHaveCount(32);
-  for (const label of ["หลังคา", "ผนังภายนอก", "หน้าต่าง", "ประตูทางเข้า", "พื้น", "ฝ้าเพดาน", "รายละเอียดฟาซาด", "แสงและบรรยากาศ"]) {
+  await expect(materialCards).toHaveCount(0);
+  for (const label of ["หลังคา", "ผนังภายนอก", "หน้าต่าง", "ประตูทางเข้า", "พื้น"]) {
     const materialGroup = page.getByRole("radiogroup", { name: label });
     await expect(materialGroup).toHaveCount(1);
     await expect(materialGroup.getByRole("radio")).toHaveCount(4);
   }
-  const firstRow = await Promise.all([0, 1, 2, 3].map((index) => materialCards.nth(index).boundingBox()));
+  for (const removedLabel of ["ฝ้าเพดาน", "รายละเอียดฟาซาด", "แสงและบรรยากาศ"]) {
+    await expect(page.getByText(removedLabel, { exact: true })).toHaveCount(0);
+  }
+  const roofImages = page.getByRole("radiogroup", { name: "หลังคา" }).locator("img");
+  await expect(roofImages).toHaveCount(4);
+  await expect(roofImages.nth(0)).toHaveAttribute("src", /materials%2Froof%2F1\.png|materials\/roof\/1\.png/);
+  await expect(roofImages.nth(3)).toHaveAttribute("src", /materials%2Froof%2F4\.png|materials\/roof\/4\.png/);
+  const wallImages = page.getByRole("radiogroup", { name: "ผนังภายนอก" }).locator("img");
+  await expect(wallImages).toHaveCount(4);
+  await expect(wallImages.nth(0)).toHaveAttribute("src", /materials%2Fwall%2F1\.png|materials\/wall\/1\.png/);
+  await expect(wallImages.nth(3)).toHaveAttribute("src", /materials%2Fwall%2F4\.png|materials\/wall\/4\.png/);
+  const windowImages = page.getByRole("radiogroup", { name: "หน้าต่าง" }).locator("img");
+  await expect(windowImages).toHaveCount(4);
+  await expect(windowImages.nth(0)).toHaveAttribute("src", /materials%2Fwindow%2F1\.png|materials\/window\/1\.png/);
+  await expect(windowImages.nth(3)).toHaveAttribute("src", /materials%2Fwindow%2F4\.png|materials\/window\/4\.png/);
+  const doorImages = page.getByRole("radiogroup", { name: "ประตูทางเข้า" }).locator("img");
+  await expect(doorImages).toHaveCount(4);
+  await expect(doorImages.nth(0)).toHaveAttribute("src", /materials%2Fdoor%2F4\.png|materials\/door\/4\.png/);
+  await expect(doorImages.nth(3)).toHaveAttribute("src", /materials%2Fdoor%2F3\.png|materials\/door\/3\.png/);
+  const flooringImages = page.getByRole("radiogroup", { name: "พื้น" }).locator("img");
+  await expect(flooringImages).toHaveCount(4);
+  await expect(flooringImages.nth(0)).toHaveAttribute("src", /materials%2Fflooring%2F1\.png|materials\/flooring\/1\.png/);
+  await expect(flooringImages.nth(3)).toHaveAttribute("src", /materials%2Fflooring%2F4\.png|materials\/flooring\/4\.png/);
+  await flooringImages.first().scrollIntoViewIfNeeded();
+  await expect.poll(() => flooringImages.evaluateAll((images) => images.every((image) => {
+    const element = image as HTMLImageElement;
+    return element.complete && element.naturalWidth > 0;
+  }))).toBe(true);
+  const allMaterialImages = page.getByTestId("material-scroll-area").getByRole("radiogroup").locator("img");
+  await expect(allMaterialImages).toHaveCount(20);
+  const firstRow = await Promise.all([0, 1, 2, 3].map((index) => allMaterialImages.nth(index).boundingBox()));
   expect(firstRow.every((box) => box !== null && Math.abs(box.y - firstRow[0]!.y) < 1)).toBe(true);
   expect(firstRow[0]!.width).toBeGreaterThanOrEqual(110);
   expect(firstRow[0]!.width).toBeLessThanOrEqual(125);
 
   const featureCards = page.getByTestId("feature-asset-placeholder");
-  await expect(featureCards).toHaveCount(15);
-  const featureRow = await Promise.all([0, 1, 2, 3, 4].map((index) => featureCards.nth(index).boundingBox()));
+  await expect(featureCards).toHaveCount(0);
+  const featureImages = page.getByRole("group", { name: "ส่วนพิเศษที่อยากพิจารณา" }).locator("img");
+  await expect(featureImages).toHaveCount(10);
+  await expect(featureImages.nth(0)).toHaveAttribute("src", /materials\/special-features\/1\.png/);
+  await expect(featureImages.nth(9)).toHaveAttribute("src", /materials\/special-features\/10\.png/);
+  await featureImages.first().scrollIntoViewIfNeeded();
+  await expect.poll(() => featureImages.evaluateAll((images) => images.every((image) => {
+    const element = image as HTMLImageElement;
+    return element.complete && element.naturalWidth > 0;
+  }))).toBe(true);
+  const featureRow = await Promise.all([0, 1, 2, 3, 4].map((index) => featureImages.nth(index).boundingBox()));
   expect(featureRow.every((box) => box !== null && Math.abs(box.y - featureRow[0]!.y) < 1)).toBe(true);
   expect(featureRow[0]!.width).toBeGreaterThanOrEqual(95);
   expect(featureRow[0]!.width).toBeLessThanOrEqual(110);
@@ -94,7 +133,7 @@ test("matches the reference desktop structure while only the catalog scrolls", a
     descendantImages: node.querySelectorAll("img").length,
     text: node.textContent?.trim() ?? "",
   })));
-  expect(placeholderStates.length).toBeGreaterThanOrEqual(48);
+  expect(placeholderStates.length).toBeGreaterThanOrEqual(1);
   for (const state of placeholderStates) {
     expect(state.childElementCount).toBe(0);
     expect(state.descendantImages).toBe(0);
@@ -125,7 +164,7 @@ test("matches the reference desktop structure while only the catalog scrolls", a
     return node.scrollTop;
   });
   expect(resultingScrollTop).toBeGreaterThan(0);
-  await expect(page.getByRole("checkbox", { name: "พื้นที่สำหรับสัตว์เลี้ยง" })).toBeInViewport();
+  await expect(page.getByRole("checkbox", { name: "ห้องออกกำลังกาย" })).toBeInViewport();
   await expect(quality).toBeVisible();
   await expect(backAction).toBeVisible();
   await expect(nextAction).toBeVisible();
@@ -154,7 +193,7 @@ test("supports keyboard material selection and persists special features", async
   await expect(page.getByRole("complementary", { name: "ภาพตัวอย่างวัสดุ" })).toContainText("สระว่ายน้ำ");
 
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await page.getByRole("button", { name: "แก้ไขวัสดุและส่วนพิเศษ" }).click();
+  await page.getByRole("button", { name: "แก้ไขวัสดุและส่วนพิเศษ" }).first().click();
   await expect(pool).toBeChecked();
   expect(consoleErrors).toEqual([]);
   expect(pageErrors).toEqual([]);

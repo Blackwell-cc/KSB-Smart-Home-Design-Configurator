@@ -17,3 +17,27 @@ test("renders a local-font Thai PDF document from the same report view model", a
   expect(buffer.byteLength).toBeGreaterThan(1_000);
   expect(buffer.byteLength).toBeGreaterThan(fallbackBuffer.byteLength);
 });
+
+test("uses the matching PDF-safe derivative for a selected WebP house image", () => {
+  const imageSrc = "/concepts/base-classic-2f-master.webp";
+
+  expect(resolvePdfConceptImagePath(imageSrc)).toMatch(/public[\\/]concepts[\\/]pdf[\\/]base-classic-2f-master\.jpg$/);
+  expect(resolvePdfConceptImage(imageSrc)).toEqual(expect.objectContaining({
+    data: expect.any(Buffer),
+    format: "jpg",
+  }));
+});
+
+test.each([
+  "/concepts/base-classic-1f-master.webp",
+  "/concepts/base-modern-3f-master-2.webp",
+  "/concepts/base-nordic-1f-master.webp",
+  "/concepts/base-loft-3f-master.webp",
+  "/concepts/base-tropical-1f-master.webp",
+  "/concepts/base-contemporary-3f-master.webp",
+])("keeps the floor-specific house image available in PDF reports: %s", (imageSrc) => {
+  expect(resolvePdfConceptImage(imageSrc)).toEqual(expect.objectContaining({
+    data: expect.any(Buffer),
+    format: "jpg",
+  }));
+});

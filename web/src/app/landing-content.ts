@@ -139,7 +139,7 @@ const thaiContent: LandingContent = {
     },
     budget: {
       label: "งบประมาณเริ่มต้น",
-      value: "5.8 – 6.9 ล้านบาท",
+      value: "30 – 40 ล้านบาท",
       supporting: "ช่วงราคาประมาณการเบื้องต้น",
       detailLabel: "ดูรายละเอียด",
       disclaimer: "ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน",

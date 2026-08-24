@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test, vi } from "vitest";
 import { createDefaultConfiguration } from "@/features/configurator/domain/configuration";
@@ -49,6 +49,7 @@ function saveValidDraft() {
 }
 
 beforeEach(() => {
+  vi.restoreAllMocks();
   window.localStorage.clear();
   push.mockReset();
   vi.stubGlobal("fetch", vi.fn());
@@ -73,6 +74,109 @@ test("restores a validated anonymous draft and requests its server preview", asy
   expect(push).toHaveBeenCalledWith("/configurator");
 });
 
+test("clears the current draft and returns home when starting over", async () => {
+  saveValidDraft();
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ preview }), { status: 200 }));
+  const user = userEvent.setup();
+  render(<PreviewPage />);
+
+  await screen.findByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" });
+  await user.click(screen.getByRole("button", { name: "เริ่มทำใหม่" }));
+
+  expect(window.localStorage.length).toBe(0);
+  expect(push).toHaveBeenCalledWith("/");
+});
+
+test("opens the full-report dialog over the current result and restores the CTA after Escape", async () => {
+  saveValidDraft();
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ preview }), { status: 200 }));
+  const user = userEvent.setup();
+  render(<PreviewPage />);
+
+  await screen.findByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" });
+  const trigger = screen.getByRole("button", { name: "รับข้อมูลฉบับเต็ม" });
+  await user.click(trigger);
+
+  const dialog = screen.getByRole("dialog", { name: "รับข้อมูลฉบับเต็ม" });
+  expect(dialog).toBeVisible();
+  expect(screen.getByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" })).toBeInTheDocument();
+  expect(within(dialog).getByText("Modern Luxury")).toBeVisible();
+  expect(within(dialog).getByText("กรุงเทพมหานคร")).toBeVisible();
+  expect(within(dialog).getByText("พื้นที่ใช้สอย 164 ตร.ม.")).toBeVisible();
+  expect(push).not.toHaveBeenCalled();
+
+  await user.type(within(dialog).getByLabelText("ชื่อ–นามสกุล *"), "ข้อมูลที่กรอกค้างไว้");
+  await user.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
+  await user.click(trigger);
+  expect(screen.getByLabelText("ชื่อ–นามสกุล *")).toHaveValue("ข้อมูลที่กรอกค้างไว้");
+});
+
+test("shares the current result without exposing detailed budget data", async () => {
+  saveValidDraft();
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ preview }), { status: 200 }));
+  const open = vi.spyOn(window, "open").mockImplementation(() => null);
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  const user = userEvent.setup();
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+  render(<PreviewPage />);
+
+  await screen.findByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" });
+  await user.click(screen.getByRole("button", { name: "แชร์ผ่าน LINE" }));
+  await user.click(screen.getByRole("button", { name: "แชร์ผ่าน Instagram" }));
+  await user.click(screen.getByRole("button", { name: "แชร์ผ่าน Facebook" }));
+  await user.click(screen.getByRole("button", { name: "คัดลอกลิงก์" }));
+
+  expect(open).toHaveBeenNthCalledWith(1, expect.stringContaining("social-plugins.line.me"), "_blank", "noopener,noreferrer");
+  expect(open).toHaveBeenNthCalledWith(2, expect.stringContaining("instagram.com"), "_blank", "noopener,noreferrer");
+  expect(open).toHaveBeenNthCalledWith(3, expect.stringContaining("facebook.com/sharer"), "_blank", "noopener,noreferrer");
+  await waitFor(() => expect(writeText).toHaveBeenCalledWith(expect.stringContaining("ลองออกแบบบ้านในฝันของคุณกับ KSB Architect")));
+  expect(writeText.mock.calls[0]?.[0]).not.toContain("5,124,319");
+  expect(await screen.findByText("คัดลอกลิงก์แล้ว")).toHaveAttribute("aria-live", "polite");
+});
+
+test("opens Instagram even when clipboard access is denied and reports the fallback", async () => {
+  saveValidDraft();
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ preview }), { status: 200 }));
+  const callOrder: string[] = [];
+  const open = vi.spyOn(window, "open").mockImplementation(() => { callOrder.push("open"); return null; });
+  const writeText = vi.fn().mockImplementation(() => { callOrder.push("copy"); return Promise.reject(new DOMException("denied", "NotAllowedError")); });
+  const user = userEvent.setup();
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+  render(<PreviewPage />);
+
+  await screen.findByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" });
+  await user.click(screen.getByRole("button", { name: "แชร์ผ่าน Instagram" }));
+
+  expect(open).toHaveBeenCalledWith("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+  await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
+  expect(callOrder).toEqual(["copy", "open"]);
+  expect(await screen.findByText("เปิด Instagram แล้ว แต่ยังคัดลอกลิงก์ไม่ได้")).toBeVisible();
+});
+
+test("keeps an older clipboard failure from replacing the latest copy success", async () => {
+  saveValidDraft();
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ preview }), { status: 200 }));
+  let rejectFirstCopy: (reason?: unknown) => void = () => undefined;
+  const firstCopy = new Promise<void>((_resolve, reject) => { rejectFirstCopy = reject; });
+  const writeText = vi.fn()
+    .mockImplementationOnce(() => firstCopy)
+    .mockResolvedValueOnce(undefined);
+  const user = userEvent.setup();
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+  render(<PreviewPage />);
+
+  await screen.findByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" });
+  await user.click(screen.getByRole("button", { name: "คัดลอกลิงก์" }));
+  await user.click(screen.getByRole("button", { name: "คัดลอกลิงก์" }));
+  expect(await screen.findByText("คัดลอกลิงก์แล้ว")).toBeVisible();
+
+  await act(async () => { rejectFirstCopy(new DOMException("denied", "NotAllowedError")); });
+  expect(screen.getByText("คัดลอกลิงก์แล้ว")).toBeVisible();
+  expect(screen.queryByText("ยังคัดลอกลิงก์ไม่ได้ กรุณาคัดลอกจากแถบที่อยู่")).not.toBeInTheDocument();
+});
+
 test("keeps the full PII-safe design brief for lead submission after pricing projection", async () => {
   saveValidDraft();
   const fetchMock = vi.mocked(fetch);
@@ -87,12 +191,13 @@ test("keeps the full PII-safe design brief for lead submission after pricing pro
   render(<PreviewPage />);
 
   await screen.findByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" });
-  await user.click(screen.getByRole("button", { name: "รับสรุปโครงการฉบับเต็ม" }));
-  await user.selectOptions(screen.getByLabelText("ช่องทางติดต่อที่ต้องการ"), "email");
-  await user.type(screen.getByLabelText("ชื่อ"), "ผู้ทดสอบ");
-  await user.type(screen.getByLabelText("อีเมล"), "owner@example.test");
+  await user.click(screen.getByRole("button", { name: "รับข้อมูลฉบับเต็ม" }));
+  await user.type(screen.getByLabelText("ชื่อ–นามสกุล *"), "ผู้ทดสอบ");
+  await user.type(screen.getByLabelText("เบอร์โทรศัพท์ *"), "0812345678");
+  await user.type(screen.getByLabelText("อีเมล *"), "owner@example.test");
+  await user.selectOptions(screen.getByLabelText("วัตถุประสงค์ในการขอข้อมูล *"), "planning_to_build");
   await user.click(screen.getByLabelText(/ยินยอม/));
-  await user.click(screen.getByRole("button", { name: "ส่ง Project Report ฉบับเต็มให้ฉัน" }));
+  await user.click(screen.getByRole("button", { name: "รับรายงานฉบับเต็ม" }));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
 
   const estimateBody = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as Record<string, unknown>;
@@ -108,6 +213,8 @@ test("keeps the full PII-safe design brief for lead submission after pricing pro
     specialFeatures: ["pool", "internal-garden"],
   });
   expect(leadBody.configuration).not.toHaveProperty("privateNotes");
+  expect(window.localStorage.getItem("ksb-configurator-draft-v1")).not.toBeNull();
+  expect(push).toHaveBeenCalledWith("/report/access#project=project&token=token");
 });
 
 test("rejects a preview response that omits either separated estimate range", async () => {

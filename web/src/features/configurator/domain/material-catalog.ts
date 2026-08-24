@@ -4,9 +4,6 @@ export const MATERIAL_CATEGORY_IDS = [
   "window",
   "door",
   "flooring",
-  "ceiling",
-  "facade",
-  "lighting",
 ] as const;
 
 export type MaterialCategoryId = (typeof MATERIAL_CATEGORY_IDS)[number];
@@ -18,80 +15,50 @@ export const MATERIAL_CATALOG = [
     id: "roof",
     label: "หลังคา",
     options: [
-      { id: "concrete-tile", label: "Concrete Tile" },
-      { id: "ceramic-tile", label: "Ceramic Tile" },
-      { id: "metal-roof", label: "Metal Roof" },
-      { id: "natural-slate", label: "Natural Slate" },
+      { id: "concrete-tile", label: "กระเบื้องคอนกรีต", imageSrc: "/materials/roof/1.png" },
+      { id: "ceramic-tile", label: "กระเบื้องเซรามิก", imageSrc: "/materials/roof/2.png" },
+      { id: "metal-roof", label: "หลังคาเมทัลชีท", imageSrc: "/materials/roof/3.png" },
+      { id: "natural-slate", label: "หินชนวนธรรมชาติ", imageSrc: "/materials/roof/4.png" },
     ],
   },
   {
     id: "wall",
     label: "ผนังภายนอก",
     options: [
-      { id: "smooth-plaster", label: "Smooth Plaster" },
-      { id: "natural-stone", label: "Natural Stone" },
-      { id: "exterior-timber", label: "Exterior Timber" },
-      { id: "exposed-concrete", label: "Exposed Concrete" },
+      { id: "smooth-plaster", label: "ปูนฉาบเรียบ", imageSrc: "/materials/wall/1.png" },
+      { id: "natural-stone", label: "หินธรรมชาติ", imageSrc: "/materials/wall/2.png" },
+      { id: "exterior-timber", label: "ไม้ตกแต่งภายนอก", imageSrc: "/materials/wall/3.png" },
+      { id: "exposed-concrete", label: "คอนกรีตเปลือย", imageSrc: "/materials/wall/4.png" },
     ],
   },
   {
     id: "window",
     label: "หน้าต่าง",
     options: [
-      { id: "black-aluminium", label: "Black Aluminium" },
-      { id: "natural-aluminium", label: "Natural Aluminium" },
-      { id: "solid-wood", label: "Solid Wood" },
-      { id: "upvc", label: "uPVC" },
+      { id: "black-aluminium", label: "อลูมิเนียมสีดำ", imageSrc: "/materials/window/1.png" },
+      { id: "natural-aluminium", label: "อลูมิเนียมสีธรรมชาติ", imageSrc: "/materials/window/2.png" },
+      { id: "solid-wood", label: "ไม้จริง", imageSrc: "/materials/window/3.png" },
+      { id: "upvc", label: "uPVC", imageSrc: "/materials/window/4.png" },
     ],
   },
   {
     id: "door",
     label: "ประตูทางเข้า",
     options: [
-      { id: "teak", label: "Teak" },
-      { id: "engineered-wood", label: "Engineered Wood" },
-      { id: "aluminium-glass", label: "Aluminium and Glass" },
-      { id: "metal-frame", label: "Metal Frame" },
+      { id: "teak", label: "ไม้สัก", imageSrc: "/materials/door/4.png" },
+      { id: "engineered-wood", label: "ไม้เอ็นจิเนียร์", imageSrc: "/materials/door/1.png" },
+      { id: "aluminium-glass", label: "อลูมิเนียม + กระจก", imageSrc: "/materials/door/2.png" },
+      { id: "metal-frame", label: "ประตูกรอบเหล็ก", imageSrc: "/materials/door/3.png" },
     ],
   },
   {
     id: "flooring",
     label: "พื้น",
     options: [
-      { id: "natural-marble", label: "Natural Marble" },
-      { id: "engineered-wood", label: "Engineered Wood" },
-      { id: "porcelain-tile", label: "Porcelain Tile" },
-      { id: "terrazzo", label: "Terrazzo" },
-    ],
-  },
-  {
-    id: "ceiling",
-    label: "ฝ้าเพดาน",
-    options: [
-      { id: "flat-ceiling", label: "Flat Ceiling" },
-      { id: "timber-slats", label: "Timber Slats" },
-      { id: "recessed-ceiling", label: "Recessed Ceiling" },
-      { id: "solid-timber", label: "Solid Timber" },
-    ],
-  },
-  {
-    id: "facade",
-    label: "รายละเอียดฟาซาด",
-    options: [
-      { id: "timber-screen", label: "Timber Screen" },
-      { id: "decorative-stone", label: "Decorative Stone" },
-      { id: "metal-screen", label: "Metal Screen" },
-      { id: "green-facade", label: "Green Facade" },
-    ],
-  },
-  {
-    id: "lighting",
-    label: "แสงและบรรยากาศ",
-    options: [
-      { id: "warm-ambient", label: "Warm Ambient" },
-      { id: "architectural-light", label: "Architectural Light" },
-      { id: "landscape-light", label: "Landscape Light" },
-      { id: "accent-lighting", label: "Accent Lighting" },
+      { id: "natural-marble", label: "หินอ่อนธรรมชาติ", imageSrc: "/materials/flooring/1.png" },
+      { id: "engineered-wood", label: "ไม้เอ็นจิเนียร์", imageSrc: "/materials/flooring/2.png" },
+      { id: "porcelain-tile", label: "กระเบื้องพอร์ซเลน", imageSrc: "/materials/flooring/3.png" },
+      { id: "terrazzo", label: "หินขัดเทอร์ราซโซ", imageSrc: "/materials/flooring/4.png" },
     ],
   },
 ] as const;
@@ -117,7 +84,6 @@ export type PricingSpecialFeature =
   | "smart-home"
   | "solar"
   | "ev-charger"
-  | "double-volume"
   | "large-glazing";
 
 export const PRICING_SPECIAL_FEATURE_CODES = [
@@ -126,26 +92,28 @@ export const PRICING_SPECIAL_FEATURE_CODES = [
   "smart-home",
   "solar",
   "ev-charger",
-  "double-volume",
   "large-glazing",
 ] as const satisfies readonly PricingSpecialFeature[];
 
 export const SPECIAL_FEATURE_CATALOG = [
-  { id: "pool", label: "สระว่ายน้ำ" },
-  { id: "lift", label: "ลิฟต์" },
-  { id: "smart-home", label: "ระบบ Smart Home" },
-  { id: "solar", label: "โซลาร์เซลล์" },
-  { id: "ev-charger", label: "ที่ชาร์จรถ EV" },
-  { id: "double-volume", label: "โถง Double Volume" },
-  { id: "large-glazing", label: "ผนังกระจกขนาดใหญ่" },
-  { id: "internal-garden", label: "สวนภายในบ้าน" },
-  { id: "skylight", label: "สกายไลต์" },
-  { id: "home-theater", label: "โฮมเธียเตอร์" },
-  { id: "wine-room", label: "ห้องไวน์" },
-  { id: "outdoor-pavilion", label: "ศาลานั่งเล่นภายนอก" },
-  { id: "security-system", label: "ระบบรักษาความปลอดภัย" },
-  { id: "fitness-room", label: "ห้องออกกำลังกาย" },
-  { id: "pet-area", label: "พื้นที่สำหรับสัตว์เลี้ยง" },
+  { id: "pool", label: "สระว่ายน้ำ", imageSrc: "/materials/special-features/1.png" },
+  { id: "lift", label: "ลิฟต์", imageSrc: "/materials/special-features/2.png" },
+  { id: "smart-home", label: "ระบบ Smart Home", imageSrc: "/materials/special-features/3.png" },
+  { id: "solar", label: "โซลาร์เซลล์", imageSrc: "/materials/special-features/4.png" },
+  { id: "ev-charger", label: "ที่ชาร์จรถ EV", imageSrc: "/materials/special-features/5.png" },
+  { id: "large-glazing", label: "ผนังกระจกขนาดใหญ่", imageSrc: "/materials/special-features/6.png" },
+  { id: "internal-garden", label: "สวนภายในบ้าน", imageSrc: "/materials/special-features/7.png" },
+  { id: "outdoor-pavilion", label: "ศาลานั่งเล่นภายนอก", imageSrc: "/materials/special-features/8.png" },
+  { id: "security-system", label: "ระบบรักษาความปลอดภัย", imageSrc: "/materials/special-features/9.png" },
+  { id: "fitness-room", label: "ห้องออกกำลังกาย", imageSrc: "/materials/special-features/10.png" },
+] as const;
+
+export const RETIRED_SPECIAL_FEATURE_IDS = [
+  "double-volume",
+  "skylight",
+  "home-theater",
+  "wine-room",
+  "pet-area",
 ] as const;
 
 export type SpecialFeatureId = (typeof SPECIAL_FEATURE_CATALOG)[number]["id"];

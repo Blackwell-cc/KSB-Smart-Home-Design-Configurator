@@ -49,28 +49,27 @@ describe("calculateArea", () => {
     expect(result.constructionFloorAreaM2).toBe(254);
   });
 
-  test("adds each requested optional function to the recommended usable area", () => {
+  test("records every optional function without changing any area result", () => {
     const base = calculateQaArea(createDefaultConfiguration());
-    const functionAreas = {
-      office: 12,
-      elderlyRoom: 16,
-      thaiKitchen: 12,
-      multipurposeRoom: 15,
-    } as const;
 
-    for (const [functionName, expectedIncrease] of Object.entries(functionAreas) as Array<
-      [keyof HouseConfiguration["functions"], number]
-    >) {
+    for (const functionName of Object.keys(createDefaultConfiguration().functions) as Array<keyof HouseConfiguration["functions"]>) {
       const result = calculateQaArea(
         configuration({
           functions: { ...createDefaultConfiguration().functions, [functionName]: true },
         }),
       );
 
-      expect(result.recommendedUsableAreaM2).toBe(
-        base.recommendedUsableAreaM2 + expectedIncrease,
-      );
+      expect(result).toEqual(base);
     }
+  });
+
+  test("records requirement-only choices without changing any area result", () => {
+    const baseline = calculateQaArea(createDefaultConfiguration());
+    const withRequirements = calculateQaArea(configuration({
+      additionalRequirements: ["fitness", "home-theater", "pet-area"],
+    }));
+
+    expect(withRequirements).toEqual(baseline);
   });
 
   test("keeps zero parking as a zero-area CFA line item", () => {
@@ -109,7 +108,7 @@ describe("calculateArea", () => {
       constructionFloorAreaM2: 104,
     });
     expect(calculateQaArea(maximum)).toMatchObject({
-      recommendedUsableAreaM2: 457,
+      recommendedUsableAreaM2: 402,
       usableAreaM2: 1500,
       constructionFloorAreaM2: 1654,
     });

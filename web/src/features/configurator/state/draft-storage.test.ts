@@ -37,6 +37,23 @@ describe("DraftStorage", () => {
     });
   });
 
+  test("migrates an existing v1 draft that predates requirement-only choices", () => {
+    const legacyConfiguration = { ...createDefaultConfiguration() } as Record<string, unknown>;
+    delete legacyConfiguration.additionalRequirements;
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 1,
+        configuration: legacyConfiguration,
+      }),
+    });
+
+    expect(createDraftStorage(storage).load()).toMatchObject({
+      status: "valid",
+      draft: { configuration: { additionalRequirements: [] } },
+    });
+  });
+
   test("migrates legacy signature drafts without losing features", () => {
     const legacyConfiguration = { ...createDefaultConfiguration() } as Record<string, unknown>;
     delete legacyConfiguration.materialSelections;
@@ -56,6 +73,66 @@ describe("DraftStorage", () => {
     expect(result).toMatchObject({
       status: "valid",
       draft: { configuration: { materialQualityId: "signature", specialFeatures: ["pool"] } },
+    });
+  });
+
+  test("removes retired material categories from an existing draft", () => {
+    const configuration = createDefaultConfiguration();
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 3,
+        configuration: {
+          ...configuration,
+          materialSelections: {
+            ...configuration.materialSelections,
+            ceiling: "flat-ceiling",
+            facade: "timber-screen",
+            lighting: "warm-ambient",
+          },
+        },
+      }),
+    });
+
+    expect(createDraftStorage(storage).load()).toMatchObject({
+      status: "valid",
+      draft: {
+        configuration: {
+          materialSelections: configuration.materialSelections,
+        },
+      },
+    });
+  });
+
+  test("removes retired special features from an existing draft without losing the draft", () => {
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 3,
+        configuration: {
+          ...createDefaultConfiguration(),
+          provinceCode: "10",
+          specialFeatures: [
+            "pool",
+            "double-volume",
+            "skylight",
+            "home-theater",
+            "wine-room",
+            "pet-area",
+          ],
+        },
+      }),
+    });
+
+    expect(createDraftStorage(storage).load()).toMatchObject({
+      status: "valid",
+      draft: {
+        currentStep: 3,
+        configuration: {
+          provinceCode: "10",
+          specialFeatures: ["pool"],
+        },
+      },
     });
   });
 
@@ -86,6 +163,52 @@ describe("DraftStorage", () => {
       });
     },
   );
+
+  test("migrates legacy budget data without losing a custom range", () => {
+    const legacyConfiguration = {
+      ...createDefaultConfiguration(),
+      targetBudget: { min: 5_000_000, max: 7_000_000 },
+    } as Record<string, unknown>;
+    delete legacyConfiguration.budgetRangeId;
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 2,
+        configuration: legacyConfiguration,
+      }),
+    });
+
+    expect(createDraftStorage(storage).load()).toMatchObject({
+      status: "valid",
+      draft: {
+        configuration: {
+          budgetRangeId: "unspecified",
+          targetBudget: { min: 5_000_000, max: 7_000_000 },
+        },
+      },
+    });
+  });
+
+  test("recognizes a catalog range in a legacy budget draft", () => {
+    const legacyConfiguration = {
+      ...createDefaultConfiguration(),
+      targetBudget: { min: 20_000_000, max: 40_000_000 },
+    } as Record<string, unknown>;
+    delete legacyConfiguration.budgetRangeId;
+    const storage = createMemoryStorage({
+      "ksb-configurator-draft-v1": JSON.stringify({
+        draftVersion: 1,
+        currentStep: 2,
+        configuration: legacyConfiguration,
+      }),
+    });
+
+    expect(createDraftStorage(storage).load()).toMatchObject({
+      status: "valid",
+      draft: { configuration: { budgetRangeId: "20m_40m" } },
+    });
+  });
+
   test("treats malformed, incompatible, and contact-bearing saved data as incompatible", () => {
     for (const raw of [
       "{not-json",

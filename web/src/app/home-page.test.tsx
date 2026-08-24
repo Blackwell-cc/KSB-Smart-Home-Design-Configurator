@@ -24,7 +24,7 @@ test("renders five non-interactive demo cards with safe sample pricing", () => {
   expect(within(showcase).getAllByRole("article")).toHaveLength(5);
   expect(within(showcase).queryByRole("button")).not.toBeInTheDocument();
   expect(within(showcase).queryByRole("slider")).not.toBeInTheDocument();
-  expect(within(showcase).getByText("5.8 – 6.9 ล้านบาท")).toBeInTheDocument();
+  expect(within(showcase).getByText("30 – 40 ล้านบาท")).toBeInTheDocument();
   expect(within(showcase).getByText("ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน")).toBeInTheDocument();
   expect(screen.getAllByText(/ใช้เวลา 3–5 นาที/)).toHaveLength(1);
   expect(screen.getByRole("heading", { name: "3 ขั้นตอนง่าย ๆ เพื่อบ้านในฝัน" })).toBeInTheDocument();

@@ -11,7 +11,7 @@ const configuration = projectDesignBriefConfiguration({
 });
 const validInput = {
   configurationId: "11111111-1111-4111-8111-111111111111", idempotencyKey: "22222222-2222-4222-8222-222222222222",
-  configuration, preferredContactMethod: "email" as const, name: "  ผู้ทดสอบ  ", email: "owner@example.test",
+  configuration, preferredContactMethod: "phone" as const, name: "  ผู้ทดสอบ  ", phone: "0812345678", email: "owner@example.test", lineId: "owner.line", requestPurpose: "planning_to_build" as const,
   consentAccepted: true as const, consentVersion: "project-contact-v1",
 };
 
@@ -63,6 +63,27 @@ describe("submitLead", () => {
     expect((captured.mock.calls[0]?.[0] as unknown as { calculationSnapshot: { concept: unknown } }).calculationSnapshot.concept).toEqual({ id: "contemporary-warm-luxury", label: "Contemporary Warm Luxury", imageSrc: "/concepts/contemporary-warm-luxury.png" });
   });
 
+  test("persists the floor-specific concept image in the full report snapshot", async () => {
+    const { dependencies: deps } = dependencies();
+    const captured = vi.fn(deps.repository.submitOnce); deps.repository.submitOnce = captured;
+    await submitLead({
+      ...validInput,
+      configuration: { ...configuration, styleId: "luxury-style", floors: 1 },
+    }, deps);
+
+    expect((captured.mock.calls[0]?.[0] as unknown as { calculationSnapshot: { concept: { imageSrc: string } } }).calculationSnapshot.concept.imageSrc)
+      .toBe("/concepts/base-tropical-1f-master.webp");
+  });
+
+  test("persists the complete contact request without copying project data into it", async () => {
+    const { dependencies: deps } = dependencies();
+    const captured = vi.fn(deps.repository.submitOnce); deps.repository.submitOnce = captured;
+    await submitLead(validInput, deps);
+    expect(captured).toHaveBeenCalledWith(expect.objectContaining({
+      name: "ผู้ทดสอบ", phone: "0812345678", email: "owner@example.test", lineId: "owner.line", requestPurpose: "planning_to_build",
+    }));
+  });
+
   test("saves the full Step 4 design brief while pricing uses only compatible values", async () => {
     const { dependencies: deps } = dependencies();
     const captured = vi.fn(deps.repository.submitOnce);
@@ -111,6 +132,25 @@ describe("submitLead", () => {
     const { dependencies: deps, repository } = dependencies(); const notify = vi.fn().mockRejectedValue(new Error("WEBHOOK_DOWN"));
     const result = await submitLead(validInput, { ...deps, notifier: { notify } });
     expect(result.leadId).toBeDefined(); expect(repository.insertCount).toBe(1);
-    expect(notify).toHaveBeenCalledWith(expect.objectContaining({ eventType: "lead_submitted", leadId: result.leadId, projectId: result.projectId, contact: "owner@example.test" }));
+    expect(notify).toHaveBeenCalledWith(expect.objectContaining({ eventType: "lead_submitted", leadId: result.leadId, projectId: result.projectId, contact: "0812345678" }));
+  });
+
+  test("allows the explicit development price-book mode outside the published flow", async () => {
+    const { dependencies: deps } = dependencies();
+    const published = await deps.priceBookRepository.loadPublished();
+    const developmentPriceBookRepository = {
+      async loadPublished() {
+        return {
+          ...published,
+          priceBook: { ...published.priceBook, status: "review" as const },
+          estimateMode: "development-demo" as const,
+        };
+      },
+    };
+
+    await expect(submitLead(validInput, { ...deps, priceBookRepository: developmentPriceBookRepository })).resolves.toEqual(expect.objectContaining({
+      leadId: expect.any(String),
+      projectId: expect.any(String),
+    }));
   });
 });

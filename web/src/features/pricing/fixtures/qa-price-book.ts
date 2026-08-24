@@ -23,7 +23,6 @@ export const qaPriceBook: PriceBook = {
     "smart-home": { low: 150_000, expected: 350_000, high: 800_000 },
     solar: { low: 180_000, expected: 300_000, high: 500_000 },
     "ev-charger": { low: 35_000, expected: 65_000, high: 120_000 },
-    "double-volume": { low: 150_000, expected: 350_000, high: 700_000 },
     "large-glazing": { low: 250_000, expected: 600_000, high: 1_500_000 },
   },
   designFeeRates: { low: 0.05, expected: 0.0675, high: 0.085 },

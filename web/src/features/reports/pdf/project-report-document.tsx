@@ -8,22 +8,41 @@ Font.register({ family: "KSB Noto Sans Thai", src: path.join(process.cwd(), "src
 const styles = StyleSheet.create({ page: { padding: 34, fontFamily: "KSB Noto Sans Thai", fontSize: 10, color: "#171411" }, eyebrow: { color: "#8a692e", fontSize: 8, letterSpacing: 1.2 }, title: { marginTop: 6, fontSize: 22 }, section: { marginTop: 18 }, heading: { color: "#8a692e", fontSize: 12, marginBottom: 6 }, row: { flexDirection: "row", paddingVertical: 4, borderBottomWidth: 0.5, borderBottomColor: "#d8c9a9" }, label: { flexGrow: 1 }, amount: { width: 88, textAlign: "right" }, fine: { marginTop: 12, color: "#625c55", fontSize: 8, lineHeight: 1.4 } });
 const money = (value: number) => new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 }).format(value);
 
+const PDF_CONCEPT_IMAGES = {
+  "/concepts/contemporary-warm-luxury.png": { file: "contemporary-warm-luxury.png", format: "png" },
+  "/concepts/modern-tropical-resort.png": { file: "modern-tropical-resort.png", format: "png" },
+  "/concepts/timeless-contemporary-luxury.png": { file: "timeless-contemporary-luxury.png", format: "png" },
+  "/concepts/base-classic-2f-master.webp": { file: "pdf/base-classic-2f-master.jpg", format: "jpg" },
+  "/concepts/base-classic-1f-master.webp": { file: "pdf/base-classic-1f-master.jpg", format: "jpg" },
+  "/concepts/base-classic-3f-master.webp": { file: "pdf/base-classic-3f-master.jpg", format: "jpg" },
+  "/concepts/base-modern-2f-master-2.webp": { file: "pdf/base-modern-2f-master-2.jpg", format: "jpg" },
+  "/concepts/base-modern-1f-master-2.webp": { file: "pdf/base-modern-1f-master-2.jpg", format: "jpg" },
+  "/concepts/base-modern-3f-master-2.webp": { file: "pdf/base-modern-3f-master-2.jpg", format: "jpg" },
+  "/concepts/base-nordic-2f-master.webp": { file: "pdf/base-nordic-2f-master.jpg", format: "jpg" },
+  "/concepts/base-nordic-1f-master.webp": { file: "pdf/base-nordic-1f-master.jpg", format: "jpg" },
+  "/concepts/base-nordic-3f-master.webp": { file: "pdf/base-nordic-3f-master.jpg", format: "jpg" },
+  "/concepts/base-loft-2f-master.webp": { file: "pdf/base-loft-2f-master.jpg", format: "jpg" },
+  "/concepts/base-loft-1f-master.webp": { file: "pdf/base-loft-1f-master.jpg", format: "jpg" },
+  "/concepts/base-loft-3f-master.webp": { file: "pdf/base-loft-3f-master.jpg", format: "jpg" },
+  "/concepts/base-minimal-2f-master.webp": { file: "pdf/base-minimal-2f-master.jpg", format: "jpg" },
+  "/concepts/base-tropical-2f-master.webp": { file: "pdf/base-tropical-2f-master.jpg", format: "jpg" },
+  "/concepts/base-tropical-1f-master.webp": { file: "pdf/base-tropical-1f-master.jpg", format: "jpg" },
+  "/concepts/base-tropical-3f-master.webp": { file: "pdf/base-tropical-3f-master.jpg", format: "jpg" },
+  "/concepts/base-contemporary-2f-master.webp": { file: "pdf/base-contemporary-2f-master.jpg", format: "jpg" },
+  "/concepts/base-contemporary-1f-master.webp": { file: "pdf/base-contemporary-1f-master.jpg", format: "jpg" },
+  "/concepts/base-contemporary-3f-master.webp": { file: "pdf/base-contemporary-3f-master.jpg", format: "jpg" },
+} as const satisfies Record<string, { file: string; format: "png" | "jpg" }>;
+
 export function resolvePdfConceptImagePath(imageSrc: string | undefined): string | null {
-  switch (imageSrc) {
-    case "/concepts/contemporary-warm-luxury.png": return path.join(process.cwd(), "public", "concepts", "contemporary-warm-luxury.png");
-    case "/concepts/modern-tropical-resort.png": return path.join(process.cwd(), "public", "concepts", "modern-tropical-resort.png");
-    case "/concepts/timeless-contemporary-luxury.png": return path.join(process.cwd(), "public", "concepts", "timeless-contemporary-luxury.png");
-    default: return null;
-  }
+  if (!imageSrc || !(imageSrc in PDF_CONCEPT_IMAGES)) return null;
+  return path.join(process.cwd(), "public", "concepts", PDF_CONCEPT_IMAGES[imageSrc as keyof typeof PDF_CONCEPT_IMAGES].file);
 }
 
-export function resolvePdfConceptImage(imageSrc: string | undefined): { data: Buffer; format: "png" } | null {
-  switch (imageSrc) {
-    case "/concepts/contemporary-warm-luxury.png": return { data: readFileSync(path.join(process.cwd(), "public", "concepts", "contemporary-warm-luxury.png")), format: "png" };
-    case "/concepts/modern-tropical-resort.png": return { data: readFileSync(path.join(process.cwd(), "public", "concepts", "modern-tropical-resort.png")), format: "png" };
-    case "/concepts/timeless-contemporary-luxury.png": return { data: readFileSync(path.join(process.cwd(), "public", "concepts", "timeless-contemporary-luxury.png")), format: "png" };
-    default: return null;
-  }
+export function resolvePdfConceptImage(imageSrc: string | undefined): { data: Buffer; format: "png" | "jpg" } | null {
+  if (!imageSrc || !(imageSrc in PDF_CONCEPT_IMAGES)) return null;
+  const asset = PDF_CONCEPT_IMAGES[imageSrc as keyof typeof PDF_CONCEPT_IMAGES];
+  const imagePath = resolvePdfConceptImagePath(imageSrc);
+  return imagePath ? { data: readFileSync(imagePath), format: asset.format } : null;
 }
 
 export function ProjectReportDocument({ report }: { report: FullReportViewModel }) {

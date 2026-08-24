@@ -4,106 +4,91 @@ import { vi } from "vitest";
 import type { FullReportViewModel } from "../application/build-full-report";
 import { FullReport } from "./full-report";
 
-vi.mock("html-to-image", () => ({ toPng: vi.fn().mockResolvedValue("data:image/png;base64,summary") }));
-
-const report: FullReportViewModel = {
-  snapshotId: "snapshot-1",
-  projectId: "project-1",
-  concept: {
-    styleId: "contemporary-warm-luxury",
-    label: "Contemporary Warm Luxury",
-    imageSrc: "/concepts/contemporary-warm-luxury.png",
-  },
-  configuration: {
-    floors: 2,
-    bedrooms: 3,
-    bathrooms: 3,
-    parkingSpaces: 2,
-    materialLevel: "premium",
-    specialFeatures: [],
-  },
-  area: {
-    usableAreaM2: 164,
-    constructionFloorAreaM2: 198,
-  },
-  total: { low: 4_725_000, expected: 5_871_250, high: 7_052_500 },
-  lines: [
-    { code: "core-construction", label: "ค่าก่อสร้างหลัก", amount: { low: 4_500_000, expected: 5_500_000, high: 6_500_000 } },
-    { code: "design-professional-fee", label: "ค่าออกแบบและบริการวิชาชีพ", amount: { low: 225_000, expected: 371_250, high: 552_500 } },
+const report = {
+  snapshotId: "snapshot-1", projectId: "project-1", generatedAt: "2026-08-19T08:00:00.000Z",
+  concept: { styleId: "classic-style", label: "Classic Style", thaiLabel: "บ้านสไตล์คลาสสิก", imageSrc: "/concepts/timeless-contemporary-luxury.png", direction: { title: "ภูมิฐาน ประณีต เหนือกาลเวลา", description: "บ้านที่ให้ความสำคัญกับสัดส่วน รายละเอียด และบรรยากาศสง่างาม" } },
+  configuration: { residents: 5, floors: 2, bedrooms: 4, bathrooms: 4, parkingSpaces: 3, materialLevel: "signature", materialQuality: "SIGNATURE", functions: ["ห้องทำงาน", "ครัวไทย"], specialFeatures: ["pool", "smart-home"] },
+  location: { province: "กรุงเทพมหานคร", district: "บางรัก", siteAccess: "เข้าถึงสะดวก" },
+  area: { usableAreaM2: 615, constructionFloorAreaM2: 650 },
+  materials: [
+    { categoryId: "roof", categoryLabel: "หลังคา", optionLabel: "Slate / หินธรรมชาติ" },
+    { categoryId: "wall", categoryLabel: "ผนังภายนอก", optionLabel: "หินธรรมชาติ" },
+    { categoryId: "window", categoryLabel: "หน้าต่าง", optionLabel: "อลูมิเนียมสีดำ" },
+    { categoryId: "flooring", categoryLabel: "พื้น", optionLabel: "หินอ่อนธรรมชาติ" },
   ],
-  assumptions: ["ประเมินจากข้อมูลเบื้องต้น"],
-  includedItems: ["งานโครงสร้าง"],
-  excludedItems: ["ค่าควบคุมงานก่อสร้าง: ยังไม่รวม"],
-  confidence: "B",
-  pricingVersion: "TH-2026Q2-QA-0.1",
-  referenceDate: "2026-06-30",
-  budgetComparison: { status: "within-target" },
-  disclaimer: "เป็นกรอบงบประมาณเพื่อใช้วางแผนเบื้องต้น",
-  nextStepAdvice: "นัดพูดคุยกับสถาปนิกเพื่อยืนยันรายละเอียดโครงการ",
-};
+  specialFeatures: [
+    { id: "pool", label: "สระว่ายน้ำ", description: "พื้นที่พักผ่อนพร้อมระบบสระ" },
+    { id: "smart-home", label: "ระบบ Smart Home", description: "ควบคุมระบบสำคัญภายในบ้าน" },
+  ],
+  additionalRequirements: ["ห้องทำงาน", "ครัวไทย"],
+  gallery: Array.from({ length: 12 }, (_, index) => ({ id: `view-${index + 1}`, label: `มุมมอง ${index + 1}`, imageSrc: "/concepts/timeless-contemporary-luxury.png", objectPosition: `${30 + index * 3}% 50%`, placeholder: true })),
+  total: { low: 4_725_000, expected: 5_871_250, high: 7_052_500 },
+  lines: [],
+  detailedBudget: {
+    categories: [
+      { code: "structure", label: "งานโครงสร้าง", description: "ฐานราก เสา คาน พื้น", amount: { low: 4_000_000, expected: 5_000_000, high: 6_000_000 } },
+      { code: "design-professional-fee", label: "ค่าออกแบบและบริการวิชาชีพ", description: "งานออกแบบและเอกสาร", amount: { low: 525_000, expected: 671_250, high: 852_500 } },
+    ],
+    subtotal: { low: 4_525_000, expected: 5_671_250, high: 6_852_500 },
+    contingency: { code: "contingency", label: "สำรองประมาณการ / ความเสี่ยงหน้างาน", description: "ค่าเผื่อหน้างาน", amount: { low: 200_000, expected: 200_000, high: 200_000 } },
+    total: { low: 4_725_000, expected: 5_871_250, high: 7_052_500 },
+  },
+  assumptions: ["ประเมินจากข้อมูลเบื้องต้น"], includedItems: ["งานโครงสร้าง"], excludedItems: ["ค่าควบคุมงานก่อสร้าง: ยังไม่รวม"], confidence: "B", pricingVersion: "TH-2026Q2-QA-0.1", referenceDate: "2026-06-30",
+  budgetComparison: { status: "within-target" }, disclaimer: "เป็นกรอบงบประมาณเพื่อใช้วางแผนเบื้องต้น", nextStepAdvice: "นัดพูดคุยกับสถาปนิกเพื่อยืนยันรายละเอียดโครงการ",
+} satisfies FullReportViewModel;
 
-test("renders a PII-free full report with the architectural price-range triptych", () => {
-  render(<FullReport report={report} />);
+test("renders the premium dynamic report, existing PDF action and a reconciled detailed budget", () => {
+  render(<FullReport report={report} pdfHref="/api/reports/project-1/pdf" />);
 
-  expect(screen.getByRole("heading", { name: "สรุปโครงการฉบับเต็ม" })).toBeVisible();
-  expect(screen.getAllByText("4,725,000 บาท").length).toBeGreaterThan(0);
-  expect(screen.getAllByText("5,871,250 บาท").length).toBeGreaterThan(0);
-  expect(screen.getAllByText("7,052,500 บาท").length).toBeGreaterThan(0);
-  expect(screen.getByText("ค่าออกแบบและบริการวิชาชีพ")).toBeVisible();
-  expect(screen.getByText("ค่าควบคุมงานก่อสร้าง: ยังไม่รวม")).toBeVisible();
-  expect(screen.getByText(/TH-2026Q2-QA-0\.1/)).toBeVisible();
+  expect(screen.getByRole("heading", { name: "รายงานฉบับเต็ม ภาพรวมบ้านที่คุณกำลังวางแผน" })).toBeVisible();
+  expect(screen.getByRole("link", { name: "ดาวน์โหลดเอกสารฉบับเต็ม (PDF)" })).toHaveAttribute("href", "/api/reports/project-1/pdf");
+  expect(screen.getByText("บ้านสไตล์คลาสสิก 2 ชั้น")).toBeVisible();
+  expect(screen.getByText("กรุงเทพมหานคร")).toBeVisible();
+  expect(screen.getByText("งานโครงสร้าง")).toBeVisible();
+  expect(screen.getAllByText(/7,052,500/).length).toBeGreaterThan(0);
+  expect(screen.getByText(/Slate \/ หินธรรมชาติ/)).toBeVisible();
+  expect(screen.getByText("ระบบ Smart Home")).toBeVisible();
+  expect(screen.queryByText(/classic-style|smart-home/)).not.toBeInTheDocument();
   expect(screen.queryByLabelText(/ชื่อ|อีเมล|เบอร์โทร|LINE/i)).not.toBeInTheDocument();
 });
 
-test("exports the project summary as a local PNG without uploading it", async () => {
+test("changes the accessible main gallery view from thumbnails and arrow controls", async () => {
   const user = userEvent.setup();
-  const createObjectUrl = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:summary");
-  const revokeObjectUrl = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
-  const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
-  const { toPng } = await import("html-to-image");
-  render(<FullReport report={report} />);
+  render(<FullReport report={report} pdfHref="/api/reports/project-1/pdf" />);
 
-  await user.click(screen.getByRole("button", { name: "บันทึกภาพสรุปโครงการ" }));
-
-  await waitFor(() => expect(toPng).toHaveBeenCalledOnce());
-  expect(click).toHaveBeenCalledOnce();
-  expect(createObjectUrl).toHaveBeenCalledOnce();
-  expect(revokeObjectUrl).toHaveBeenCalledWith("blob:summary");
+  expect(screen.getByText("01 / 12")).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "แสดงมุมมอง 4" }));
+  expect(screen.getByText("04 / 12")).toBeVisible();
+  expect(screen.getByRole("img", { name: "มุมมอง 4 ของบ้านสไตล์ Classic Style" })).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "ภาพถัดไป" }));
+  expect(screen.getByText("05 / 12")).toBeVisible();
 });
 
-test("always cleans the temporary anchor and object URL when a PNG download click fails", async () => {
-  const user = userEvent.setup(); const revoke = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined); const remove = vi.spyOn(HTMLAnchorElement.prototype, "remove");
-  vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:failure"); vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => { throw new Error("DOWNLOAD_FAILED"); });
-  render(<FullReport report={report} />); await user.click(screen.getByRole("button", { name: "บันทึกภาพสรุปโครงการ" }));
-  await waitFor(() => expect(revoke).toHaveBeenCalledWith("blob:failure")); expect(remove).toHaveBeenCalled();
-});
-
-test("hands a consultation request to the host after its server-confirmed success", async () => {
+test("creates a privacy-safe share and reports consultation status only after server success", async () => {
   const user = userEvent.setup();
+  const onCreateShare = vi.fn().mockResolvedValue("/share/public-example-7f3k");
   const onRequestConsultation = vi.fn().mockResolvedValue(undefined);
   const onConsultationRequested = vi.fn();
-  render(<FullReport report={report} onRequestConsultation={onRequestConsultation} onConsultationRequested={onConsultationRequested} />);
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockResolvedValue(undefined) } });
+  render(<FullReport report={report} pdfHref="/api/reports/project-1/pdf" onCreateShare={onCreateShare} onRequestConsultation={onRequestConsultation} onConsultationRequested={onConsultationRequested} />);
 
-  await user.click(screen.getByRole("button", { name: "ขอนัดปรึกษากับสถาปนิก" }));
+  await user.click(screen.getByRole("button", { name: "แชร์รายงานนี้" }));
+  await waitFor(() => expect(onCreateShare).toHaveBeenCalledOnce());
+  expect(await screen.findByRole("status")).toHaveTextContent("คัดลอกลิงก์รายงานแล้ว");
 
+  await user.click(screen.getByRole("button", { name: "ปรึกษาสถาปนิก" }));
   await waitFor(() => expect(onRequestConsultation).toHaveBeenCalledOnce());
-  expect(onRequestConsultation.mock.calls[0][0]).toBeInstanceOf(AbortSignal);
   expect(onConsultationRequested).toHaveBeenCalledOnce();
-  expect(screen.getByRole("status")).toHaveTextContent("ส่งคำขอนัดปรึกษาแล้ว");
+  expect(screen.getByText("ส่งคำขอนัดปรึกษาแล้ว")).toBeVisible();
 });
 
-test("keeps failures generic and aborts an in-flight consultation request when unmounted", async () => {
+test("aborts an in-flight consultation request when unmounted", async () => {
   const user = userEvent.setup();
   let signal: AbortSignal | undefined;
-  const onRequestConsultation = vi.fn().mockImplementation((requestSignal: AbortSignal) => {
-    signal = requestSignal;
-    return new Promise<void>(() => undefined);
-  });
-  const { unmount } = render(<FullReport report={report} onRequestConsultation={onRequestConsultation} />);
-
-  await user.click(screen.getByRole("button", { name: "ขอนัดปรึกษากับสถาปนิก" }));
+  const onRequestConsultation = vi.fn().mockImplementation((requestSignal: AbortSignal) => { signal = requestSignal; return new Promise<void>(() => undefined); });
+  const { unmount } = render(<FullReport report={report} pdfHref="/api/reports/project-1/pdf" onRequestConsultation={onRequestConsultation} />);
+  await user.click(screen.getByRole("button", { name: "ปรึกษาสถาปนิก" }));
   await waitFor(() => expect(onRequestConsultation).toHaveBeenCalledOnce());
   unmount();
-
   expect(signal?.aborted).toBe(true);
 });

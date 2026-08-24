@@ -17,6 +17,11 @@ test("locks the desktop configurator to one viewport and scrolls only the style 
   expect(stylesheet).toMatch(/\.formPanel h1:focus-visible\s*\{[^}]*border-left:/);
 });
 
+test("removes the unused house-style category controls", () => {
+  expect(stylesheet).not.toMatch(/^\.styleFilters\b/m);
+  expect(stylesheet).not.toMatch(/^\.filterChip\b/m);
+});
+
 test("keeps desktop viewport ownership out of unscoped base selectors", () => {
   expect(stylesheet).not.toMatch(/^\.shell\s*\{[^}]*height:/m);
   expect(stylesheet).not.toMatch(/^\.shell\s*\{[^}]*overflow:\s*hidden;/m);
@@ -24,10 +29,54 @@ test("keeps desktop viewport ownership out of unscoped base selectors", () => {
   expect(stylesheet).not.toMatch(/^\.formPanel\s*\{[^}]*overflow-y:/m);
 });
 
-test("fills the right stage with the house image and renders zones as labels only", () => {
+test("scopes the Step 3 viewport layout, single divider, budget radios, preview and summary", () => {
+  expect(stylesheet).toMatch(/\.page\[data-step="site-budget"\]\s*\{[^}]*height:\s*100svh;[^}]*overflow:\s*hidden;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="site-budget"\]\s*\{[^}]*height:\s*calc\(100svh - 78px\);[^}]*grid-template-columns:\s*minmax\(0, 43fr\) minmax\(0, 57fr\);[^}]*gap:\s*0;/);
+  expect(stylesheet).toMatch(/\.siteBudgetPreview::before\s*\{[^}]*width:\s*1px;[^}]*background:/);
+  expect(stylesheet).toMatch(/\.siteBudgetPreview::after\s*\{[^}]*height:\s*140px;[^}]*radial-gradient/);
+  expect(stylesheet).toMatch(/\.siteBudgetConceptImage img\s*\{[^}]*object-fit:\s*contain;/);
+  expect(stylesheet).toMatch(/\.siteBudgetPreview\s*\{[^}]*grid-template-rows:\s*minmax\(0, 1fr\) auto;/);
+  expect(stylesheet).toMatch(/\.budgetRangeGrid\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\);/);
+  expect(stylesheet).toMatch(/\.budgetRangeOption:has\(input:focus-visible\)\s*\{[^}]*outline:/);
+});
+
+test("keeps Step 3 budget choices inside a scroll region above the action bar", () => {
+  expect(stylesheet).toMatch(/\.siteBudgetStack\s*\{[^}]*overflow-y:\s*auto;[^}]*overscroll-behavior:\s*contain;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="site-budget"\] \.actions\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*2;[^}]*flex-shrink:\s*0;[^}]*background:/);
+  expect(stylesheet).toMatch(/@media \(max-width: 1199px\)[\s\S]*?\.siteBudgetStack\s*\{[^}]*overflow:\s*visible;/);
+});
+
+test("scopes the Step 2 split layout, divider glow, and clean contained preview", () => {
+  expect(stylesheet).toMatch(/\.page\[data-step="functions"\]\s*\{[^}]*height:\s*100svh;[^}]*overflow:\s*hidden;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="functions"\]\s*\{[^}]*grid-template-columns:\s*minmax\(0, 43fr\) minmax\(0, 57fr\);[^}]*gap:\s*0;/);
+  expect(stylesheet).toMatch(/\.functionsPreview::before\s*\{[^}]*width:\s*1px;[^}]*background:/);
+  expect(stylesheet).toMatch(/\.functionsPreview::after\s*\{[^}]*height:\s*140px;[^}]*radial-gradient/);
+  expect(stylesheet).toMatch(/\.functionsPreviewImage img\s*\{[^}]*object-fit:\s*cover;/);
+  expect(stylesheet).toMatch(/\.functionsPreview\s*\{[^}]*grid-template-rows:\s*minmax\(0, 1fr\) auto;/);
+  expect(stylesheet).toMatch(/\.functionsPreviewImage\s*\{[^}]*linear-gradient[^}]*#07111a/);
+  expect(stylesheet).toMatch(/\.functionCarouselTrack\s*\{[^}]*overflow-x:\s*auto;[^}]*overflow-y:\s*hidden;/);
+  expect(stylesheet).toMatch(/\.functionsPreviewImage img\s*\{[^}]*filter:\s*brightness\(1\.08\)[^}]*animation:\s*functionsPreviewReveal/);
+  expect(stylesheet).toMatch(/@keyframes functionsPreviewReveal\s*\{[\s\S]*?filter:\s*brightness\(1\.08\)/);
+});
+
+test("keeps the Step 2 heading hierarchy clear and aligns the function carousel heading", () => {
+  expect(stylesheet).toMatch(/\.shell\[data-step="functions"\] \.eyebrow\s*\{[^}]*line-height:\s*1\.25;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="functions"\] \.formPanel h1\s*\{[^}]*margin-top:\s*10px;/);
+  expect(stylesheet).toMatch(/\.shell\[data-step="functions"\] \.intro\s*\{[^}]*margin-top:\s*3px;/);
+  expect(stylesheet).toMatch(/\.choiceHeading\s*\{[^}]*justify-content:\s*space-between;/);
+  expect(stylesheet).toMatch(/\.choiceTitle\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*baseline;/);
+});
+
+test("fills the right stage with the house image without environment labels", () => {
   expect(stylesheet).toMatch(/\.mainHousePreviewPlaceholder\s*\{[^}]*inset:\s*0;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*transform:\s*none;/);
-  expect(stylesheet).toMatch(/\.reservedZone\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/);
+  expect(stylesheet).not.toContain(".reservedZone");
+  expect(stylesheet).not.toContain(".plotDimension");
   expect(stylesheet).not.toContain(".templateCard");
+});
+
+test("sizes and crops the configurator logo asset for the header", () => {
+  expect(stylesheet).toMatch(/\.configuratorLogoFrame\s*\{[^}]*width:\s*132px;[^}]*height:\s*50px;[^}]*overflow:\s*hidden;/);
+  expect(stylesheet).toMatch(/\.configuratorLogo\s*\{[^}]*object-fit:\s*cover;[^}]*object-position:\s*50% 54%;/);
 });
 
 test("reserves mobile clearance below the form for the sticky action bar", () => {

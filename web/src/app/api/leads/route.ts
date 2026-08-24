@@ -1,7 +1,7 @@
 import { LeadSubmissionSchema, type LeadSubmissionInput } from "@/features/leads/domain/lead";
 import { createDeterministicAccessToken, ProjectAccessTokenSecretError, submitLead } from "@/features/leads/application/submit-lead";
-import { createSupabaseLeadRepositoryFromEnvironment } from "@/features/leads/infrastructure/supabase-lead-repository";
-import { createSupabasePriceBookRepositoryFromEnvironment } from "@/features/pricing/infrastructure/supabase-price-book-repository";
+import { createRuntimePriceBookRepository } from "@/features/pricing/infrastructure/development-price-book-repository";
+import { createRuntimeLeadRepository, runtimeProjectAccessTokenSecret } from "@/features/project-access/infrastructure/runtime-project-repository";
 import { createWebhookLeadNotifierFromEnvironment } from "@/features/leads/infrastructure/webhook-lead-notifier";
 import { createFixedWindowRateLimiter, fingerprintRequest, type RateLimitDecision } from "@/lib/api/rate-limit";
 
@@ -35,10 +35,10 @@ export function createLeadPostHandler({ submit, rateLimit }: { submit: Submit; r
   };
 }
 
-const secret = process.env.PROJECT_ACCESS_TOKEN_SECRET ?? "";
+const secret = runtimeProjectAccessTokenSecret();
 const leadRateLimiter = createFixedWindowRateLimiter({ limit: 5, windowMs: 10 * 60 * 1_000 });
 function optionalNotifier() { try { return createWebhookLeadNotifierFromEnvironment(); } catch { return undefined; } }
 export const POST = createLeadPostHandler({
   rateLimit: (request) => leadRateLimiter.consume(`lead:${fingerprintRequest(request, process.env.RATE_LIMIT_SECRET ?? secret)}`),
-  submit: (input) => submitLead(input, { repository: createSupabaseLeadRepositoryFromEnvironment(), priceBookRepository: createSupabasePriceBookRepositoryFromEnvironment(), createAccessToken: (key) => createDeterministicAccessToken(key, secret), now: () => new Date(), notifier: optionalNotifier() }),
+  submit: (input) => submitLead(input, { repository: createRuntimeLeadRepository(), priceBookRepository: createRuntimePriceBookRepository(), createAccessToken: (key) => createDeterministicAccessToken(key, secret), now: () => new Date(), notifier: optionalNotifier() }),
 });

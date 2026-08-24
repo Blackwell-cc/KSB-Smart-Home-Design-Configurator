@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { expect, test, vi } from "vitest";
-import { createPrivateAccessExchangeHandler } from "./route";
+import { createDefaultConfiguration, projectDesignBriefConfiguration } from "@/features/configurator/domain/configuration";
+import { POST as submitLeadPost } from "@/app/api/leads/route";
+import { createPrivateAccessExchangeHandler, POST } from "./route";
 
 const request = (body: unknown, headers: Record<string, string> = { "content-type": "application/json", origin: "https://ksb.test" }) => new NextRequest("https://ksb.test/api/reports/exchange", { method: "POST", headers, body: typeof body === "string" ? body : JSON.stringify(body) });
 
@@ -30,4 +32,40 @@ test("fails closed when the exchange Origin is absent or cross-site", async () =
   const handler = createPrivateAccessExchangeHandler({ resolve: vi.fn(), secret: "s".repeat(32), now: () => new Date() });
   expect((await handler(request({ projectId: "11111111-1111-4111-8111-111111111111", token: "private-token-12345678901234567890" }, { "content-type": "application/json" }))).status).toBe(403);
   expect((await handler(request({ projectId: "11111111-1111-4111-8111-111111111111", token: "private-token-12345678901234567890" }, { "content-type": "application/json", origin: "https://attacker.test" }))).status).toBe(403);
+});
+
+test("exchanges a report created by the shared non-production runtime", async () => {
+  const configuration = projectDesignBriefConfiguration({
+    ...createDefaultConfiguration(),
+    styleId: "contemporary-warm-luxury",
+    provinceCode: "10",
+  });
+  const leadResponse = await submitLeadPost(new Request("http://localhost:3000/api/leads", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      configurationId: crypto.randomUUID(),
+      idempotencyKey: crypto.randomUUID(),
+      configuration,
+      preferredContactMethod: "phone",
+      name: "ผู้ทดสอบ",
+      phone: "0812345678",
+      email: "owner@example.test",
+      requestPurpose: "planning_to_build",
+      consentAccepted: true,
+      consentVersion: "project-contact-v1",
+    }),
+  }));
+  const lead = await leadResponse.json() as { projectId: string; reportUrl: string };
+  const fragment = new URLSearchParams(lead.reportUrl.split("#")[1]);
+
+  const response = await POST(new NextRequest("http://localhost:3000/api/reports/exchange", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "http://localhost:3000" },
+    body: JSON.stringify({ projectId: lead.projectId, token: fragment.get("token") }),
+  }));
+
+  expect(leadResponse.status).toBe(201);
+  expect(response.status).toBe(200);
+  await expect(response.json()).resolves.toEqual({ projectId: lead.projectId });
 });

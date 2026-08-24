@@ -1,9 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 import { FieldError } from "@/components/ui/field-error";
-import { VISIBLE_CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
+import { resolveConceptImage, STYLE_SELECTION_FLOORS, VISIBLE_CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import styles from "./configurator-shell.module.css";
 
 type StyleStepProps = {
@@ -13,42 +12,14 @@ type StyleStepProps = {
   onChange(styleId: string): void;
 };
 
-const STYLE_FILTERS = [
-  { id: "all", label: "ทั้งหมด" },
-  { id: "modern", label: "โมเดิร์น" },
-  { id: "contemporary", label: "คอนเทมโพรารี" },
-  { id: "tropical", label: "ทรอปิคอล" },
-  { id: "classic", label: "คลาสสิก" },
-] as const;
-
-type StyleFilter = (typeof STYLE_FILTERS)[number]["id"];
-
 export function StyleStep({ error, errorId, selectedStyleId, onChange }: StyleStepProps) {
-  const [activeFilter, setActiveFilter] = useState<StyleFilter>("all");
-  const visibleConcepts = activeFilter === "all"
-    ? VISIBLE_CONCEPT_CATALOG
-    : VISIBLE_CONCEPT_CATALOG.filter((concept) => concept.category === activeFilter);
-
   return (
     <fieldset aria-describedby={error ? errorId : undefined} className={styles.choiceFieldset}>
       <legend className={styles.visuallyHidden}>เลือกรูปแบบบ้านที่ใกล้กับความต้องการของคุณ</legend>
-      <div aria-label="กรองรูปแบบบ้าน" className={styles.styleFilters} role="group">
-        {STYLE_FILTERS.map((filter) => (
-          <button
-            aria-pressed={activeFilter === filter.id}
-            className={styles.filterChip}
-            key={filter.id}
-            onClick={() => setActiveFilter(filter.id)}
-            type="button"
-          >
-            {filter.label}
-          </button>
-        ))}
-      </div>
 
       {/* Placeholder thumbnail contract: render about 116×78 px; replace with 1200×800 px (3:2) production assets. */}
       <div aria-describedby={error ? errorId : undefined} aria-label="เลือกสไตล์บ้าน" className={styles.conceptGrid} data-style-layout="vertical-list" role="radiogroup">
-        {visibleConcepts.map((concept) => {
+        {VISIBLE_CONCEPT_CATALOG.map((concept) => {
           const originalIndex = VISIBLE_CONCEPT_CATALOG.findIndex((item) => item.id === concept.id);
           return (
             <label className={styles.conceptOption} data-continuation={originalIndex === 5} data-selected={selectedStyleId === concept.id} data-style-card="true" key={concept.id}>
@@ -61,7 +32,7 @@ export function StyleStep({ error, errorId, selectedStyleId, onChange }: StyleSt
                 value={concept.id}
               />
               <span className={styles.conceptThumbnail} data-render-size="116x78" data-source-size="1200x800">
-                <Image alt="" aria-hidden="true" fill loading={originalIndex < 2 ? "eager" : "lazy"} sizes="116px" src={concept.image} />
+                <Image alt="" aria-hidden="true" fill loading={originalIndex < 2 ? "eager" : "lazy"} sizes="116px" src={resolveConceptImage(concept, STYLE_SELECTION_FLOORS)} />
               </span>
               <span className={styles.conceptCopy}>
                 <span className={styles.conceptIndex}>{String(originalIndex + 1).padStart(2, "0")}</span>
@@ -69,7 +40,7 @@ export function StyleStep({ error, errorId, selectedStyleId, onChange }: StyleSt
                 <span className={styles.conceptEnglish}>{concept.englishLabel}</span>
                 <span className={styles.conceptDescription}>{concept.description}</span>
                 <span className={styles.conceptSpecs}>
-                  <span>{concept.specs.floors}</span>
+                  <span>{STYLE_SELECTION_FLOORS} ชั้น</span>
                   <span>{concept.specs.bedrooms}นอน</span>
                   <span>{concept.specs.bathrooms}น้ำ</span>
                 </span>

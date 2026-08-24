@@ -20,7 +20,7 @@ export const EstimateRequestSchema = z.object({
   provinceCode: z.enum(THAI_PROVINCE_CODES),
   siteAccess: z.enum(["normal", "restricted", "very-restricted"]),
   materialLevel: z.enum(["select", "premium", "signature"]),
-  specialFeatures: z.array(z.enum(["pool", "lift", "smart-home", "solar", "ev-charger", "double-volume", "large-glazing"])).refine((items) => new Set(items).size === items.length),
+  specialFeatures: z.array(z.enum(["pool", "lift", "smart-home", "solar", "ev-charger", "large-glazing"])).refine((items) => new Set(items).size === items.length),
 }).strict();
 
 export type EstimateRequest = z.infer<typeof EstimateRequestSchema>;
@@ -52,8 +52,8 @@ export function toCalculationConfiguration(request: EstimateRequest): HouseConfi
   return {
     schemaVersion: 1, projectType: "new-house", styleId: request.styleId, residents: request.residents,
     floors: request.floors, bedrooms: request.bedrooms, bathrooms: request.bathrooms, parkingSpaces: request.parkingSpaces,
-    functions: request.functions, usableAreaOverrideM2: request.usableAreaOverrideM2, provinceCode: request.provinceCode,
-    district: null, siteAccess: request.siteAccess, targetBudget: null, materialSelections: { ...DEFAULT_MATERIAL_SELECTIONS }, materialQualityId: MATERIAL_QUALITY_FOR_LEVEL[request.materialLevel], materialLevel: request.materialLevel,
+    functions: request.functions, additionalRequirements: [], usableAreaOverrideM2: request.usableAreaOverrideM2, provinceCode: request.provinceCode,
+    district: null, siteAccess: request.siteAccess, budgetRangeId: "unspecified", targetBudget: null, materialSelections: { ...DEFAULT_MATERIAL_SELECTIONS }, materialQualityId: MATERIAL_QUALITY_FOR_LEVEL[request.materialLevel], materialLevel: request.materialLevel,
     specialFeatures: request.specialFeatures, privateNotes: "",
   };
 }

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const migration = (file: string) => readFileSync(resolve(process.cwd(), "../supabase/migrations", file), "utf8");
@@ -71,4 +71,14 @@ test("enforces the exact public-preview field allowlist inside PostgreSQL", () =
   for (const key of ["conceptAssetId", "styleLabel", "floors", "bedrooms", "bathrooms", "parkingSpaces", "usableAreaM2"]) expect(shareGuard).toContain(`public_payload ? '${key}'`);
   expect(shareGuard).toMatch(/conceptAssetId[\s\S]*contemporary-warm-luxury[\s\S]*modern-tropical-resort[\s\S]*timeless-contemporary-luxury[\s\S]*not-sure/i);
   expect(shareGuard).not.toMatch(/\?\s*'(name|phone|email|lineId|budget|price|notes|province|privateToken)'/i);
+});
+
+test("stores the full-report request purpose with complete contact details", () => {
+  const path = resolve(process.cwd(), "../supabase/migrations/0010_full_report_request_purpose.sql");
+  expect(existsSync(path)).toBe(true);
+  const requestMigration = readFileSync(path, "utf8");
+  expect(requestMigration).toMatch(/alter table leads[\s\S]*request_purpose/i);
+  expect(requestMigration).toMatch(/planning_to_build[\s\S]*architect_consultation[\s\S]*budget_planning/i);
+  expect(requestMigration).toMatch(/create function public\.submit_lead_once[\s\S]*p_request_purpose text[\s\S]*insert into leads[\s\S]*request_purpose/i);
+  expect(requestMigration).toMatch(/p_phone is null[\s\S]*p_email is null/i);
 });

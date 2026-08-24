@@ -107,6 +107,28 @@
   cursor: pointer;
 }
 
+.assetMedia {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid rgba(216, 173, 98, 0.2);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.assetImage {
+  object-fit: cover;
+  transition: transform 220ms ease, filter 220ms ease;
+}
+
+.assetChoice:hover .assetImage,
+.assetChoice[data-selected="true"] .assetImage {
+  filter: brightness(1.06);
+  transform: scale(1.025);
+}
+
 .assetChoice:has(input:focus-visible),
 .qualityChoice:has(input:focus-visible) {
   outline: 3px solid var(--focus);
@@ -211,6 +233,10 @@
   }
 
   .assetChoice {
+    transition: none;
+  }
+
+  .assetImage {
     transition: none;
   }
 }

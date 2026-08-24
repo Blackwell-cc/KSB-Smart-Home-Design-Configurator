@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUDGET_RANGE_IDS } from "./budget-ranges";
 import {
   DEFAULT_MATERIAL_SELECTIONS,
   MATERIAL_CATALOG,
@@ -16,6 +17,17 @@ export const SPECIAL_FEATURE_CODES = SPECIAL_FEATURE_CATALOG.map(({ id }) => id)
   ...SpecialFeatureId[],
 ];
 
+export const ADDITIONAL_REQUIREMENT_CODES = [
+  "prayer-room",
+  "laundry",
+  "home-theater",
+  "fitness",
+  "pantry",
+  "pet-area",
+  "maid-room",
+  "separate-living",
+] as const;
+
 function materialOptionSchema(categoryId: MaterialCategoryId): z.ZodType<string> {
   const category = MATERIAL_CATALOG.find(({ id }) => id === categoryId);
   if (!category) throw new Error(`MATERIAL_CATEGORY_NOT_FOUND:${categoryId}`);
@@ -30,9 +42,6 @@ const materialSelectionShape = {
   window: materialOptionSchema("window"),
   door: materialOptionSchema("door"),
   flooring: materialOptionSchema("flooring"),
-  ceiling: materialOptionSchema("ceiling"),
-  facade: materialOptionSchema("facade"),
-  lighting: materialOptionSchema("lighting"),
 } satisfies Record<MaterialCategoryId, z.ZodType<string>>;
 
 const MaterialSelectionsSchema: z.ZodType<MaterialSelections> = z
@@ -61,10 +70,17 @@ const HouseConfigurationObjectSchema = z
         multipurposeRoom: z.boolean(),
       })
       .strict(),
+    additionalRequirements: z
+      .array(z.enum(ADDITIONAL_REQUIREMENT_CODES))
+      .refine(hasUniqueValues, {
+        message: "เลือกรายการความต้องการซ้ำไม่ได้",
+      })
+      .default([]),
     usableAreaOverrideM2: z.number().min(60).max(1500).nullable(),
     provinceCode: z.enum(THAI_PROVINCE_CODES).nullable(),
     district: z.string().max(100).nullable(),
     siteAccess: z.enum(["normal", "restricted", "very-restricted"]),
+    budgetRangeId: z.enum(BUDGET_RANGE_IDS).default("unspecified"),
     targetBudget: z.object({ min: z.number().positive(), max: z.number().positive() }).strict().nullable(),
     materialSelections: MaterialSelectionsSchema.default(DEFAULT_MATERIAL_SELECTIONS),
     materialQualityId: z.enum(MATERIAL_QUALITY_IDS).default("premium"),
@@ -129,10 +145,12 @@ export function createDefaultConfiguration(): HouseConfiguration {
       thaiKitchen: false,
       multipurposeRoom: false,
     },
+    additionalRequirements: [],
     usableAreaOverrideM2: null,
     provinceCode: null,
     district: null,
     siteAccess: "normal",
+    budgetRangeId: "unspecified",
     targetBudget: null,
     materialSelections: { ...DEFAULT_MATERIAL_SELECTIONS },
     materialQualityId: "premium",

@@ -6,15 +6,18 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { calculateArea } from "@/features/area-planning/domain/calculate-area";
 import { QA_AREA_CATALOG } from "@/features/area-planning/domain/area-catalog";
+import { STYLE_SELECTION_FLOORS } from "@/features/preview/domain/concept-catalog";
 import { HouseConfigurationSchema, type HouseConfiguration } from "../domain/configuration";
 import { buildLivePreview } from "../presentation/live-preview";
 import { createConfiguratorStore } from "../state/configurator-store";
 import { createDraftStorage, type DraftStorage } from "../state/draft-storage";
 import { ConfiguratorHeader } from "./configurator-header";
+import { FunctionsPreview } from "./functions-preview";
 import { FunctionsStep } from "./functions-step";
 import { MaterialFeaturesStep } from "./material-features-step";
 import { MaterialsPreview } from "./materials-preview";
 import { ReviewStep } from "./review-step";
+import { SiteBudgetPreview } from "./site-budget-preview";
 import { SiteBudgetStep } from "./site-budget-step";
 import { StylePreviewStage } from "./style-preview-stage";
 import { StyleStep } from "./style-step";
@@ -48,9 +51,9 @@ const CompletionSchema = HouseConfigurationSchema.superRefine((value, context) =
 const STEP_HEADINGS = [
   "เลือกรูปแบบบ้าน",
   "พื้นที่และฟังก์ชัน",
-  "ทำเลและงบประมาณ",
+  "กำหนดงบประมาณ",
   "วัสดุและส่วนพิเศษ",
-  "ตรวจทานความต้องการ",
+  "ตรวจสอบความถูกต้อง",
 ] as const;
 
 type ConfiguratorShellProps = {
@@ -58,24 +61,7 @@ type ConfiguratorShellProps = {
   store?: ReturnType<typeof createConfiguratorStore>;
 };
 
-type BudgetDraft = { min: string; max: string };
 type AreaDraft = string;
-
-function budgetDraftFor(targetBudget: HouseConfiguration["targetBudget"]): BudgetDraft {
-  return { min: targetBudget?.min.toString() ?? "", max: targetBudget?.max.toString() ?? "" };
-}
-
-function budgetErrorFor(budget: BudgetDraft): string | undefined {
-  const hasMinimum = budget.min !== "";
-  const hasMaximum = budget.max !== "";
-  if (!hasMinimum && !hasMaximum) return undefined;
-  if (!hasMinimum || !hasMaximum) return "กรอกงบประมาณทั้งสองช่อง หรือเว้นว่างทั้งคู่";
-  const minimum = Number(budget.min);
-  const maximum = Number(budget.max);
-  if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || minimum <= 0 || maximum <= 0) return "กรุณาระบุงบประมาณเป็นจำนวนบวก";
-  if (minimum > maximum) return "งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น";
-  return undefined;
-}
 
 function areaDraftFor(usableAreaOverrideM2: HouseConfiguration["usableAreaOverrideM2"]): AreaDraft {
   return usableAreaOverrideM2?.toString() ?? "";
@@ -135,20 +121,18 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   const [browserStore] = useState(createBrowserConfiguratorStore);
   const store = injectedStore ?? browserStore;
   const state = useSyncExternalStore(store.subscribe, store.getState, () => SERVER_CONFIGURATOR_SNAPSHOT);
-  const [budgetDraftOverride, setBudgetDraft] = useState<BudgetDraft | null>(null);
   const [areaDraftOverride, setAreaDraft] = useState<AreaDraft | null>(null);
-  const budgetDraft = budgetDraftOverride ?? budgetDraftFor(state.configuration.targetBudget);
   const areaDraft = areaDraftOverride ?? areaDraftFor(state.configuration.usableAreaOverrideM2);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const hasMountedStep = useRef(false);
   const stepSchemaValid = validationForStep(state.configuration, state.currentStep).success;
-  const budgetError = budgetErrorFor(budgetDraft);
   const areaError = areaErrorFor(areaDraft);
-  const isValid = stepSchemaValid && (state.currentStep !== 1 || areaError === undefined) && (state.currentStep !== 2 || budgetError === undefined);
+  const isValid = stepSchemaValid && (state.currentStep !== 1 || areaError === undefined);
   const error = stepError(state.currentStep, stepSchemaValid);
   const errorId = state.currentStep === 0 ? "style-error" : "province-error";
   const area = calculateArea(state.configuration, QA_AREA_CATALOG);
   const livePreview = buildLivePreview(state.configuration, area);
+  const stylePreview = buildLivePreview({ ...state.configuration, floors: STYLE_SELECTION_FLOORS }, area);
 
   useEffect(() => {
     if (!hasMountedStep.current) {
@@ -165,16 +149,6 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   }, [store]);
 
   const updateConfiguration = (patch: Partial<HouseConfiguration>) => state.updateConfiguration(patch);
-  const updateBudget = (key: "min" | "max", value: string) => {
-    const nextBudget = { ...budgetDraft, [key]: value };
-    setBudgetDraft(nextBudget);
-    const nextError = budgetErrorFor(nextBudget);
-    if (nextError !== undefined || (nextBudget.min === "" && nextBudget.max === "")) {
-      updateConfiguration({ targetBudget: null });
-      return;
-    }
-    updateConfiguration({ targetBudget: { min: Number(nextBudget.min), max: Number(nextBudget.max) } });
-  };
   const updateArea = (value: string) => {
     setAreaDraft(value);
     if (areaErrorFor(value) !== undefined) return;
@@ -182,6 +156,9 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
   };
   const moveNext = () => {
     if (!isValid) return;
+    if (state.currentStep === 0 && state.configuration.floors !== STYLE_SELECTION_FLOORS) {
+      updateConfiguration({ floors: STYLE_SELECTION_FLOORS });
+    }
     if (state.currentStep < CONFIGURATOR_STEPS.length - 1) state.setCurrentStep(state.currentStep + 1);
   };
   const moveBack = () => {
@@ -201,6 +178,24 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
     )}
   </div> : null;
 
+  if (state.currentStep === 4) {
+    return (
+      <main className={styles.page} data-responsive-layout="split-preview" data-step="review" data-testid="configurator-layout">
+        <ConfiguratorHeader currentStep={state.currentStep} onSave={() => store.getState().flushPendingDraft()} steps={CONFIGURATOR_STEPS} />
+        <div className={styles.shell} data-step="review">
+          <ReviewStep
+            configuration={state.configuration}
+            headingRef={headingRef}
+            onBack={moveBack}
+            onContinue={openPreview}
+            onEdit={(step) => state.setCurrentStep(step)}
+            onSave={() => store.getState().flushPendingDraft()}
+          />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className={styles.page} data-responsive-layout="split-preview" data-step={CONFIGURATOR_STEPS[state.currentStep].id} data-testid="configurator-layout">
       <ConfiguratorHeader currentStep={state.currentStep} onSave={() => store.getState().flushPendingDraft()} steps={CONFIGURATOR_STEPS} />
@@ -208,13 +203,12 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
         <section aria-labelledby="step-heading" className={styles.formPanel} data-choice-canvas="true">
           <p className={styles.eyebrow}>ขั้นตอน {state.currentStep + 1} / {CONFIGURATOR_STEPS.length}</p>
           <h1 id="step-heading" ref={headingRef} tabIndex={-1}>{STEP_HEADINGS[state.currentStep]}</h1>
-          <p className={styles.intro} id="configurator-help">{state.currentStep === 0 ? "เลือกสไตล์ที่ใช่ เพื่อเริ่มออกแบบบ้านในแบบของคุณ" : state.currentStep === 3 ? "เลือกวัสดุและรายละเอียดพิเศษ เพื่อกำหนดคุณภาพและกรอบงบประมาณให้สอดคล้องกับบ้านของคุณ" : "ให้ข้อมูลเท่าที่สะดวก เพื่อจัดกรอบความต้องการเบื้องต้นก่อนคุยกับสถาปนิก"}</p>
+          <p className={styles.intro} id="configurator-help">{state.currentStep === 0 ? "เลือกสไตล์ที่ใช่ เพื่อเริ่มออกแบบบ้านในแบบของคุณ" : state.currentStep === 1 ? "ระบุขนาดพื้นที่และฟังก์ชันที่ต้องการ เพื่อให้เราวางแผนบ้านได้ตรงกับไลฟ์สไตล์ของคุณ" : state.currentStep === 2 ? "ให้ข้อมูลที่สำคัญ เพื่อช่วยประเมินและวางแผนโครงการเบื้องต้นให้เหมาะกับความต้องการของคุณ" : state.currentStep === 3 ? "เลือกวัสดุและรายละเอียดพิเศษ เพื่อกำหนดคุณภาพและกรอบงบประมาณให้สอดคล้องกับบ้านของคุณ" : "ให้ข้อมูลเท่าที่สะดวก เพื่อจัดกรอบความต้องการเบื้องต้นก่อนคุยกับสถาปนิก"}</p>
           <div className={styles.stepContent}>
-            {state.currentStep === 0 ? <StyleStep error={error} errorId={errorId} onChange={(styleId) => updateConfiguration({ styleId })} selectedStyleId={state.configuration.styleId} /> : null}
-            {state.currentStep === 1 ? <FunctionsStep areaDraft={areaDraft} areaError={areaError} configuration={state.configuration} onAreaChange={updateArea} onChange={updateConfiguration} /> : null}
-            {state.currentStep === 2 ? <SiteBudgetStep budgetDraft={budgetDraft} budgetError={budgetError} configuration={state.configuration} error={error} errorId={errorId} onBudgetChange={updateBudget} onChange={updateConfiguration} /> : null}
+            {state.currentStep === 0 ? <StyleStep error={error} errorId={errorId} onChange={(styleId) => updateConfiguration({ styleId, floors: STYLE_SELECTION_FLOORS })} selectedStyleId={state.configuration.styleId} /> : null}
+            {state.currentStep === 1 ? <FunctionsStep areaDraft={areaDraft} areaError={areaError} configuration={state.configuration} onAreaChange={updateArea} onChange={updateConfiguration} recommendedAreaM2={area.recommendedUsableAreaM2} /> : null}
+            {state.currentStep === 2 ? <SiteBudgetStep configuration={state.configuration} error={error} errorId={errorId} onChange={updateConfiguration} /> : null}
             {state.currentStep === 3 ? <MaterialFeaturesStep configuration={state.configuration} onChange={updateConfiguration} /> : null}
-            {state.currentStep === 4 ? <ReviewStep configuration={state.configuration} onEdit={(step) => state.setCurrentStep(step)} /> : null}
           </div>
           {state.currentStep === 3 ? null : navigationActions}
         </section>
@@ -222,15 +216,19 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
           <StylePreviewStage
             configuration={state.configuration}
             isValid={isValid}
-            livePreview={livePreview}
+            livePreview={stylePreview}
             onNext={moveNext}
             onReset={() => updateConfiguration({ styleId: null })}
           />
+        ) : state.currentStep === 1 ? (
+          <FunctionsPreview area={area} areaError={areaError} configuration={state.configuration} livePreview={livePreview} />
+        ) : state.currentStep === 2 ? (
+          <SiteBudgetPreview area={area} configuration={state.configuration} livePreview={livePreview} />
         ) : state.currentStep === 3 ? (
           <MaterialsPreview configuration={state.configuration} />
         ) : <aside aria-label="ภาพตัวอย่างบ้าน" className={styles.preview} data-mobile-preview-ratio="16:10" data-preview-material={livePreview.material.level} data-preview-style={livePreview.concept.id}>
           <div className={styles.imageFrame} data-preview-tone={livePreview.material.level}>
-            <Image alt={`ภาพอ้างอิง ${livePreview.concept.thaiLabel} (${livePreview.concept.englishLabel})`} fill key={livePreview.concept.id} preload sizes="(max-width: 899px) 100vw, 50vw" src={livePreview.concept.image} />
+            <Image alt={`ภาพอ้างอิง ${livePreview.concept.thaiLabel} (${livePreview.concept.englishLabel})`} fill key={`${livePreview.concept.id}-${state.configuration.floors}`} preload sizes="(max-width: 899px) 100vw, 50vw" src={livePreview.concept.image} />
           </div>
           <div className={styles.previewCopy} aria-live="polite">
             <p>CONCEPT PREVIEW</p>

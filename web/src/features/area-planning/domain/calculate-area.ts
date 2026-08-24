@@ -23,11 +23,7 @@ export function calculateArea(input: HouseConfiguration, catalog: AreaCatalog): 
       C.entryStorageM2 +
       C.kitchenM2 +
       C.serviceM2 +
-      input.floors * C.circulationPerFloorM2 +
-      (input.functions.office ? C.officeM2 : 0) +
-      (input.functions.elderlyRoom ? C.elderlyRoomM2 : 0) +
-      (input.functions.thaiKitchen ? C.thaiKitchenM2 : 0) +
-      (input.functions.multipurposeRoom ? C.multipurposeRoomM2 : 0),
+      input.floors * C.circulationPerFloorM2,
   );
   const usableAreaM2 = input.usableAreaOverrideM2 ?? recommendedUsableAreaM2;
   const parkingM2 = input.parkingSpaces * C.coveredParkingPerSpaceM2;

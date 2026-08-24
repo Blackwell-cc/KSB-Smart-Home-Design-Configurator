@@ -19,19 +19,19 @@ test("restores an offline draft after refresh and preserves Back navigation", as
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto("/configurator");
-  await page.getByRole("radio", { name: "Contemporary Warm Luxury" }).check();
+  await page.getByRole("radio", { name: "Modern Style" }).locator("..").click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await expect(page.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "พื้นที่และฟังก์ชัน", exact: true })).toBeVisible();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("ksb-configurator-draft-v1"))).not.toBeNull();
 
   await page.reload();
-  await expect(page.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "พื้นที่และฟังก์ชัน", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "ย้อนกลับ" }).click();
-  await expect(page.getByRole("radio", { name: "Contemporary Warm Luxury" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "Modern Style" })).toBeChecked();
   expect(pageErrors.filter((message) => message.includes("Hydration failed"))).toEqual([]);
 });
 
-test("rejects unsafe API inputs, private-link failures, missing prices, PDF failures and Lead floods", async ({ page, request }) => {
+test("rejects unsafe API inputs and private-link failures while marking development estimates", async ({ page, request }) => {
   const invalidEnum = await request.post("/api/estimate", { data: { ...validEstimateRequest, materialLevel: "platinum" } });
   expect(invalidEnum.status()).toBe(400);
   expect(await invalidEnum.json()).toEqual({ error: { code: "INVALID_CONFIGURATION" } });
@@ -40,9 +40,9 @@ test("rejects unsafe API inputs, private-link failures, missing prices, PDF fail
   expect(oversizedNotes.status()).toBe(400);
   expect(await oversizedNotes.json()).toEqual({ error: { code: "INVALID_CONFIGURATION" } });
 
-  const unavailableEstimate = await request.post("/api/estimate", { data: validEstimateRequest });
-  expect(unavailableEstimate.status()).toBe(503);
-  expect(await unavailableEstimate.json()).toEqual({ error: { code: "ESTIMATE_UNAVAILABLE" } });
+  const developmentEstimate = await request.post("/api/estimate", { data: validEstimateRequest });
+  expect(developmentEstimate.status()).toBe(200);
+  expect(await developmentEstimate.json()).toEqual({ preview: expect.objectContaining({ estimateMode: "development-demo" }) });
 
   await page.goto("/");
   for (const token of ["e".repeat(48), "r".repeat(48)]) {

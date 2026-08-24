@@ -160,9 +160,9 @@ describe("calculateEstimate", () => {
     );
 
     expect(snapshot.lines.find((line) => line.code === "special-features")?.amount).toEqual({
-      low: 2_465_000,
-      expected: 4_165_000,
-      high: 7_420_000,
+      low: 2_315_000,
+      expected: 3_815_000,
+      high: 6_720_000,
     });
     expect(snapshot.excludedItems).toContain(SUPERVISION_EXCLUSION);
     expectSnapshotInvariants(snapshot);

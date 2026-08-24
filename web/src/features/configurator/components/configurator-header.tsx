@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { ProgressStepper } from "@/components/ui/progress-stepper";
 import styles from "./configurator-shell.module.css";
@@ -34,8 +36,17 @@ export function ConfiguratorHeader({ currentStep, onSave, steps }: ConfiguratorH
   return (
     <header className={styles.masthead}>
       <div className={styles.configuratorBrand}>
-        <strong>KSB ARCHITECT</strong>
-        <span>SMART HOME DESIGN CONFIGURATOR</span>
+        <Link aria-label="KSB Architect หน้าแรก" className={styles.configuratorLogoFrame} href="/">
+          <Image
+            alt="KSB Architect"
+            className={styles.configuratorLogo}
+            fill
+            preload
+            sizes="132px"
+            src="/brand/ksb-architect-logo.png"
+          />
+        </Link>
+        <span className={styles.configuratorSubtitle}>SMART HOME DESIGN CONFIGURATOR</span>
       </div>
       <ProgressStepper currentStep={currentStep} steps={steps} />
       <div className={styles.headerUtilities}>

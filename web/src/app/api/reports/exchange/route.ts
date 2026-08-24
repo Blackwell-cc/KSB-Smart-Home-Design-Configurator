@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createProjectSession, PROJECT_SESSION_COOKIE } from "@/features/project-access/domain/project-session";
 import { resolvePrivateProject, type ResolvedPrivateProject } from "@/features/project-access/application/resolve-private-project";
-import { createSupabasePrivateProjectRepositoryFromEnvironment } from "@/features/project-access/infrastructure/supabase-private-project-repository";
+import { createRuntimePrivateProjectRepository, runtimeProjectSessionSecret } from "@/features/project-access/infrastructure/runtime-project-repository";
 import { isSameOriginRequest } from "@/lib/api/same-origin";
 
 const MAX_BODY_BYTES = 4 * 1024;
@@ -30,5 +30,5 @@ export function createPrivateAccessExchangeHandler({ resolve, secret, now }: Han
   };
 }
 export async function POST(request: Request) {
-  try { const repository = createSupabasePrivateProjectRepositoryFromEnvironment(); return createPrivateAccessExchangeHandler({ resolve: (input) => resolvePrivateProject(input, repository, new Date()), secret: process.env.PROJECT_SESSION_SECRET ?? "", now: () => new Date() })(request); } catch { return error(503, "PROJECT_LINK_INVALID"); }
+  try { const repository = createRuntimePrivateProjectRepository(); return createPrivateAccessExchangeHandler({ resolve: (input) => resolvePrivateProject(input, repository, new Date()), secret: runtimeProjectSessionSecret(), now: () => new Date() })(request); } catch { return error(503, "PROJECT_LINK_INVALID"); }
 }

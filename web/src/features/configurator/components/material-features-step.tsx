@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { HouseConfiguration } from "../domain/configuration";
 import {
   MATERIAL_CATALOG,
@@ -61,7 +62,20 @@ export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeatur
                         type="radio"
                         value={option.id}
                       />
-                      <AssetPlaceholder type="material" testId="material-asset-placeholder" />
+                      {"imageSrc" in option ? (
+                        <span aria-hidden="true" className={styles.assetMedia}>
+                          <Image
+                            alt=""
+                            className={styles.assetImage}
+                            fill
+                            sizes="(max-width: 1199px) 45vw, 140px"
+                            src={option.imageSrc}
+                            unoptimized
+                          />
+                        </span>
+                      ) : (
+                        <AssetPlaceholder type="material" testId="material-asset-placeholder" />
+                      )}
                       <span>{option.label}</span>
                     </label>
                   );
@@ -85,7 +99,20 @@ export function MaterialFeaturesStep({ configuration, onChange }: MaterialFeatur
                     type="checkbox"
                     value={feature.id}
                   />
-                  <AssetPlaceholder type="feature" testId="feature-asset-placeholder" />
+                  {"imageSrc" in feature ? (
+                    <span aria-hidden="true" className={styles.assetMedia}>
+                      <Image
+                        alt=""
+                        className={styles.assetImage}
+                        fill
+                        sizes="(max-width: 1199px) 45vw, 120px"
+                        src={feature.imageSrc}
+                        unoptimized
+                      />
+                    </span>
+                  ) : (
+                    <AssetPlaceholder type="feature" testId="feature-asset-placeholder" />
+                  )}
                   <span>{feature.label}</span>
                 </label>
               );

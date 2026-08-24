@@ -87,3 +87,24 @@ test("uses canonical province names and a polite fallback in the live metrics", 
     value: "ยังไม่ได้เลือกจังหวัด",
   });
 });
+
+test("selects the matching house image from the chosen style and floor count", () => {
+  const oneFloor = {
+    ...createDefaultConfiguration(),
+    styleId: "natural-style",
+    floors: 1,
+  } satisfies HouseConfiguration;
+  const threeFloors = { ...oneFloor, floors: 3 } satisfies HouseConfiguration;
+  const minimalFallback = {
+    ...createDefaultConfiguration(),
+    styleId: "minimalist-style",
+    floors: 3,
+  } satisfies HouseConfiguration;
+
+  expect(buildLivePreview(oneFloor, calculateArea(oneFloor, QA_AREA_CATALOG)).concept.image)
+    .toBe("/concepts/base-nordic-1f-master.webp");
+  expect(buildLivePreview(threeFloors, calculateArea(threeFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/concepts/base-nordic-3f-master.webp");
+  expect(buildLivePreview(minimalFallback, calculateArea(minimalFallback, QA_AREA_CATALOG)).concept.image)
+    .toBe("/concepts/base-minimal-2f-master.webp");
+});

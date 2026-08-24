@@ -3,9 +3,12 @@ import {
   HouseConfigurationSchema,
   type HouseConfiguration,
 } from "../domain/configuration";
+import { budgetRangeIdForTarget, type TargetBudget } from "../domain/budget-ranges";
 import {
   DEFAULT_MATERIAL_SELECTIONS,
+  MATERIAL_CATEGORY_IDS,
   MATERIAL_QUALITY_IDS,
+  RETIRED_SPECIAL_FEATURE_IDS,
   materialLevelForQuality,
   materialQualityForLevel,
   type MaterialQualityId,
@@ -53,12 +56,27 @@ function migrateLegacyConfiguration(value: unknown): unknown {
       ? materialQualityForLevel(configuration.materialLevel)
       : undefined);
   const hasExactMaterialQuality = MATERIAL_QUALITY_IDS.includes(materialQualityId as MaterialQualityId);
+  const specialFeatures = Array.isArray(configuration.specialFeatures)
+    ? configuration.specialFeatures.filter(
+        (feature) => !RETIRED_SPECIAL_FEATURE_IDS.includes(feature as (typeof RETIRED_SPECIAL_FEATURE_IDS)[number]),
+      )
+    : configuration.specialFeatures;
+  const legacyMaterialSelections = configuration.materialSelections;
+  const materialSelections = legacyMaterialSelections && typeof legacyMaterialSelections === "object"
+    ? Object.fromEntries(MATERIAL_CATEGORY_IDS.map((categoryId) => [
+        categoryId,
+        (legacyMaterialSelections as Record<string, unknown>)[categoryId]
+          ?? DEFAULT_MATERIAL_SELECTIONS[categoryId],
+      ]))
+    : DEFAULT_MATERIAL_SELECTIONS;
   return {
     ...envelope,
     configuration: {
       ...configuration,
-      materialSelections: configuration.materialSelections ?? DEFAULT_MATERIAL_SELECTIONS,
+      budgetRangeId: configuration.budgetRangeId ?? budgetRangeIdForTarget(configuration.targetBudget as TargetBudget),
+      materialSelections,
       materialQualityId,
+      specialFeatures,
       materialLevel: hasExactMaterialQuality
         ? materialLevelForQuality(materialQualityId as MaterialQualityId)
         : configuration.materialLevel,

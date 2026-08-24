@@ -2,6 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import { act } from "react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+import { calculateArea } from "@/features/area-planning/domain/calculate-area";
+import { QA_AREA_CATALOG } from "@/features/area-planning/domain/area-catalog";
 import { VISIBLE_CONCEPT_CATALOG } from "@/features/preview/domain/concept-catalog";
 import { createConfiguratorStore } from "../state/configurator-store";
 import type { DraftStorage } from "../state/draft-storage";
@@ -32,8 +34,14 @@ function renderConfigurator() {
 }
 
 async function chooseStyleAndContinue(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("radio", { name: "Contemporary Warm Luxury" }));
+  await user.click(screen.getByRole("radio", { name: "Modern Style" }));
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+}
+
+async function openStepThree(user: ReturnType<typeof userEvent.setup>) {
+  await chooseStyleAndContinue(user);
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+  expect(screen.getByRole("heading", { name: "กำหนดงบประมาณ" })).toHaveFocus();
 }
 
 async function continueToReview(user: ReturnType<typeof userEvent.setup>) {
@@ -53,32 +61,98 @@ test("moves through five PII-free steps and navigates to the preview only after 
 
   await continueToReview(user);
 
-  expect(screen.getByRole("heading", { name: "ตรวจทานความต้องการ" })).toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "ดู Preview" }));
+  expect(screen.getByRole("heading", { name: "ตรวจสอบความถูกต้อง" })).toBeInTheDocument();
+  expect(screen.queryByText(/ราคาก่อสร้าง|บาท\/ตร\.ม\.|งบประมาณโดยประมาณ/)).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "ไปยังหน้าสรุปค่าใช้จ่าย" }));
   expect(onPreview).toHaveBeenCalledWith("/preview");
+});
+
+test("renders Step 5 as a read-only live review with readable Step 1–4 values", async () => {
+  const { store, user } = renderConfigurator();
+  await act(async () => {
+    store.getState().updateConfiguration({
+      styleId: "modern-tropical-resort",
+      residents: 5,
+      floors: 2,
+      bedrooms: 5,
+      bathrooms: 4,
+      parkingSpaces: 3,
+      functions: { office: true, elderlyRoom: true, thaiKitchen: false, multipurposeRoom: false },
+      additionalRequirements: ["home-theater"],
+      usableAreaOverrideM2: 530,
+      provinceCode: "10",
+      district: "บางรัก",
+      siteAccess: "restricted",
+      budgetRangeId: "40m_80m",
+      targetBudget: { min: 40_000_000, max: 80_000_000 },
+      materialSelections: {
+        roof: "concrete-tile",
+        wall: "natural-stone",
+        window: "black-aluminium",
+        door: "teak",
+        flooring: "natural-marble",
+      },
+      materialQualityId: "signature",
+      specialFeatures: ["pool", "smart-home", "ev-charger"],
+    });
+    store.getState().setCurrentStep(4);
+  });
+
+  expect(screen.getByRole("heading", { name: "ตรวจสอบความถูกต้อง" })).toBeInTheDocument();
+  expect(screen.getByText("Modern Tropical Resort")).toBeInTheDocument();
+  expect(screen.getByText(/5 ห้องนอน · 4 ห้องน้ำ · 2 ชั้น/)).toBeInTheDocument();
+  expect(screen.getByText(/ห้องทำงาน · ห้องผู้สูงอายุ · ห้องดูหนัง/)).toBeInTheDocument();
+  expect(screen.getByText("40–80 ล้านบาท")).toBeInTheDocument();
+  expect(screen.getByText(/กรุงเทพมหานคร · บางรัก/)).toBeInTheDocument();
+  expect(screen.getByText("หินธรรมชาติ")).toBeInTheDocument();
+  expect(screen.getByText("อลูมิเนียมสีดำ")).toBeInTheDocument();
+  expect(screen.getByText("SIGNATURE")).toBeInTheDocument();
+  expect(screen.getByText("ระบบ Smart Home")).toBeInTheDocument();
+  expect(screen.getByRole("img", { name: /ทรอปิคอล รีสอร์ต/ })).toHaveAttribute("src", expect.stringContaining("modern-tropical-resort.png"));
+  expect(screen.getByRole("img", { name: "วัสดุหลังคา กระเบื้องคอนกรีต" })).toHaveAttribute("src", "/materials/roof/1.png");
+  expect(screen.getByRole("img", { name: "วัสดุผนังภายนอก หินธรรมชาติ" })).toHaveAttribute("src", "/materials/wall/2.png");
+  expect(screen.getByRole("img", { name: "วัสดุหน้าต่าง อลูมิเนียมสีดำ" })).toHaveAttribute("src", "/materials/window/1.png");
+  expect(screen.getByRole("img", { name: "วัสดุประตูทางเข้า ไม้สัก" })).toHaveAttribute("src", "/materials/door/4.png");
+  expect(screen.getByRole("img", { name: "วัสดุพื้น หินอ่อนธรรมชาติ" })).toHaveAttribute("src", "/materials/flooring/1.png");
+  expect(screen.queryByText(/elderlyRoom|home-theater|natural-stone|black-aluminium/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/ราคาก่อสร้าง|บาท\/ตร\.ม\.|งบประมาณโดยประมาณ/)).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: "แก้ไขพื้นที่และฟังก์ชัน" }));
+  expect(screen.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toHaveFocus();
+  await act(async () => {
+    store.getState().updateConfiguration({ bedrooms: 6 });
+    store.getState().setCurrentStep(4);
+  });
+  expect(screen.getByText(/6 ห้องนอน · 4 ห้องน้ำ · 2 ชั้น/)).toBeInTheDocument();
 });
 
 test("renders the premium step-one workspace from the approved reference", () => {
   renderConfigurator();
 
   expect(screen.getByText("SMART HOME DESIGN CONFIGURATOR")).toBeInTheDocument();
+  const homeLogo = screen.getByRole("link", { name: "KSB Architect หน้าแรก" });
+  expect(homeLogo).toHaveAttribute("href", "/");
+  expect(decodeURIComponent(within(homeLogo).getByRole("img", { name: "KSB Architect" }).getAttribute("src") ?? ""))
+    .toContain("/brand/ksb-architect-logo.png");
   expect(screen.getByRole("heading", { name: "เลือกรูปแบบบ้าน" })).not.toHaveFocus();
   expect(screen.getByText("เลือกสไตล์ที่ใช่ เพื่อเริ่มออกแบบบ้านในแบบของคุณ")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "คู่มือการใช้งาน" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "บันทึกแบบร่าง" })).toBeInTheDocument();
 
-  const filters = screen.getByRole("group", { name: "กรองรูปแบบบ้าน" });
-  expect(within(filters).getAllByRole("button")).toHaveLength(5);
-  expect(within(filters).getByRole("button", { name: "ทั้งหมด" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.queryByRole("group", { name: "กรองรูปแบบบ้าน" })).not.toBeInTheDocument();
 
   const choices = screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
-  expect(within(choices).getAllByRole("radio")).toHaveLength(6);
+  expect(within(choices).getAllByRole("radio")).toHaveLength(7);
+  for (const styleName of ["Classic Style", "Modern Style", "Nordic Style", "Loft Style", "Minimalist Style", "Tropical", "Contemporary"]) {
+    expect(within(choices).getByRole("radio", { name: styleName })).toBeInTheDocument();
+  }
   expect(screen.queryByText("TROPICAL RESORT 02")).not.toBeInTheDocument();
 
   const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
   expect(within(preview).getByText("ประเภทบ้าน")).toBeInTheDocument();
-  expect(within(preview).getByText("โซนสวน")).toBeInTheDocument();
-  expect(within(preview).getByText("โซนสระว่ายน้ำ")).toBeInTheDocument();
+  expect(within(preview).queryByText("โซนสวน")).not.toBeInTheDocument();
+  expect(within(preview).queryByText("โซนสระว่ายน้ำ")).not.toBeInTheDocument();
+  expect(within(preview).queryByText("32.00 ม.")).not.toBeInTheDocument();
   expect(within(preview).getByText("สเป็กที่แนะนำสำหรับบ้านสไตล์นี้")).toBeInTheDocument();
   expect(within(preview).getByRole("button", { name: "แชร์แบบร่าง" })).toBeDisabled();
   expect(within(preview).getByRole("button", { name: "รีเซ็ตตัวเลือก" })).toBeInTheDocument();
@@ -103,7 +177,7 @@ test("gates required steps, describes validation errors, and focuses the new ste
   expect(layout).toHaveAttribute("data-step", "functions");
   expect(screen.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toHaveFocus();
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
-  expect(screen.getByRole("heading", { name: "ทำเลและงบประมาณ" })).toHaveFocus();
+  expect(screen.getByRole("heading", { name: "กำหนดงบประมาณ" })).toHaveFocus();
   expect(screen.getByRole("button", { name: "ถัดไป" })).toBeDisabled();
 });
 
@@ -124,29 +198,52 @@ test("restores the current step and chosen values when the shell remounts with i
 
 test("back navigation preserves previous choices and the live preview reflects the selected concept and room program", async () => {
   const { user } = renderConfigurator();
-  const initialPreview = screen.getByRole("img", { name: /Contemporary Warm Luxury/i });
+  const initialPreview = screen.getByRole("img", { name: /Classic Style/i });
   const initialSource = initialPreview.getAttribute("src");
 
-  await user.click(screen.getByRole("radio", { name: "Modern Tropical Resort" }));
-  expect(screen.getByRole("img", { name: /Modern Tropical Resort/i })).not.toHaveAttribute("src", initialSource);
+  await user.click(screen.getByRole("radio", { name: "Nordic Style" }));
+  expect(screen.getByRole("img", { name: /Nordic Style/i })).not.toHaveAttribute("src", initialSource);
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
   await user.click(screen.getByRole("button", { name: /จำนวนห้องนอน.*เพิ่ม/ }));
   expect(screen.getByText(/^พื้นที่ใช้สอย 178/)).toHaveTextContent("(แนะนำ)");
   await user.click(screen.getByRole("button", { name: "ย้อนกลับ" }));
 
-  expect(screen.getByRole("radio", { name: "Modern Tropical Resort" })).toBeChecked();
+  expect(screen.getByRole("radio", { name: "Nordic Style" })).toBeChecked();
+});
+
+test("changes the Step 2 preview image when the selected floor count changes", async () => {
+  const { user } = renderConfigurator();
+  await user.click(screen.getByRole("radio", { name: "Nordic Style" }));
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+
+  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างพื้นที่และฟังก์ชัน" });
+  expect([...preview.querySelectorAll("[data-floor-image-preload]")].map((image) => decodeURIComponent(image.getAttribute("src") ?? "")))
+    .toEqual(expect.arrayContaining([
+      expect.stringContaining("/concepts/base-nordic-1f-master.webp"),
+      expect.stringContaining("/concepts/base-nordic-2f-master.webp"),
+      expect.stringContaining("/concepts/base-nordic-3f-master.webp"),
+    ]));
+  const imageSource = () => decodeURIComponent(within(preview).getByRole("img", { name: /บ้านสไตล์นอร์ดิก/ }).getAttribute("src") ?? "");
+  expect(imageSource()).toContain("/concepts/base-nordic-2f-master.webp");
+
+  await user.click(screen.getByRole("button", { name: /จำนวนชั้น.*ลด/ }));
+  expect(imageSource()).toContain("/concepts/base-nordic-1f-master.webp");
+
+  await user.click(screen.getByRole("button", { name: /จำนวนชั้น.*เพิ่ม/ }));
+  await user.click(screen.getByRole("button", { name: /จำนวนชั้น.*เพิ่ม/ }));
+  expect(imageSource()).toContain("/concepts/base-nordic-3f-master.webp");
 });
 
 test("renders the architectural planning stage from the current style", async () => {
   const { user } = renderConfigurator();
   const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
 
-  await user.click(screen.getByRole("radio", { name: "Modern Tropical Resort" }));
+  await user.click(screen.getByRole("radio", { name: "Nordic Style" }));
 
-  expect(within(preview).getByRole("heading", { name: "ทรอปิคอล รีสอร์ต" })).toBeInTheDocument();
+  expect(within(preview).getByRole("heading", { name: "บ้านสไตล์นอร์ดิก" })).toBeInTheDocument();
   expect(within(preview).getByText("200–300 ตร.ม.")).toBeInTheDocument();
   expect(within(preview).getByText("ครอบครัวที่ชอบธรรมชาติ")).toBeInTheDocument();
-  expect(within(preview).getByRole("img", { name: /Modern Tropical Resort/i })).toBeInTheDocument();
+  expect(within(preview).getByRole("img", { name: /Nordic Style/i })).toBeInTheDocument();
   expect(within(preview).getByText("ภาพ Mockup สำหรับวางแผนเบื้องต้น ไม่ใช่แบบก่อสร้าง")).toBeInTheDocument();
 });
 
@@ -156,7 +253,7 @@ test("exposes ordered progress, named counter controls, accessible choice groups
 
   expect(within(progress).getAllByRole("listitem")).toHaveLength(5);
   expect(screen.getByTestId("configurator-layout")).toHaveAttribute("data-responsive-layout", "split-preview");
-  expect(screen.getByRole("radio", { name: "Contemporary Warm Luxury" })).toBeInTheDocument();
+  expect(screen.getByRole("radio", { name: "Modern Style" })).toBeInTheDocument();
 
   await chooseStyleAndContinue(user);
 
@@ -164,6 +261,70 @@ test("exposes ordered progress, named counter controls, accessible choice groups
   expect(screen.getByRole("button", { name: /จำนวนชั้น.*ลด/ })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /จำนวนชั้น.*เพิ่ม/ })).toBeInTheDocument();
   expect(screen.getByRole("checkbox", { name: "ห้องทำงาน" })).toBeInTheDocument();
+});
+
+test("renders the clean Step 2 preview and a live summary below it", async () => {
+  const { user } = renderConfigurator();
+  await chooseStyleAndContinue(user);
+
+  const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างพื้นที่และฟังก์ชัน" });
+  expect(within(preview).getByRole("img", { name: /Modern Style/i })).toBeInTheDocument();
+  expect(within(preview).queryByText("CONCEPT PREVIEW")).not.toBeInTheDocument();
+  expect(within(preview).queryByRole("heading", { name: "บ้านสไตล์โมเดิร์น" })).not.toBeInTheDocument();
+
+  const summary = within(preview).getByRole("region", { name: "สรุปรายการพื้นที่และฟังก์ชัน" });
+  for (const label of ["ผู้อยู่อาศัย", "ชั้น", "ห้องนอน", "ห้องน้ำ", "ที่จอดรถ", "พื้นที่ใช้สอย"]) {
+    expect(within(summary).getByText(label)).toBeInTheDocument();
+  }
+
+  await user.click(screen.getByRole("checkbox", { name: "ห้องทำงาน" }));
+  expect(within(summary).getByText("ฟังก์ชันเพิ่มเติมที่เลือก")).toBeInTheDocument();
+  expect(within(summary).getByText("ห้องทำงาน")).toBeInTheDocument();
+});
+
+test("stores the extended Step 2 carousel choices as requirements without changing area", async () => {
+  const { store, user } = renderConfigurator();
+  await chooseStyleAndContinue(user);
+  const before = calculateArea(store.getState().configuration, QA_AREA_CATALOG);
+
+  const carousel = screen.getByRole("region", { name: "ตัวเลือกฟังก์ชันและความต้องการเพิ่มเติม" });
+  expect(within(carousel).getAllByRole("checkbox")).toHaveLength(12);
+  expect(screen.getByRole("button", { name: "เลื่อนตัวเลือกไปทางซ้าย" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "เลื่อนตัวเลือกไปทางขวา" })).toBeInTheDocument();
+  await user.click(within(carousel).getByRole("checkbox", { name: "ห้องฟิตเนส" }));
+
+  expect(store.getState().configuration.additionalRequirements).toEqual(["fitness"]);
+  expect(calculateArea(store.getState().configuration, QA_AREA_CATALOG)).toEqual(before);
+  expect(screen.getByText("ฟังก์ชันเพิ่มเติมที่เลือก")).toBeInTheDocument();
+  expect(screen.getAllByText("ห้องฟิตเนส").length).toBeGreaterThan(1);
+});
+
+test("treats every Step 2 function as requirement-only and presents one selected list", async () => {
+  const { store, user } = renderConfigurator();
+  await chooseStyleAndContinue(user);
+  const before = calculateArea(store.getState().configuration, QA_AREA_CATALOG);
+
+  expect(screen.queryByText(/มีผลต่อพื้นที่ใช้สอยที่แนะนำ/)).not.toBeInTheDocument();
+  await user.click(screen.getByRole("checkbox", { name: "ห้องทำงาน" }));
+  await user.click(screen.getByRole("checkbox", { name: "ห้องฟิตเนส" }));
+
+  expect(calculateArea(store.getState().configuration, QA_AREA_CATALOG)).toEqual(before);
+  expect(screen.getAllByText("ฟังก์ชันเพิ่มเติมที่เลือก")).toHaveLength(1);
+  expect(screen.queryByText("รายการความต้องการที่บันทึก")).not.toBeInTheDocument();
+});
+
+test("connects the Step 2 area slider and numeric value to the existing configuration state", async () => {
+  const { store, user } = renderConfigurator();
+  await chooseStyleAndContinue(user);
+
+  const slider = screen.getByRole("slider", { name: "เลื่อนปรับขนาดพื้นที่" });
+  expect(slider).toHaveAttribute("min", "60");
+  expect(slider).toHaveAttribute("max", "1500");
+  await user.clear(screen.getByRole("spinbutton", { name: /พื้นที่ใช้สอยที่ต้องการ/ }));
+  await user.type(screen.getByRole("spinbutton", { name: /พื้นที่ใช้สอยที่ต้องการ/ }), "280");
+
+  expect(slider).toHaveValue("280");
+  expect(store.getState().configuration.usableAreaOverrideM2).toBe(280);
 });
 
 test("uses the selected usable-area override and site access in the review summary", async () => {
@@ -177,10 +338,9 @@ test("uses the selected usable-area override and site access in the review summa
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
 
-  expect(screen.getByText(/พื้นที่ใช้สอยที่เลือก 220 ตร.ม./)).toBeInTheDocument();
-  expect(screen.getByText(/พื้นที่ก่อสร้างรวม.*254/)).toBeInTheDocument();
-  expect(screen.getByText(/เข้าถึงได้จำกัด/)).toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "แก้ไขพื้นที่ใช้สอย" }));
+  expect(screen.getByText(/พื้นที่ใช้สอย 220 ตร\.ม\./)).toBeInTheDocument();
+  expect(screen.getByText(/ถนนค่อนข้างแคบ/)).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "แก้ไขพื้นที่และฟังก์ชัน" }));
   expect(screen.getByRole("heading", { name: "พื้นที่และฟังก์ชัน" })).toHaveFocus();
 });
 
@@ -231,52 +391,70 @@ test("does not present an old override as current while the replacement is inval
   expect(screen.queryByText(/^พื้นที่ใช้สอย 220/)).not.toBeInTheDocument();
 });
 
-test("keeps a temporary reversed budget out of the draft and describes the linked correction", async () => {
+test("selects one budget range, updates compatibility values, and keeps open ranges non-authoritative", async () => {
   const { store, user } = renderConfigurator();
-  await chooseStyleAndContinue(user);
-  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+  await openStepThree(user);
 
-  const minimum = screen.getByRole("spinbutton", { name: /เริ่มต้น/ });
-  const maximum = screen.getByRole("spinbutton", { name: /สูงสุด/ });
-  await user.type(minimum, "9000000");
-  await user.type(maximum, "5000000");
+  const group = screen.getByRole("radiogroup", { name: "งบประมาณที่วางไว้" });
+  expect(within(group).getAllByRole("radio")).toHaveLength(7);
+  expect(within(group).getByRole("radio", { name: "ยังไม่ระบุ" })).toBeChecked();
 
-  expect(screen.getByText("งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น")).toHaveAttribute("id", "budget-error");
-  expect(minimum).toHaveAttribute("aria-describedby", "budget-error");
-  expect(maximum).toHaveAttribute("aria-describedby", "budget-error");
-  expect(store.getState().configuration.targetBudget).toBeNull();
+  await user.click(within(group).getByRole("radio", { name: "10–20 ล้านบาท" }));
+  expect(store.getState().configuration).toMatchObject({
+    budgetRangeId: "10m_20m",
+    targetBudget: { min: 10_000_000, max: 20_000_000 },
+  });
+
+  await user.click(within(group).getByRole("radio", { name: "มากกว่า 80 ล้านบาท" }));
+  expect(store.getState().configuration).toMatchObject({ budgetRangeId: "over_80m", targetBudget: null });
 });
 
-test("requires a complete ordered budget before continuing and supports explicitly clearing it", async () => {
-  const { store, user } = renderConfigurator();
-  await chooseStyleAndContinue(user);
-  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
-  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+test("shows the selected budget with color only and without a check mark", async () => {
+  const { user } = renderConfigurator();
+  await openStepThree(user);
 
-  const minimum = screen.getByRole("spinbutton", { name: /เริ่มต้น/ });
-  const maximum = screen.getByRole("spinbutton", { name: /สูงสุด/ });
+  const group = screen.getByRole("radiogroup", { name: "งบประมาณที่วางไว้" });
+  const selectedBudget = within(group).getByRole("radio", { name: "5–10 ล้านบาท" });
+  await user.click(selectedBudget);
+
+  expect(selectedBudget.closest("label")).toHaveAttribute("data-selected", "true");
+  expect(within(group).queryByText("✓")).not.toBeInTheDocument();
+});
+
+test("allows Step 3 to continue with an unspecified budget while still requiring province", async () => {
+  const { user } = renderConfigurator();
+  await openStepThree(user);
   const next = screen.getByRole("button", { name: "ถัดไป" });
-
-  await user.type(minimum, "5000000");
   expect(next).toBeDisabled();
-  expect(screen.getByText("กรอกงบประมาณทั้งสองช่อง หรือเว้นว่างทั้งคู่")).toHaveAttribute("id", "budget-error");
-  expect(minimum).toHaveAttribute("aria-describedby", "budget-error");
-  expect(store.getState().configuration.targetBudget).toBeNull();
-
-  await user.type(maximum, "7000000");
+  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
   expect(next).toBeEnabled();
-  expect(store.getState().configuration.targetBudget).toEqual({ min: 5000000, max: 7000000 });
+});
 
-  await user.clear(maximum);
-  await user.type(maximum, "4000000");
-  expect(next).toBeDisabled();
-  expect(screen.getByText("งบประมาณสูงสุดต้องไม่น้อยกว่างบเริ่มต้น")).toHaveAttribute("id", "budget-error");
-  expect(store.getState().configuration.targetBudget).toBeNull();
+test("preserves the selected budget after back navigation", async () => {
+  const { user } = renderConfigurator();
+  await openStepThree(user);
+  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+  await user.click(screen.getByRole("radio", { name: "20–40 ล้านบาท" }));
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+  await user.click(screen.getByRole("button", { name: "ย้อนกลับ" }));
+  expect(screen.getByRole("radio", { name: "20–40 ล้านบาท" })).toBeChecked();
+});
 
-  await user.clear(minimum);
-  await user.clear(maximum);
-  expect(next).toBeEnabled();
-  expect(store.getState().configuration.targetBudget).toBeNull();
+test("shows a clean Step 3 concept preview and updates its separate summary", async () => {
+  const { user } = renderConfigurator();
+  await openStepThree(user);
+
+  const preview = screen.getByRole("complementary", { name: "ตัวอย่างแนวคิดบ้าน" });
+  expect(within(preview).getByRole("img", { name: /ภาพแนวคิดบ้าน/ })).toBeInTheDocument();
+  expect(within(preview).queryByText("3D")).not.toBeInTheDocument();
+  expect(within(preview).queryByRole("button")).not.toBeInTheDocument();
+
+  const summary = screen.getByRole("region", { name: "สรุปข้อมูลเบื้องต้น" });
+  expect(summary).toHaveTextContent("ยังไม่ระบุ");
+  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+  await user.click(screen.getByRole("radio", { name: "10–20 ล้านบาท" }));
+  expect(summary).toHaveTextContent("กรุงเทพมหานคร");
+  expect(summary).toHaveTextContent("10–20 ล้านบาท");
 });
 
 test("does not create an unchanged draft on unmount and never recreates a cleared draft", () => {
@@ -318,7 +496,7 @@ test("supports native arrow-key quality selection and blocks preview for an inco
   const user = userEvent.setup();
   render(<ConfiguratorShell onPreview={onPreview} store={store} />);
 
-  await user.click(screen.getByRole("button", { name: "ดู Preview" }));
+  await user.click(screen.getByRole("button", { name: "ไปยังหน้าสรุปค่าใช้จ่าย" }));
   expect(onPreview).not.toHaveBeenCalled();
   expect(screen.getByRole("heading", { name: "เลือกรูปแบบบ้าน" })).toHaveFocus();
 
@@ -353,12 +531,52 @@ test("presents every house style as an image-backed architect card", () => {
   });
 });
 
+test("keeps every Step 1 house presentation fixed to the two-floor model", () => {
+  const { store } = renderConfigurator();
+
+  act(() => {
+    store.getState().updateConfiguration({ floors: 3 });
+  });
+
+  const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
+  const previewImage = within(preview).getByRole("img", { name: /ภาพจำลองบ้านสไตล์/ });
+  expect(decodeURIComponent(previewImage.getAttribute("src") ?? "")).toContain("/concepts/base-classic-2f-master.webp");
+  expect(within(preview).getByText("2 ชั้น")).toBeInTheDocument();
+
+  const choices = screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
+  const nordicCard = within(choices).getByRole("radio", { name: "Nordic Style" }).closest("label");
+  expect(within(nordicCard as HTMLElement).getByText("2 ชั้น")).toBeInTheDocument();
+});
+
+test("resets the floor default to two when a Step 1 style is selected", async () => {
+  const { store, user } = renderConfigurator();
+
+  act(() => {
+    store.getState().updateConfiguration({ floors: 3 });
+  });
+  await user.click(screen.getByRole("radio", { name: "Modern Style" }));
+
+  expect(store.getState().configuration.floors).toBe(2);
+});
+
+test("carries the two-floor default into Step 2 for a restored style selection", async () => {
+  const { store, user } = renderConfigurator();
+
+  act(() => {
+    store.getState().updateConfiguration({ styleId: "classic-style", floors: 3 });
+  });
+  await user.click(screen.getByRole("button", { name: "ถัดไป" }));
+
+  expect(store.getState().configuration.floors).toBe(2);
+  expect(screen.getByRole("spinbutton", { name: "จำนวนชั้น" })).toHaveValue(2);
+});
+
 test("marks preview data and mobile-safe landmarks for the active selection", () => {
   const { store } = renderConfigurator();
 
   const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
   const form = screen.getByRole("region", { name: "เลือกรูปแบบบ้าน" });
-  expect(preview).toHaveAttribute("data-preview-style", "contemporary-warm-luxury");
+  expect(preview).toHaveAttribute("data-preview-style", "classic-style");
   expect(preview).toHaveAttribute("data-preview-material", "premium");
   expect(preview).toHaveAttribute("data-mobile-preview-ratio", "16:10");
   expect(form).toHaveAttribute("data-choice-canvas", "true");
@@ -370,19 +588,71 @@ test("marks preview data and mobile-safe landmarks for the active selection", ()
   expect(screen.getByTestId("material-scroll-area")).toBeInTheDocument();
 });
 
-test("renders eight four-option material groups using blank placeholders", () => {
+test("renders supplied photography in the requested material-option order", () => {
   const { store } = renderConfigurator();
   act(() => store.getState().setCurrentStep(3));
 
   const scrollArea = screen.getByTestId("material-scroll-area");
   const materialGroups = within(scrollArea).getAllByRole("radiogroup");
-  expect(materialGroups).toHaveLength(8);
+  expect(materialGroups).toHaveLength(5);
   materialGroups.forEach((group) => expect(within(group).getAllByRole("radio")).toHaveLength(4));
 
-  const materialPlaceholders = within(scrollArea).getAllByTestId("material-asset-placeholder");
-  expect(materialPlaceholders).toHaveLength(32);
-  materialPlaceholders.forEach((placeholder) => expect(placeholder).toBeEmptyDOMElement());
-  expect(within(scrollArea).queryByRole("img")).not.toBeInTheDocument();
+  const roofGroup = within(scrollArea).getByRole("radiogroup", { name: "หลังคา" });
+  expect([...roofGroup.querySelectorAll("img")].map((image) => {
+    const src = image.getAttribute("src") ?? "";
+    return new URL(src, "http://localhost").searchParams.get("url") ?? src;
+  })).toEqual([
+    "/materials/roof/1.png",
+    "/materials/roof/2.png",
+    "/materials/roof/3.png",
+    "/materials/roof/4.png",
+  ]);
+
+  const wallGroup = within(scrollArea).getByRole("radiogroup", { name: "ผนังภายนอก" });
+  expect([...wallGroup.querySelectorAll("img")].map((image) => {
+    const src = image.getAttribute("src") ?? "";
+    return new URL(src, "http://localhost").searchParams.get("url") ?? src;
+  })).toEqual([
+    "/materials/wall/1.png",
+    "/materials/wall/2.png",
+    "/materials/wall/3.png",
+    "/materials/wall/4.png",
+  ]);
+
+  const windowGroup = within(scrollArea).getByRole("radiogroup", { name: "หน้าต่าง" });
+  expect([...windowGroup.querySelectorAll("img")].map((image) => {
+    const src = image.getAttribute("src") ?? "";
+    return new URL(src, "http://localhost").searchParams.get("url") ?? src;
+  })).toEqual([
+    "/materials/window/1.png",
+    "/materials/window/2.png",
+    "/materials/window/3.png",
+    "/materials/window/4.png",
+  ]);
+
+  const doorGroup = within(scrollArea).getByRole("radiogroup", { name: "ประตูทางเข้า" });
+  expect([...doorGroup.querySelectorAll("img")].map((image) => {
+    const src = image.getAttribute("src") ?? "";
+    return new URL(src, "http://localhost").searchParams.get("url") ?? src;
+  })).toEqual([
+    "/materials/door/4.png",
+    "/materials/door/1.png",
+    "/materials/door/2.png",
+    "/materials/door/3.png",
+  ]);
+
+  const flooringGroup = within(scrollArea).getByRole("radiogroup", { name: "พื้น" });
+  expect([...flooringGroup.querySelectorAll("img")].map((image) => {
+    const src = image.getAttribute("src") ?? "";
+    return new URL(src, "http://localhost").searchParams.get("url") ?? src;
+  })).toEqual([
+    "/materials/flooring/1.png",
+    "/materials/flooring/2.png",
+    "/materials/flooring/3.png",
+    "/materials/flooring/4.png",
+  ]);
+
+  expect(within(scrollArea).queryAllByTestId("material-asset-placeholder")).toHaveLength(0);
 });
 
 test("selects materials, multiple features, and bespoke quality", async () => {
@@ -393,7 +663,7 @@ test("selects materials, multiple features, and bespoke quality", async () => {
   const qualityGroup = screen.getByRole("radiogroup", { name: "ระดับคุณภาพวัสดุ" });
   expect(scrollArea).not.toContainElement(qualityGroup);
 
-  await user.click(screen.getByRole("radio", { name: "Metal Roof" }));
+  await user.click(screen.getByRole("radio", { name: "หลังคาเมทัลชีท" }));
   await user.click(screen.getByRole("checkbox", { name: "สระว่ายน้ำ" }));
   await user.click(screen.getByRole("checkbox", { name: "สวนภายในบ้าน" }));
   await user.click(screen.getByRole("radio", { name: /BESPOKE/ }));
@@ -425,6 +695,7 @@ test("orders compact Step 4 as selector, quality, preview, summary, then one act
   expect(screen.getAllByRole("button", { name: "ย้อนกลับ" })).toHaveLength(1);
   expect(screen.getAllByRole("button", { name: "ถัดไป" })).toHaveLength(1);
 });
+
 test("keeps the mobile vertical-list contract and the mockup disclaimer visible", () => {
   renderConfigurator();
 
@@ -444,16 +715,16 @@ test("updates the preview tone contract when the material level changes", async 
   });
 
   expect(preview).toHaveAttribute("data-preview-material", "signature");
-  expect(within(preview).getByRole("img", { name: /Contemporary Warm Luxury/i }).parentElement).toHaveAttribute("data-preview-tone", "signature");
+  expect(within(preview).getByRole("img", { name: /Classic Style/i }).parentElement).toHaveAttribute("data-preview-tone", "signature");
 });
 
-test("explains function and mixed-pricing Step 4 choices without showing prices", async () => {
+test("keeps Step 2 choices requirement-only while Step 4 describes mixed pricing support truthfully", async () => {
   const { store } = renderConfigurator();
 
   await act(async () => {
     store.getState().setCurrentStep(1);
   });
-  expect(screen.getByText("มีผลต่อพื้นที่ใช้สอยที่แนะนำ")).toBeInTheDocument();
+  expect(screen.queryByText(/มีผลต่อพื้นที่ใช้สอยที่แนะนำ/)).not.toBeInTheDocument();
 
   await act(async () => {
     store.getState().setCurrentStep(3);
@@ -463,13 +734,28 @@ test("explains function and mixed-pricing Step 4 choices without showing prices"
   expect(screen.getByText("ระดับคุณภาพวัสดุมีผลต่อคุณภาพโดยรวมและงบประมาณของโครงการ")).toBeInTheDocument();
 });
 
-test("keeps every special-feature placeholder empty", () => {
+test("renders supplied photography for the ten retained special-feature choices", () => {
   const { store } = renderConfigurator();
   act(() => store.getState().setCurrentStep(3));
 
-  const featurePlaceholders = screen.getAllByTestId("feature-asset-placeholder");
-  expect(featurePlaceholders).toHaveLength(15);
-  featurePlaceholders.forEach((placeholder) => expect(placeholder).toBeEmptyDOMElement());
+  const featureGroup = screen.getByRole("group", { name: "ส่วนพิเศษที่อยากพิจารณา" });
+  expect([...featureGroup.querySelectorAll("img")].map((image) => image.getAttribute("src"))).toEqual([
+    "/materials/special-features/1.png",
+    "/materials/special-features/2.png",
+    "/materials/special-features/3.png",
+    "/materials/special-features/4.png",
+    "/materials/special-features/5.png",
+    "/materials/special-features/6.png",
+    "/materials/special-features/7.png",
+    "/materials/special-features/8.png",
+    "/materials/special-features/9.png",
+    "/materials/special-features/10.png",
+  ]);
+  expect(within(featureGroup).queryByTestId("feature-asset-placeholder")).not.toBeInTheDocument();
+
+  for (const removedLabel of ["โถง Double Volume", "สกายไลต์", "โฮมเธียเตอร์", "ห้องไวน์", "พื้นที่สำหรับสัตว์เลี้ยง"]) {
+    expect(screen.queryByRole("checkbox", { name: removedLabel })).not.toBeInTheDocument();
+  }
 });
 
 test("renders exactly four material quality radios", () => {
@@ -489,7 +775,7 @@ test("shows a blank Step 4 preview and compact selection summary", () => {
   expect(placeholder).toBeEmptyDOMElement();
   expect(placeholder).toHaveAttribute("data-placeholder-type", "preview");
   expect(within(preview).getByRole("heading", { name: "สรุปวัสดุที่เลือก" })).toBeInTheDocument();
-  expect(preview).toHaveTextContent("Concrete Tile");
+  expect(preview).toHaveTextContent("กระเบื้องคอนกรีต");
   expect(preview).toHaveTextContent("PREMIUM");
   expect(within(preview).queryByText("CONCEPT PREVIEW")).not.toBeInTheDocument();
   expect(within(preview).queryByRole("img")).not.toBeInTheDocument();
