@@ -124,7 +124,7 @@ function AdditionalViews({ image, styleLabel }: { image: string; styleLabel: str
       <div className={styles.viewStack}>
         {[1, 2, 3].map((view) => (
           <span className={styles.viewThumbnail} key={view}>
-            <Image alt={`มุมมองเพิ่มเติม ${view} ของบ้านสไตล์ ${styleLabel}`} fill sizes="96px" src={image} />
+            <Image alt={`มุมมองเพิ่มเติม ${view} ของบ้านสไตล์ ${styleLabel}`} fill sizes="(max-width: 560px) 70px, 106px" src={image} unoptimized />
           </span>
         ))}
       </div>

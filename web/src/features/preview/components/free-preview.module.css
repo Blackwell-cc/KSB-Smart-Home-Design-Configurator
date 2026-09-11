@@ -167,7 +167,7 @@
 .additionalViews {
   position: absolute;
   right: 14px;
-  bottom: 28px;
+  bottom: 52px;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -197,7 +197,11 @@
   transform-origin: 50% 100%;
 }
 
-.viewThumbnail img { object-fit: cover; transition: transform 180ms ease; }
+.viewThumbnail img {
+  object-fit: cover;
+  filter: contrast(1.08) saturate(1.04);
+  transition: transform 180ms ease;
+}
 .viewThumbnail:nth-child(1) { z-index: 1; transform: rotate(-11deg) translateY(7px); }
 .viewThumbnail:nth-child(1) img { object-position: 18% 66%; transform: scale(1.62); }
 .viewThumbnail:nth-child(2) { z-index: 3; transform: rotate(-4deg) translateY(-2px); }
