@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { AiLoader } from "@/components/ui/ai-loader";
 import type { DesignBriefConfiguration } from "@/features/configurator/domain/configuration";
 import type { FreePreviewPayload } from "../application/build-free-preview";
 import { CONCEPT_CATALOG, resolveConceptImage } from "../domain/concept-catalog";
@@ -46,7 +47,7 @@ function PreviewIcon({ name }: { name: "info" | "floors" | "bed" | "bath" | "car
 }
 
 function StatusCard({ status, onBack }: Pick<FreePreviewProps, "status" | "onBack">) {
-  if (status === "loading") return <main className={styles.statusPage}><p role="status" aria-busy="true">กำลังเตรียมสรุปโครงการของคุณ</p></main>;
+  if (status === "loading") return <main className={styles.statusPage}><AiLoader /></main>;
   const message = status === "no-draft"
     ? "ไม่พบข้อมูลบ้านสำหรับสร้าง Preview"
     : status === "invalid-draft"

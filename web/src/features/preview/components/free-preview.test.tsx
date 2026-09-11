@@ -106,6 +106,8 @@ test("renders accessible loading and service-unavailable guidance", () => {
   const { rerender } = render(<FreePreview status="loading" onBack={vi.fn()} onFullReport={vi.fn()} onShare={vi.fn()} onStartOver={vi.fn()} />);
 
   expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
+  expect(screen.getByRole("status")).toHaveTextContent("กำลังประเมินงบประมาณ");
+  expect(screen.getByTestId("ai-loader-ring")).toBeInTheDocument();
   rerender(<FreePreview status="unavailable" onBack={vi.fn()} onFullReport={vi.fn()} onShare={vi.fn()} onStartOver={vi.fn()} />);
   expect(screen.getByRole("alert")).toHaveTextContent(/ยังไม่สามารถประเมิน/);
   expect(screen.getByRole("button", { name: "กลับไปแก้ไขข้อมูลบ้าน" })).toBeVisible();
