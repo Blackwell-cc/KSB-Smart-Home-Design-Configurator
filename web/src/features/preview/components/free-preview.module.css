@@ -147,7 +147,7 @@
   left: 0;
   display: grid;
   gap: 5px;
-  padding: 72px 404px 28px 38px;
+  padding: 72px 440px 28px 38px;
   color: var(--ivory);
   background: linear-gradient(transparent, rgba(8, 8, 7, 0.82) 48%, rgba(8, 8, 7, 0.98));
 }
@@ -166,8 +166,8 @@
 
 .additionalViews {
   position: absolute;
-  right: 28px;
-  bottom: 52px;
+  right: 14px;
+  bottom: 28px;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -500,8 +500,8 @@
   .experience { width: calc(100% - 36px); }
   .introBlock h1 { font-size: clamp(2.5rem, 8vw, 3.6rem); }
   .conceptPanel { position: relative; min-height: min(76vw, 520px); }
-  .conceptCaption { padding: 60px 320px 22px 24px; }
-  .additionalViews { right: 24px; bottom: 44px; }
+  .conceptCaption { padding: 60px 24px 132px; }
+  .additionalViews { right: 20px; bottom: 20px; transform: scale(0.82); transform-origin: right bottom; }
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metrics > div { justify-content: flex-start; border-bottom: 1px solid rgba(215, 170, 90, 0.2); }
   .metrics > div:nth-child(even) { border-right: 0; }
@@ -523,9 +523,9 @@
   .statusBadge svg { display: none; }
   .startOverButton { min-height: 40px; padding-inline: 10px; font-size: 0.7rem; }
   .conceptPanel { min-height: 360px; }
-  .conceptCaption { padding: 54px 18px 118px; }
+  .conceptCaption { padding: 54px 18px 128px; }
   .conceptCaption p { max-width: 100%; font-size: 0.74rem; }
-  .additionalViews { right: 18px; bottom: 26px; left: 18px; justify-content: flex-end; }
+  .additionalViews { right: 18px; bottom: 16px; left: 18px; justify-content: flex-end; transform: none; }
   .viewStack { width: 154px; grid-template-columns: repeat(3, 38px); }
   .viewThumbnail { width: 70px; height: 50px; }
   .viewDetails { width: 124px; min-height: 50px; margin-left: -10px; padding: 7px 8px 7px 34px; }

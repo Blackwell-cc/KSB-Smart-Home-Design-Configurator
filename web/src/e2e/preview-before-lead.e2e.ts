@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { completeConfigurator, mockEstimate, selectStyleWithKeyboard } from "./helpers/complete-configurator";
 
-test("shows a useful free preview before asking for contact details", async ({ page }) => {
+test("shows a useful free preview before asking for contact details", async ({ page }, testInfo) => {
   const invalidImageWarnings: string[] = [];
   page.on("console", (message) => {
     if (message.text().includes("parent element with invalid \"position\"")) invalidImageWarnings.push(message.text());
@@ -41,6 +41,29 @@ test("shows a useful free preview before asking for contact details", async ({ p
   await expect(page.getByRole("button", { name: "แชร์ผ่าน Facebook" })).toBeVisible();
   await expect(page.getByRole("button", { name: "คัดลอกลิงก์" })).toBeVisible();
   await expect(page.locator("html")).toHaveJSProperty("scrollWidth", await page.locator("html").evaluate((element) => element.clientWidth));
+
+  const additionalViews = page.getByRole("group", { name: "มุมมองเพิ่มเติม" });
+  const conceptCaption = page.locator('[class*="conceptCaption"]');
+  for (const viewport of [
+    { width: 375, height: 812 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+    { width: 1908, height: 896 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const galleryBox = await additionalViews.boundingBox();
+    expect(galleryBox).not.toBeNull();
+    for (const element of [conceptCaption.locator("strong"), conceptCaption.locator("p")]) {
+      const textBox = await element.boundingBox();
+      expect(textBox).not.toBeNull();
+      const overlapWidth = Math.max(0, Math.min(textBox!.x + textBox!.width, galleryBox!.x + galleryBox!.width) - Math.max(textBox!.x, galleryBox!.x));
+      const overlapHeight = Math.max(0, Math.min(textBox!.y + textBox!.height, galleryBox!.y + galleryBox!.height) - Math.max(textBox!.y, galleryBox!.y));
+      expect(overlapWidth * overlapHeight).toBe(0);
+    }
+    if (viewport.width === 375 || viewport.width === 1908) {
+      await page.screenshot({ fullPage: true, path: testInfo.outputPath(`preview-gallery-${viewport.width}.png`) });
+    }
+  }
 
   const fullReportCta = page.getByRole("button", { name: "รับข้อมูลฉบับเต็ม" });
   await fullReportCta.click();

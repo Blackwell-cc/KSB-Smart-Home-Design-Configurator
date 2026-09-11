@@ -40,8 +40,9 @@ test("keeps the mobile concept caption contained by its panel", () => {
   expect(mobileStyles).not.toMatch(/\.conceptPanel\s*\{[^}]*position:\s*static;/);
 });
 
-test("matches the reference with layered additional-view thumbnails", () => {
-  expect(stylesheet).toMatch(/\.additionalViews\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?right:[\s\S]*?bottom:\s*5\dpx;/);
+test("keeps the reference thumbnail stack while reserving space beside the concept copy", () => {
+  expect(stylesheet).toMatch(/\.conceptCaption\s*\{[\s\S]*?padding:\s*72px 440px 28px 38px;/);
+  expect(stylesheet).toMatch(/\.additionalViews\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?right:\s*14px;[\s\S]*?bottom:\s*28px;/);
   expect(stylesheet).toMatch(/\.viewStack\s*\{[\s\S]*?display:\s*grid;/);
   expect(stylesheet).toMatch(/\.viewThumbnail:nth-child\(1\)[\s\S]*?transform:\s*rotate\(-/);
   expect(stylesheet).toMatch(/\.viewThumbnail:nth-child\(3\)[\s\S]*?transform:\s*rotate\(/);
