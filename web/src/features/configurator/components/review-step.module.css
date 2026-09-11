@@ -48,7 +48,7 @@
 .cardHeading { min-width: 0; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 8px; margin-bottom: 9px; }
 .cardHeading h2 { min-width: 0; color: var(--config-ivory); font-size: 0.8rem; font-weight: 600; line-height: 1.25; }
 .cardIcon { width: 24px; height: 24px; display: grid; place-items: center; color: var(--config-gold); }
-.cardIcon svg, .specialCard li svg, .checkList svg, .actions svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.55; }
+.cardIcon svg, .checkList svg, .actions svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.55; }
 .editButton { min-height: 28px; padding: 2px 0; color: var(--config-gold-light); border: 0; border-bottom: 1px solid currentColor; background: transparent; font: inherit; font-size: 0.64rem; cursor: pointer; }
 .editButton:hover { color: #fff1c8; }
 .editButton:focus-visible { border-radius: 4px; outline: 2px solid var(--config-gold-light); outline-offset: 3px; }
@@ -83,9 +83,16 @@
 .materialList small { color: var(--config-muted); font-size: 0.56rem; }
 .materialList strong { overflow: hidden; color: var(--config-ivory); font-size: 0.69rem; font-weight: 500; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
 
-.specialCard ul { display: grid; gap: 8px; }
-.specialCard li { min-width: 0; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: 7px; color: var(--config-ivory); font-size: 0.72rem; line-height: 1.3; }
-.specialCard li svg { color: var(--config-gold); }
+.specialFeatureList { min-height: 0; display: grid; align-content: start; gap: 4px; overflow-y: auto; scrollbar-color: rgba(216, 173, 98, 0.58) transparent; scrollbar-width: thin; }
+.specialFeatureList::-webkit-scrollbar { width: 5px; }
+.specialFeatureList::-webkit-scrollbar-track { background: transparent; }
+.specialFeatureList::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(216, 173, 98, 0.48); }
+.specialFeatureList li { min-width: 0; display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 9px; padding: 3px 0; border-bottom: 1px solid rgba(210, 165, 82, 0.12); }
+.specialFeatureList li:last-child { border-bottom: 0; }
+.specialFeatureList li > strong { overflow: hidden; color: var(--config-ivory); font-size: 0.7rem; font-weight: 500; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+.specialFeatureThumb { position: relative; width: 48px; height: 48px; display: block; overflow: hidden; border: 1px solid rgba(216, 173, 98, 0.26); border-radius: 7px; background: #11171a; }
+.specialFeatureThumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.specialFeatureCheck { position: absolute; top: 3px; right: 3px; width: 15px; height: 15px; display: grid; place-items: center; border: 1px solid rgba(255, 242, 207, 0.76); border-radius: 50%; color: #171108; background: var(--config-gold-light); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.32); font-size: 0.57rem; font-weight: 800; line-height: 1; }
 .emptyValue { color: var(--config-muted); }
 .moreItems { color: var(--config-gold-light) !important; }
 .qualityCard > strong { color: var(--config-gold-light); font-size: 1rem; letter-spacing: 0.04em; }
@@ -94,6 +101,7 @@
 .housePreview { position: relative; width: 100%; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid rgba(210, 165, 82, 0.34); border-radius: 16px; background: #0b1115; box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2); }
 .housePreview img { object-fit: cover; object-position: center; }
 .housePreview > span { height: 100%; border: 0; border-radius: 0; }
+.housePreview .materialHousePreview { width: 100%; height: 100%; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
 
 .confirmationPanels { min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr); gap: 10px; }
 .confirmationCard { min-width: 0; min-height: 0; overflow: hidden; padding: 13px 16px; border: 1px solid rgba(210, 165, 82, 0.2); border-radius: 15px; background: rgba(10, 16, 20, 0.8); }
@@ -113,14 +121,14 @@
   grid-area: actions;
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(180px, 0.72fr) minmax(230px, 0.9fr) minmax(310px, 1.25fr);
+  grid-template-columns: minmax(220px, 0.72fr) minmax(420px, 1.55fr);
   align-items: center;
   gap: 14px;
   padding: 10px 0;
   border-top: 1px solid rgba(210, 165, 82, 0.16);
 }
 .actions button { min-height: 52px; border-radius: 14px; font-weight: 600; }
-.actions button:nth-child(2), .actions button:nth-child(3) { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+.actions button:last-child { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
 .actions button:last-child { color: #15100a; background: linear-gradient(110deg, #f0d18f, #d8ad62); box-shadow: 0 8px 22px rgba(216, 173, 98, 0.1); }
 
 @media (min-width: 1200px) {
@@ -138,6 +146,8 @@
   .cardHeading { margin-bottom: 7px; }
   .materialList li { padding-block: 2px; }
   .materialThumb { width: 34px; height: 34px; }
+  .specialFeatureList li { grid-template-columns: 36px minmax(0, 1fr); padding-block: 2px; }
+  .specialFeatureThumb { width: 36px; height: 36px; }
   .confirmationCard { padding: 14px 15px; }
 }
 
@@ -154,7 +164,6 @@
   .materialList { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
   .confirmationPanels { grid-template-columns: minmax(0, 1fr); }
   .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .actions button:last-child { grid-column: 1 / -1; grid-row: 1; }
 }
 
 @media (max-width: 560px) {

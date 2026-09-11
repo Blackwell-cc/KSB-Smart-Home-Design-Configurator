@@ -95,16 +95,74 @@ test("selects the matching house image from the chosen style and floor count", (
     floors: 1,
   } satisfies HouseConfiguration;
   const threeFloors = { ...oneFloor, floors: 3 } satisfies HouseConfiguration;
-  const minimalFallback = {
+  const classicOneFloor = {
+    ...createDefaultConfiguration(),
+    styleId: "classic-style",
+    floors: 1,
+  } satisfies HouseConfiguration;
+  const classicThreeFloors = { ...classicOneFloor, floors: 3 } satisfies HouseConfiguration;
+  const classicTwoFloors = { ...classicOneFloor, floors: 2 } satisfies HouseConfiguration;
+  const minimalThreeFloors = {
     ...createDefaultConfiguration(),
     styleId: "minimalist-style",
     floors: 3,
   } satisfies HouseConfiguration;
+  const minimalOneFloor = { ...minimalThreeFloors, floors: 1 } satisfies HouseConfiguration;
+  const minimalTwoFloors = { ...minimalThreeFloors, floors: 2 } satisfies HouseConfiguration;
+  const loftOneFloor = {
+    ...createDefaultConfiguration(),
+    styleId: "loft-style",
+    floors: 1,
+  } satisfies HouseConfiguration;
+  const loftTwoFloors = { ...loftOneFloor, floors: 2 } satisfies HouseConfiguration;
+  const loftThreeFloors = { ...loftOneFloor, floors: 3 } satisfies HouseConfiguration;
+  const contemporaryOneFloor = {
+    ...createDefaultConfiguration(),
+    styleId: "vintage-style",
+    floors: 1,
+  } satisfies HouseConfiguration;
+  const contemporaryTwoFloors = { ...contemporaryOneFloor, floors: 2 } satisfies HouseConfiguration;
+  const contemporaryThreeFloors = { ...contemporaryOneFloor, floors: 3 } satisfies HouseConfiguration;
+  const tropicalOneFloor = {
+    ...createDefaultConfiguration(),
+    styleId: "luxury-style",
+    floors: 1,
+  } satisfies HouseConfiguration;
+  const tropicalTwoFloors = { ...tropicalOneFloor, floors: 2 } satisfies HouseConfiguration;
+  const tropicalThreeFloors = { ...tropicalOneFloor, floors: 3 } satisfies HouseConfiguration;
 
   expect(buildLivePreview(oneFloor, calculateArea(oneFloor, QA_AREA_CATALOG)).concept.image)
     .toBe("/concepts/base-nordic-1f-master.webp");
+  expect(buildLivePreview(classicOneFloor, calculateArea(classicOneFloor, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/classic/1f/base.webp?v=20260828-classic-1f-ai-v2");
+  expect(buildLivePreview(classicTwoFloors, calculateArea(classicTwoFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/classic/2f/base.webp?v=20260911-classic-2f-ai-v1");
+  expect(buildLivePreview(classicThreeFloors, calculateArea(classicThreeFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/classic/3f/base.webp?v=20260909-classic-3f-ai-v1");
   expect(buildLivePreview(threeFloors, calculateArea(threeFloors, QA_AREA_CATALOG)).concept.image)
     .toBe("/concepts/base-nordic-3f-master.webp");
-  expect(buildLivePreview(minimalFallback, calculateArea(minimalFallback, QA_AREA_CATALOG)).concept.image)
-    .toBe("/concepts/base-minimal-2f-master.webp");
+  expect(buildLivePreview(minimalOneFloor, calculateArea(minimalOneFloor, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/minimal/1f/base.webp?v=20260827-minimal-1f-ai-v1");
+  expect(buildLivePreview(minimalTwoFloors, calculateArea(minimalTwoFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/minimal/2f/base.webp?v=20260828-minimal-2f-ai-v1");
+  expect(buildLivePreview(minimalThreeFloors, calculateArea(minimalThreeFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/minimal/3f/base.webp?v=20260828-minimal-3f-ai-v1");
+  expect(buildLivePreview(loftOneFloor, calculateArea(loftOneFloor, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/loft/1f/base.webp?v=20260827-loft-1f-base-v2");
+  expect(buildLivePreview(loftTwoFloors, calculateArea(loftTwoFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/loft/2f/base.webp?v=20260827-loft-2f-ai-v1");
+  expect(buildLivePreview(loftThreeFloors, calculateArea(loftThreeFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/loft/3f/base.webp?v=20260827-loft-3f-ai-v1");
+  expect(buildLivePreview(contemporaryOneFloor, calculateArea(contemporaryOneFloor, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/contemporary/1f/base.webp?v=20260910-contemporary-base-v3");
+  expect(buildLivePreview(contemporaryTwoFloors, calculateArea(contemporaryTwoFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/contemporary/2f/base.webp?v=20260910-contemporary-base-v3");
+  expect(buildLivePreview(contemporaryThreeFloors, calculateArea(contemporaryThreeFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/contemporary/3f/base.webp?v=20260910-contemporary-base-v3");
+  expect(buildLivePreview(tropicalOneFloor, calculateArea(tropicalOneFloor, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/tropical/1f/base.webp?v=20260910-tropical-1f-ai-v1");
+  expect(buildLivePreview(tropicalTwoFloors, calculateArea(tropicalTwoFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/tropical/2f/base.webp?v=20260910-tropical-2f-ai-v1");
+  expect(buildLivePreview(tropicalThreeFloors, calculateArea(tropicalThreeFloors, QA_AREA_CATALOG)).concept.image)
+    .toBe("/material-previews/tropical/3f/base.webp?v=20260911-tropical-3f-ai-v1");
 });

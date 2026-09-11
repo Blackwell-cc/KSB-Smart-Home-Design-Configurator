@@ -152,7 +152,7 @@
 .consent { display: flex; align-items: flex-start; gap: 8px; color: #c8c2b8; font-size: 0.66rem; line-height: 1.45; cursor: pointer; }
 .consent input { width: 16px; height: 16px; flex: 0 0 auto; margin: 1px 0 0; accent-color: var(--modal-gold); }
 .consentError { display: block; margin-top: 4px; }
-.submitError { margin: 9px 0 0; color: #e8a293; font-size: 0.72rem; text-align: center; }
+.submitError { max-width: 390px; margin: 0 auto 0 0; align-self: center; color: #e8a293; font-size: 0.72rem; line-height: 1.45; text-align: left; }
 
 .informationPanel {
   display: grid;
@@ -252,6 +252,7 @@
   .moreViews { grid-column: 1 / -1; min-height: 46px; }
   .moreViews strong { font-size: 0.72rem; }
   .actions { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: 8px; }
+  .submitError { grid-column: 1 / -1; max-width: none; margin: 0; text-align: center; }
   .actions { margin: 16px -14px -14px; padding-right: 14px; padding-left: 14px; }
   .actions button { min-width: 0; min-height: 50px; }
   .submit { gap: 8px; }

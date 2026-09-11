@@ -1,0 +1,20 @@
+{
+  "sceneId": "classic-1f",
+  "styleId": "classic-style",
+  "floors": 1,
+  "width": 1672,
+  "height": 941,
+  "base": "../../../../../public/concepts/base-classic-1f-master.webp",
+  "masks": {
+    "roof": "masks/roof.png",
+    "window": "masks/window.png",
+    "door": "masks/door.png"
+  },
+  "generatedScenes": {
+    "roof": "generated-roof-scenes",
+    "window": "generated-window-scenes",
+    "door": "generated-door-scenes"
+  },
+  "lockedMaterials": ["wall"],
+  "status": "published"
+}

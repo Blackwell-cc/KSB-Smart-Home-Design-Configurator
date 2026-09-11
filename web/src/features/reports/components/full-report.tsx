@@ -8,7 +8,6 @@ import styles from "./full-report.module.css";
 type FullReportProps = {
   report: FullReportViewModel;
   pdfHref: string;
-  onCreateShare?: () => Promise<string>;
   onRequestConsultation?: (signal: AbortSignal) => Promise<void>;
   onConsultationRequested?: () => void;
 };
@@ -16,11 +15,10 @@ type FullReportProps = {
 const money = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 });
 const thaiDate = new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "long", year: "numeric" });
 
-type IconName = "download" | "share" | "arrow" | "home" | "area" | "bed" | "bath" | "car" | "layers" | "location" | "check" | "spark" | "document";
+type IconName = "download" | "arrow" | "home" | "area" | "bed" | "bath" | "car" | "layers" | "location" | "check" | "spark" | "document";
 function Icon({ name }: { name: IconName }) {
   const paths = {
     download: <><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 20h16" /></>,
-    share: <><circle cx="18" cy="5" r="2" /><circle cx="6" cy="12" r="2" /><circle cx="18" cy="19" r="2" /><path d="m8 11 8-5M8 13l8 5" /></>,
     arrow: <path d="m9 18 6-6-6-6" />,
     home: <><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10M9 20v-6h6v6" /></>,
     area: <><rect x="4" y="4" width="6" height="16" rx="1" /><rect x="14" y="4" width="6" height="16" rx="1" /><path d="M7 8h1m-1 4h1m-1 4h1m9-8h1m-1 4h1m-1 4h1" /></>,
@@ -96,22 +94,11 @@ function ConceptCards({ report }: { report: FullReportViewModel }) {
   </>;
 }
 
-export function FullReport({ report, pdfHref, onCreateShare, onRequestConsultation, onConsultationRequested }: FullReportProps) {
+export function FullReport({ report, pdfHref, onRequestConsultation, onConsultationRequested }: FullReportProps) {
   const consultationController = useRef<AbortController | null>(null);
-  const [shareState, setShareState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [consultationState, setConsultationState] = useState<"idle" | "loading" | "success" | "error">("idle");
   useEffect(() => () => consultationController.current?.abort(), []);
 
-  async function shareReport() {
-    if (!onCreateShare || shareState === "loading") return;
-    setShareState("loading");
-    try {
-      const path = await onCreateShare();
-      const url = new URL(path, window.location.origin).toString();
-      await navigator.clipboard.writeText(url);
-      setShareState("success");
-    } catch { setShareState("error"); }
-  }
   async function requestConsultation() {
     if (!onRequestConsultation || consultationState === "loading") return;
     consultationController.current?.abort();
@@ -122,8 +109,8 @@ export function FullReport({ report, pdfHref, onCreateShare, onRequestConsultati
   }
 
   return <main className={styles.page} aria-labelledby="full-report-title">
-    <header className={styles.topbar}><p>KSB ARCHITECT / SMART HOME</p><div className={styles.topActions}><a href={pdfHref}><Icon name="download" />ดาวน์โหลดเอกสารฉบับเต็ม (PDF)</a><button disabled={!onCreateShare || shareState === "loading"} onClick={() => void shareReport()} type="button"><Icon name="share" />{shareState === "loading" ? "กำลังเตรียมลิงก์…" : "แชร์รายงานนี้"}</button><button className={styles.consultButton} disabled={!onRequestConsultation || consultationState === "loading"} onClick={() => void requestConsultation()} type="button">{consultationState === "loading" ? "กำลังส่งคำขอ…" : "ปรึกษาสถาปนิก"}</button></div></header>
-    {(shareState !== "idle" || consultationState !== "idle") && <div className={styles.actionStatus} aria-live="polite">{shareState === "success" ? <p role="status">คัดลอกลิงก์รายงานแล้ว</p> : shareState === "error" ? <p role="alert">ยังสร้างลิงก์แชร์ไม่ได้ กรุณาลองอีกครั้ง</p> : null}{consultationState === "success" ? <p role="status">ส่งคำขอนัดปรึกษาแล้ว</p> : consultationState === "error" ? <p role="alert">ยังส่งคำขอนัดปรึกษาไม่ได้ กรุณาลองอีกครั้ง</p> : null}</div>}
+    <header className={styles.topbar}><p>KSB ARCHITECT / SMART HOME</p><div className={styles.topActions}><a download="ksb-project-report.pdf" href={pdfHref}><Icon name="download" />ดาวน์โหลดเอกสารฉบับเต็ม (PDF)</a><button className={styles.consultButton} disabled={!onRequestConsultation || consultationState === "loading"} onClick={() => void requestConsultation()} type="button">{consultationState === "loading" ? "กำลังส่งคำขอ…" : "ปรึกษาสถาปนิก"}</button></div></header>
+    {consultationState !== "idle" && <div className={styles.actionStatus} aria-live="polite">{consultationState === "success" ? <p role="status">ส่งคำขอนัดปรึกษาแล้ว</p> : consultationState === "error" ? <p role="alert">ยังส่งคำขอนัดปรึกษาไม่ได้ กรุณาลองอีกครั้ง</p> : null}</div>}
     <nav aria-label="เส้นทางนำทาง" className={styles.breadcrumb}><span>หน้าหลัก</span><b>›</b><span>โครงการของฉัน</span><b>›</b><strong>รายงานฉบับเต็ม</strong></nav>
     <div className={styles.reportGrid}>
       <div className={styles.leftColumn}><div className={styles.galleryColumn}><Gallery report={report} /></div><div className={styles.leftCards}><ConceptCards report={report} /></div></div>

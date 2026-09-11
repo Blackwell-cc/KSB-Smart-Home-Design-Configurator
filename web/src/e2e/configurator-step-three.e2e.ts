@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { selectProvince } from "./helpers/complete-configurator";
 
 const viewports = [
   { name: "desktop", width: 1440, height: 900 },
@@ -36,6 +37,42 @@ for (const viewport of viewports) {
   });
 }
 
+test("searches and selects a province from the custom combobox", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openStepThree(page);
+
+  const province = page.getByRole("combobox", { name: "จังหวัด" });
+  await province.fill("เชียง");
+
+  const options = page.getByRole("listbox", { name: "รายชื่อจังหวัด" }).getByRole("option");
+  await expect(options).toHaveCount(2);
+  await expect(options.nth(0)).toHaveText("เชียงใหม่");
+  await expect(options.nth(1)).toHaveText("เชียงราย");
+  await page.screenshot({ fullPage: true, path: testInfo.outputPath("province-search-results.png") });
+
+  await options.nth(0).click();
+  await expect(province).toHaveValue("เชียงใหม่");
+  await expect(page.getByRole("listbox", { name: "รายชื่อจังหวัด" })).toBeHidden();
+  await expect(page.getByRole("region", { name: "สรุปข้อมูลเบื้องต้น" })).toContainText("เชียงใหม่");
+});
+
+test("uses the same polished dropdown treatment for site access", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openStepThree(page);
+
+  const access = page.getByRole("combobox", { name: "สภาพการเข้าถึงหน้างาน" });
+  await access.click();
+
+  const options = page.getByRole("listbox", { name: "ตัวเลือกสภาพการเข้าถึงหน้างาน" });
+  await expect(options.getByRole("option")).toHaveCount(3);
+  await page.screenshot({ fullPage: true, path: testInfo.outputPath("site-access-dropdown.png") });
+
+  await options.getByRole("option", { name: "ถนนค่อนข้างแคบ" }).click();
+  await expect(access).toContainText("ถนนค่อนข้างแคบ");
+  await expect(options).toBeHidden();
+  await expect(page.getByRole("region", { name: "สรุปข้อมูลเบื้องต้น" })).toContainText("ถนนค่อนข้างแคบ");
+});
+
 test("updates the Step 3 summary and keeps it below the clean preview", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openStepThree(page);
@@ -48,7 +85,7 @@ test("updates the Step 3 summary and keeps it below the clean preview", async ({
   expect(summaryBox).not.toBeNull();
   expect(summaryBox!.y - (imageBox!.y + imageBox!.height)).toBeGreaterThanOrEqual(20);
 
-  await page.getByLabel("จังหวัด").selectOption("10");
+  await selectProvince(page);
   await page.getByRole("radio", { name: "10–20 ล้านบาท" }).locator("..").click();
   await expect(summary).toContainText("กรุงเทพมหานคร");
   await expect(summary).toContainText("10–20 ล้านบาท");

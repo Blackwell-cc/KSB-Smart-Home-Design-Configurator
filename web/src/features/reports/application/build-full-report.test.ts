@@ -57,11 +57,13 @@ test("builds one immutable five-line view model from the saved snapshot", () => 
   expect(Object.isFrozen(report)).toBe(true);
   expect(Object.isFrozen(report.concept)).toBe(true);
   expect(Object.isFrozen(report.configuration.specialFeatures)).toBe(true);
+  expect(report.configuration.materialSelections).toEqual(configuration.materialSelections);
+  expect(Object.isFrozen(report.configuration.materialSelections)).toBe(true);
   expect(report.location).toEqual({ province: "กรุงเทพมหานคร", district: "บางรัก", siteAccess: "ถนนค่อนข้างแคบ" });
   expect(report.configuration.residents).toBe(5);
   expect(report.materials).toEqual(expect.arrayContaining([
-    expect.objectContaining({ categoryLabel: "หลังคา", optionLabel: "หินชนวนธรรมชาติ" }),
-    expect.objectContaining({ categoryLabel: "ผนังภายนอก", optionLabel: "หินธรรมชาติ" }),
+    expect.objectContaining({ categoryLabel: "หลังคา", optionLabel: "สีวอร์มเทาป์" }),
+    expect.objectContaining({ categoryLabel: "ผนังภายนอก", optionLabel: "คงรูปแบบต้นฉบับ Classic" }),
   ]));
   expect(report.specialFeatures.map(({ label }) => label)).toEqual(["สระว่ายน้ำ", "ระบบ Smart Home"]);
   expect(report.additionalRequirements).toContain("ห้องดูหนัง");

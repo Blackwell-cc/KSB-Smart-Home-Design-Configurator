@@ -34,6 +34,63 @@
   gap: 20px;
 }
 
+.lockedMaterials {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 580px;
+  padding: 14px 16px;
+  border: 1px solid rgba(216, 173, 98, 0.34);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(216, 173, 98, 0.1), rgba(255, 255, 255, 0.018));
+}
+
+.lockIcon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: var(--config-gold-light);
+  border: 1px solid rgba(216, 173, 98, 0.45);
+  border-radius: 10px;
+  background: rgba(216, 173, 98, 0.08);
+}
+
+.lockIcon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.lockHeading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px 10px;
+}
+
+.lockHeading h2 {
+  margin: 0;
+  color: var(--config-ivory);
+  font-size: 0.86rem;
+}
+
+.lockHeading span {
+  padding: 3px 8px;
+  color: var(--config-gold-light);
+  border: 1px solid rgba(216, 173, 98, 0.38);
+  border-radius: 999px;
+  font: 600 0.58rem var(--font-data);
+  letter-spacing: 0.03em;
+}
+
+.lockedMaterials p {
+  margin: 5px 0 0;
+  color: var(--config-muted);
+  font-size: 0.67rem;
+  line-height: 1.55;
+}
+
 .section {
   min-width: 0;
   margin: 0;
@@ -52,6 +109,41 @@
   font-weight: 600;
 }
 
+.categoryLegend {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lockedBadge {
+  padding: 3px 8px;
+  color: rgba(240, 209, 143, 0.78);
+  border: 1px solid rgba(216, 173, 98, 0.26);
+  border-radius: 999px;
+  background: rgba(216, 173, 98, 0.045);
+  font: 600 0.56rem var(--font-data);
+  letter-spacing: 0.03em;
+}
+
+.lockedCategory .optionGrid {
+  opacity: 0.42;
+  filter: grayscale(0.7) saturate(0.45) brightness(0.72);
+}
+
+.assetChoice[data-locked="true"] {
+  cursor: not-allowed;
+}
+
+.assetChoice[data-locked="true"]:hover {
+  border-color: var(--config-line);
+  transform: none;
+}
+
+.assetChoice[data-locked="true"] input {
+  cursor: not-allowed;
+}
+
 .optionGrid,
 .featureGrid {
   display: grid;
@@ -60,6 +152,68 @@
   width: 100%;
   max-width: 580px;
   margin-top: 10px;
+}
+
+.materialStatus {
+  width: 100%;
+  max-width: 580px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 5px;
+  padding-top: 9px;
+  border-top: 1px solid var(--config-line);
+}
+
+.currentMaterial {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  color: var(--config-ivory);
+  font-size: 0.78rem;
+}
+
+.currentMaterial small {
+  flex: 0 0 auto;
+  color: var(--config-muted);
+  font-size: inherit;
+}
+
+.currentMaterial strong {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resetMaterial {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 2px;
+  color: var(--config-gold);
+  border: 0;
+  background: transparent;
+  font: 600 0.72rem var(--font-body);
+  cursor: pointer;
+}
+
+.resetMaterial svg {
+  width: 16px;
+  height: 16px;
+}
+
+.resetMaterial:hover {
+  color: #f0d18f;
+}
+
+.resetMaterial:focus-visible {
+  border-radius: 4px;
+  outline: 1px solid var(--config-gold);
+  outline-offset: 3px;
 }
 
 .featureGrid {
@@ -219,6 +373,10 @@
   .qualityGrid,
   .featureGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: none;
+  }
+
+  .lockedMaterials {
     max-width: none;
   }
 

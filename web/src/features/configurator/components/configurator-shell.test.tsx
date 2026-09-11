@@ -44,10 +44,22 @@ async function openStepThree(user: ReturnType<typeof userEvent.setup>) {
   expect(screen.getByRole("heading", { name: "กำหนดงบประมาณ" })).toHaveFocus();
 }
 
+async function chooseProvince(user: ReturnType<typeof userEvent.setup>, name = "กรุงเทพมหานคร") {
+  const province = screen.getByRole("combobox", { name: "จังหวัด" });
+  await user.clear(province);
+  await user.type(province, name);
+  await user.click(screen.getByRole("option", { name }));
+}
+
+async function chooseSiteAccess(user: ReturnType<typeof userEvent.setup>, name: string) {
+  await user.click(screen.getByRole("combobox", { name: "สภาพการเข้าถึงหน้างาน" }));
+  await user.click(screen.getByRole("option", { name }));
+}
+
 async function continueToReview(user: ReturnType<typeof userEvent.setup>) {
   await chooseStyleAndContinue(user);
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
-  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+  await chooseProvince(user);
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
   await user.click(screen.getByRole("radio", { name: /PREMIUM/i }));
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
@@ -62,6 +74,10 @@ test("moves through five PII-free steps and navigates to the preview only after 
   await continueToReview(user);
 
   expect(screen.getByRole("heading", { name: "ตรวจสอบความถูกต้อง" })).toBeInTheDocument();
+  expect(within(screen.getByTestId("step-five-preview")).getByTestId("material-preview-scene")).toHaveAttribute(
+    "data-scene",
+    "modern-2f",
+  );
   expect(screen.queryByText(/ราคาก่อสร้าง|บาท\/ตร\.ม\.|งบประมาณโดยประมาณ/)).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "ไปยังหน้าสรุปค่าใช้จ่าย" }));
   expect(onPreview).toHaveBeenCalledWith("/preview");
@@ -108,12 +124,17 @@ test("renders Step 5 as a read-only live review with readable Step 1–4 values"
   expect(screen.getByText("อลูมิเนียมสีดำ")).toBeInTheDocument();
   expect(screen.getByText("SIGNATURE")).toBeInTheDocument();
   expect(screen.getByText("ระบบ Smart Home")).toBeInTheDocument();
-  expect(screen.getByRole("img", { name: /ทรอปิคอล รีสอร์ต/ })).toHaveAttribute("src", expect.stringContaining("modern-tropical-resort.png"));
+  expect(screen.getByRole("img", { name: "ส่วนพิเศษ สระว่ายน้ำ" })).toHaveAttribute("src", "/materials/special-features/1.png");
+  expect(screen.getByRole("img", { name: "ส่วนพิเศษ ระบบ Smart Home" })).toHaveAttribute("src", "/materials/special-features/3.png");
+  expect(screen.getByRole("img", { name: "ส่วนพิเศษ ที่ชาร์จรถ EV" })).toHaveAttribute("src", "/materials/special-features/5.png");
+  expect(within(screen.getByRole("navigation", { name: "การดำเนินการขั้นตอนที่ 5" })).getAllByRole("button")).toHaveLength(2);
+  expect(screen.getAllByRole("button", { name: "บันทึกแบบร่าง" })).toHaveLength(1);
+  expect(within(screen.getByTestId("step-five-preview")).getByRole("img", { name: "Tropical Resort 2 ชั้น" })).toHaveAttribute("src", expect.stringContaining("modern-tropical-resort.png"));
   expect(screen.getByRole("img", { name: "วัสดุหลังคา กระเบื้องคอนกรีต" })).toHaveAttribute("src", "/materials/roof/1.png");
   expect(screen.getByRole("img", { name: "วัสดุผนังภายนอก หินธรรมชาติ" })).toHaveAttribute("src", "/materials/wall/2.png");
   expect(screen.getByRole("img", { name: "วัสดุหน้าต่าง อลูมิเนียมสีดำ" })).toHaveAttribute("src", "/materials/window/1.png");
-  expect(screen.getByRole("img", { name: "วัสดุประตูทางเข้า ไม้สัก" })).toHaveAttribute("src", "/materials/door/4.png");
-  expect(screen.getByRole("img", { name: "วัสดุพื้น หินอ่อนธรรมชาติ" })).toHaveAttribute("src", "/materials/flooring/1.png");
+  expect(screen.getByRole("img", { name: "วัสดุประตูทางเข้า โมเดิร์น" })).toHaveAttribute("src", "/materials/door/4.png");
+  expect(screen.queryByRole("img", { name: /วัสดุพื้น/ })).not.toBeInTheDocument();
   expect(screen.queryByText(/elderlyRoom|home-theater|natural-stone|black-aluminium/)).not.toBeInTheDocument();
   expect(screen.queryByText(/ราคาก่อสร้าง|บาท\/ตร\.ม\.|งบประมาณโดยประมาณ/)).not.toBeInTheDocument();
 
@@ -333,8 +354,8 @@ test("uses the selected usable-area override and site access in the review summa
   await user.clear(screen.getByLabelText(/พื้นที่ใช้สอยที่ต้องการ/));
   await user.type(screen.getByLabelText(/พื้นที่ใช้สอยที่ต้องการ/), "220");
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
-  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
-  await user.selectOptions(screen.getByLabelText("สภาพการเข้าถึงหน้างาน"), "restricted");
+  await chooseProvince(user);
+  await chooseSiteAccess(user, "ถนนค่อนข้างแคบ");
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
 
@@ -426,14 +447,14 @@ test("allows Step 3 to continue with an unspecified budget while still requiring
   await openStepThree(user);
   const next = screen.getByRole("button", { name: "ถัดไป" });
   expect(next).toBeDisabled();
-  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+  await chooseProvince(user);
   expect(next).toBeEnabled();
 });
 
 test("preserves the selected budget after back navigation", async () => {
   const { user } = renderConfigurator();
   await openStepThree(user);
-  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+  await chooseProvince(user);
   await user.click(screen.getByRole("radio", { name: "20–40 ล้านบาท" }));
   await user.click(screen.getByRole("button", { name: "ถัดไป" }));
   await user.click(screen.getByRole("button", { name: "ย้อนกลับ" }));
@@ -451,7 +472,7 @@ test("shows a clean Step 3 concept preview and updates its separate summary", as
 
   const summary = screen.getByRole("region", { name: "สรุปข้อมูลเบื้องต้น" });
   expect(summary).toHaveTextContent("ยังไม่ระบุ");
-  await user.selectOptions(screen.getByLabelText("จังหวัด"), "10");
+  await chooseProvince(user);
   await user.click(screen.getByRole("radio", { name: "10–20 ล้านบาท" }));
   expect(summary).toHaveTextContent("กรุงเทพมหานคร");
   expect(summary).toHaveTextContent("10–20 ล้านบาท");
@@ -540,7 +561,7 @@ test("keeps every Step 1 house presentation fixed to the two-floor model", () =>
 
   const preview = screen.getByRole("complementary", { name: "พื้นที่แสดงแบบบ้าน" });
   const previewImage = within(preview).getByRole("img", { name: /ภาพจำลองบ้านสไตล์/ });
-  expect(decodeURIComponent(previewImage.getAttribute("src") ?? "")).toContain("/concepts/base-classic-2f-master.webp");
+  expect(decodeURIComponent(previewImage.getAttribute("src") ?? "")).toContain("/material-previews/classic/2f/base.webp?v=20260911-classic-2f-ai-v1");
   expect(within(preview).getByText("2 ชั้น")).toBeInTheDocument();
 
   const choices = screen.getByRole("radiogroup", { name: "เลือกสไตล์บ้าน" });
@@ -594,7 +615,7 @@ test("renders supplied photography in the requested material-option order", () =
 
   const scrollArea = screen.getByTestId("material-scroll-area");
   const materialGroups = within(scrollArea).getAllByRole("radiogroup");
-  expect(materialGroups).toHaveLength(5);
+  expect(materialGroups).toHaveLength(4);
   materialGroups.forEach((group) => expect(within(group).getAllByRole("radio")).toHaveLength(4));
 
   const roofGroup = within(scrollArea).getByRole("radiogroup", { name: "หลังคา" });
@@ -626,8 +647,8 @@ test("renders supplied photography in the requested material-option order", () =
   })).toEqual([
     "/materials/window/1.png",
     "/materials/window/2.png",
-    "/materials/window/3.png",
     "/materials/window/4.png",
+    "/materials/window/3.png",
   ]);
 
   const doorGroup = within(scrollArea).getByRole("radiogroup", { name: "ประตูทางเข้า" });
@@ -641,18 +662,31 @@ test("renders supplied photography in the requested material-option order", () =
     "/materials/door/3.png",
   ]);
 
-  const flooringGroup = within(scrollArea).getByRole("radiogroup", { name: "พื้น" });
-  expect([...flooringGroup.querySelectorAll("img")].map((image) => {
-    const src = image.getAttribute("src") ?? "";
-    return new URL(src, "http://localhost").searchParams.get("url") ?? src;
-  })).toEqual([
-    "/materials/flooring/1.png",
-    "/materials/flooring/2.png",
-    "/materials/flooring/3.png",
-    "/materials/flooring/4.png",
-  ]);
+  expect(within(scrollArea).queryByRole("radiogroup", { name: "พื้น" })).not.toBeInTheDocument();
 
   expect(within(scrollArea).queryAllByTestId("material-asset-placeholder")).toHaveLength(0);
+});
+
+test("shows the defining Loft roof and exterior wall choices as disabled while keeping window and door editable", () => {
+  const { store } = renderConfigurator();
+  act(() => {
+    store.getState().updateConfiguration({ styleId: "loft-style", floors: 1 });
+    store.getState().setCurrentStep(3);
+  });
+
+  const scrollArea = screen.getByTestId("material-scroll-area");
+  const roofGroup = within(scrollArea).getByRole("radiogroup", { name: "หลังคา" });
+  const wallGroup = within(scrollArea).getByRole("radiogroup", { name: "ผนังภายนอก" });
+  expect(within(roofGroup).getAllByRole("radio")).toHaveLength(4);
+  expect(within(wallGroup).getAllByRole("radio")).toHaveLength(4);
+  within(roofGroup).getAllByRole("radio").forEach((radio) => expect(radio).toBeDisabled());
+  within(wallGroup).getAllByRole("radio").forEach((radio) => expect(radio).toBeDisabled());
+  expect(roofGroup.closest("fieldset")).toHaveAttribute("data-locked", "true");
+  expect(wallGroup.closest("fieldset")).toHaveAttribute("data-locked", "true");
+  expect(within(scrollArea).getByRole("radiogroup", { name: "หน้าต่าง" })).toBeInTheDocument();
+  expect(within(scrollArea).getByRole("radiogroup", { name: "ประตูทางเข้า" })).toBeInTheDocument();
+  expect(within(scrollArea).getByText("ล็อกตามดีไซน์ Loft")).toBeInTheDocument();
+  expect(within(scrollArea).getByText(/หลังคาและผนังภายนอกเป็นองค์ประกอบหลักที่กำหนดเอกลักษณ์ของบ้านสไตล์ Loft/)).toBeInTheDocument();
 });
 
 test("selects materials, multiple features, and bespoke quality", async () => {
@@ -682,7 +716,7 @@ test("orders compact Step 4 as selector, quality, preview, summary, then one act
 
   const selector = screen.getByTestId("material-scroll-area");
   const quality = screen.getByRole("radiogroup", { name: "ระดับคุณภาพวัสดุ" });
-  const preview = screen.getByTestId("main-house-preview-placeholder");
+  const preview = screen.getByTestId("material-preview-scene");
   const summary = screen.getByRole("heading", { name: "สรุปวัสดุที่เลือก" });
   const back = screen.getByRole("button", { name: "ย้อนกลับ" });
   const next = screen.getByRole("button", { name: "ถัดไป" });
@@ -766,17 +800,22 @@ test("renders exactly four material quality radios", () => {
   expect(within(qualityGroup).getAllByRole("radio")).toHaveLength(4);
 });
 
-test("shows a blank Step 4 preview and compact selection summary", () => {
+test("carries the selected house into Step 4 with a compact material summary", () => {
   const { store } = renderConfigurator();
   act(() => store.getState().setCurrentStep(3));
 
   const preview = screen.getByRole("complementary", { name: "ภาพตัวอย่างวัสดุ" });
-  const placeholder = within(preview).getByTestId("main-house-preview-placeholder");
-  expect(placeholder).toBeEmptyDOMElement();
-  expect(placeholder).toHaveAttribute("data-placeholder-type", "preview");
+  const scene = within(preview).getByTestId("material-preview-scene");
+  expect(scene).toHaveAttribute("data-scene", "classic-2f");
+  expect(scene).toHaveAttribute("data-available", "true");
+  expect(within(preview).getByRole("img", { name: "Classic Style 2 ชั้น" })).toHaveAttribute(
+    "src",
+    expect.stringContaining(encodeURIComponent("/material-previews/classic/2f/base.webp?v=20260911-classic-2f-ai-v1")),
+  );
+  expect(within(preview).getAllByTestId("material-preview-layer")).toHaveLength(3);
   expect(within(preview).getByRole("heading", { name: "สรุปวัสดุที่เลือก" })).toBeInTheDocument();
   expect(preview).toHaveTextContent("กระเบื้องคอนกรีต");
   expect(preview).toHaveTextContent("PREMIUM");
   expect(within(preview).queryByText("CONCEPT PREVIEW")).not.toBeInTheDocument();
-  expect(within(preview).queryByRole("img")).not.toBeInTheDocument();
+  expect(within(preview).queryByText("ภาพวัสดุของแบบนี้อยู่ระหว่างจัดเตรียม")).not.toBeInTheDocument();
 });

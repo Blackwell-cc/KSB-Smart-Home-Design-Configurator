@@ -1,8 +1,9 @@
 import { FieldError } from "@/components/ui/field-error";
 import { BUDGET_RANGE_OPTIONS } from "../domain/budget-ranges";
 import type { HouseConfiguration } from "../domain/configuration";
-import { THAI_PROVINCES } from "../domain/provinces";
 import styles from "./configurator-shell.module.css";
+import { ProvinceCombobox } from "./province-combobox";
+import { SiteAccessSelect } from "./site-access-select";
 
 type SiteBudgetStepProps = {
   configuration: HouseConfiguration;
@@ -32,15 +33,11 @@ export function SiteBudgetStep({ configuration, error, errorId, onChange }: Site
         <div className={styles.siteBudgetFields}>
           <div className={styles.field}>
             <label htmlFor="province">จังหวัด</label>
-            <select
-              aria-describedby={error ? errorId : undefined}
-              id="province"
-              onChange={(event) => onChange({ provinceCode: event.target.value === "" ? null : event.target.value as HouseConfiguration["provinceCode"] })}
-              value={configuration.provinceCode ?? ""}
-            >
-              <option value="">เลือกจังหวัด</option>
-              {THAI_PROVINCES.map((province) => <option key={province.code} value={province.code}>{province.name}</option>)}
-            </select>
+            <ProvinceCombobox
+              describedBy={error ? errorId : undefined}
+              onChange={(provinceCode) => onChange({ provinceCode })}
+              value={configuration.provinceCode}
+            />
             {error ? <FieldError className={styles.error} id={errorId}>{error}</FieldError> : null}
           </div>
 
@@ -51,11 +48,7 @@ export function SiteBudgetStep({ configuration, error, errorId, onChange }: Site
 
           <div className={styles.field}>
             <label htmlFor="site-access">สภาพการเข้าถึงหน้างาน</label>
-            <select id="site-access" onChange={(event) => onChange({ siteAccess: event.target.value as HouseConfiguration["siteAccess"] })} value={configuration.siteAccess}>
-              <option value="normal">เข้าถึงปกติ</option>
-              <option value="restricted">ถนนค่อนข้างแคบ</option>
-              <option value="very-restricted">รถขนาดใหญ่เข้าถึงยาก</option>
-            </select>
+            <SiteAccessSelect onChange={(siteAccess) => onChange({ siteAccess })} value={configuration.siteAccess} />
             <p className={styles.fieldHelper}>ช่วยให้ทีมพิจารณาการขนส่งและการวางแผนหน้างานเบื้องต้น</p>
           </div>
         </div>

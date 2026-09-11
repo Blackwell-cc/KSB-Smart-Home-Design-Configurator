@@ -7,7 +7,7 @@ import { FullReport } from "./full-report";
 const report = {
   snapshotId: "snapshot-1", projectId: "project-1", generatedAt: "2026-08-19T08:00:00.000Z",
   concept: { styleId: "classic-style", label: "Classic Style", thaiLabel: "บ้านสไตล์คลาสสิก", imageSrc: "/concepts/timeless-contemporary-luxury.png", direction: { title: "ภูมิฐาน ประณีต เหนือกาลเวลา", description: "บ้านที่ให้ความสำคัญกับสัดส่วน รายละเอียด และบรรยากาศสง่างาม" } },
-  configuration: { residents: 5, floors: 2, bedrooms: 4, bathrooms: 4, parkingSpaces: 3, materialLevel: "signature", materialQuality: "SIGNATURE", functions: ["ห้องทำงาน", "ครัวไทย"], specialFeatures: ["pool", "smart-home"] },
+  configuration: { residents: 5, floors: 2, bedrooms: 4, bathrooms: 4, parkingSpaces: 3, materialLevel: "signature", materialQuality: "SIGNATURE", materialSelections: { roof: "natural-slate", wall: "natural-stone", window: "black-aluminium", door: "teak", flooring: "natural-marble" }, functions: ["ห้องทำงาน", "ครัวไทย"], specialFeatures: ["pool", "smart-home"] },
   location: { province: "กรุงเทพมหานคร", district: "บางรัก", siteAccess: "เข้าถึงสะดวก" },
   area: { usableAreaM2: 615, constructionFloorAreaM2: 650 },
   materials: [
@@ -42,6 +42,8 @@ test("renders the premium dynamic report, existing PDF action and a reconciled d
 
   expect(screen.getByRole("heading", { name: "รายงานฉบับเต็ม ภาพรวมบ้านที่คุณกำลังวางแผน" })).toBeVisible();
   expect(screen.getByRole("link", { name: "ดาวน์โหลดเอกสารฉบับเต็ม (PDF)" })).toHaveAttribute("href", "/api/reports/project-1/pdf");
+  expect(screen.getByRole("link", { name: "ดาวน์โหลดเอกสารฉบับเต็ม (PDF)" })).toHaveAttribute("download", "ksb-project-report.pdf");
+  expect(screen.queryByRole("button", { name: "แชร์รายงานนี้" })).not.toBeInTheDocument();
   expect(screen.getByText("บ้านสไตล์คลาสสิก 2 ชั้น")).toBeVisible();
   expect(screen.getByText("กรุงเทพมหานคร")).toBeVisible();
   expect(screen.getByText("งานโครงสร้าง")).toBeVisible();
@@ -64,18 +66,13 @@ test("changes the accessible main gallery view from thumbnails and arrow control
   expect(screen.getByText("05 / 12")).toBeVisible();
 });
 
-test("creates a privacy-safe share and reports consultation status only after server success", async () => {
+test("reports consultation status only after server success without offering report sharing", async () => {
   const user = userEvent.setup();
-  const onCreateShare = vi.fn().mockResolvedValue("/share/public-example-7f3k");
   const onRequestConsultation = vi.fn().mockResolvedValue(undefined);
   const onConsultationRequested = vi.fn();
-  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockResolvedValue(undefined) } });
-  render(<FullReport report={report} pdfHref="/api/reports/project-1/pdf" onCreateShare={onCreateShare} onRequestConsultation={onRequestConsultation} onConsultationRequested={onConsultationRequested} />);
+  render(<FullReport report={report} pdfHref="/api/reports/project-1/pdf" onRequestConsultation={onRequestConsultation} onConsultationRequested={onConsultationRequested} />);
 
-  await user.click(screen.getByRole("button", { name: "แชร์รายงานนี้" }));
-  await waitFor(() => expect(onCreateShare).toHaveBeenCalledOnce());
-  expect(await screen.findByRole("status")).toHaveTextContent("คัดลอกลิงก์รายงานแล้ว");
-
+  expect(screen.queryByRole("button", { name: "แชร์รายงานนี้" })).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "ปรึกษาสถาปนิก" }));
   await waitFor(() => expect(onRequestConsultation).toHaveBeenCalledOnce());
   expect(onConsultationRequested).toHaveBeenCalledOnce();

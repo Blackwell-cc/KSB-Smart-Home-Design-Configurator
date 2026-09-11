@@ -1,0 +1,15 @@
+{
+  "sceneId": "loft-2f",
+  "width": 1672,
+  "height": 941,
+  "base": "public/concepts/base-loft-2f-master.webp",
+  "layerOrder": ["window", "door"],
+  "lockedCategories": {
+    "roof": "Defining Loft roof form and finish are preserved from the original design.",
+    "wall": "Defining Loft exposed-concrete and brick facade are preserved from the original design."
+  },
+  "categories": {
+    "window": ["black-aluminium", "natural-aluminium", "solid-wood", "upvc"],
+    "door": ["teak", "engineered-wood", "aluminium-glass", "metal-frame"]
+  }
+}

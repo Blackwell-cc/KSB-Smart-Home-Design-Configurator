@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { HouseConfiguration } from "../domain/configuration";
 import { buildReviewSummary } from "../presentation/review-summary";
 import { AssetPlaceholder } from "./asset-placeholder";
+import { MaterialHousePreview } from "./material-house-preview";
 import styles from "./review-step.module.css";
 
 type ReviewStepProps = {
@@ -12,7 +13,6 @@ type ReviewStepProps = {
   onBack(): void;
   onContinue(): void;
   onEdit(step: number): void;
-  onSave(): void;
 };
 
 type ReviewIconName =
@@ -23,7 +23,6 @@ type ReviewIconName =
   | "feature"
   | "quality"
   | "check"
-  | "save"
   | "arrow";
 
 function ReviewIcon({ name }: { name: ReviewIconName }) {
@@ -35,7 +34,6 @@ function ReviewIcon({ name }: { name: ReviewIconName }) {
     feature: <><path d="M12 3v4M12 17v4M3 12h4M17 12h4" /><circle cx="12" cy="12" r="4" /><path d="m5.6 5.6 2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" /></>,
     quality: <><path d="m12 3 2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8L12 3Z" /></>,
     check: <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.6 2.7L16.5 9" /></>,
-    save: <><path d="M5 4h12l2 2v14H5V4Z" /><path d="M8 4v6h8V4M8 20v-6h8v6" /></>,
     arrow: <><path d="M5 12h14M14 7l5 5-5 5" /></>,
   };
 
@@ -46,10 +44,10 @@ function EditButton({ label, onClick }: { label: string; onClick(): void }) {
   return <button aria-label={`แก้ไข${label}`} className={styles.editButton} onClick={onClick} type="button">แก้ไข</button>;
 }
 
-export function ReviewStep({ configuration, headingRef, onBack, onContinue, onEdit, onSave }: ReviewStepProps) {
+export function ReviewStep({ configuration, headingRef, onBack, onContinue, onEdit }: ReviewStepProps) {
   const summary = buildReviewSummary(configuration);
-  const visibleSpecialFeatures = summary.specialFeatureLabels.slice(0, 5);
-  const hiddenSpecialFeatureCount = Math.max(0, summary.specialFeatureLabels.length - visibleSpecialFeatures.length);
+  const visibleSpecialFeatures = summary.specialFeatures.slice(0, 5);
+  const hiddenSpecialFeatureCount = Math.max(0, summary.specialFeatures.length - visibleSpecialFeatures.length);
 
   return (
     <section aria-labelledby="step-heading" className={styles.workspace}>
@@ -139,9 +137,25 @@ export function ReviewStep({ configuration, headingRef, onBack, onContinue, onEd
               <EditButton label="วัสดุและส่วนพิเศษ" onClick={() => onEdit(3)} />
             </div>
             {visibleSpecialFeatures.length > 0 ? (
-              <ul>{visibleSpecialFeatures.map((label) => <li key={label}><ReviewIcon name="check" />{label}</li>)}</ul>
+              <ul className={styles.specialFeatureList}>
+                {visibleSpecialFeatures.map((feature) => (
+                  <li key={feature.id}>
+                    <span className={styles.specialFeatureThumb}>
+                      <Image
+                        alt={`ส่วนพิเศษ ${feature.label}`}
+                        height={48}
+                        src={feature.imageSrc}
+                        unoptimized
+                        width={48}
+                      />
+                      <span aria-hidden="true" className={styles.specialFeatureCheck}>✓</span>
+                    </span>
+                    <strong>{feature.label}</strong>
+                  </li>
+                ))}
+              </ul>
             ) : <p className={styles.emptyValue}>ไม่ได้เลือกส่วนพิเศษ</p>}
-            {hiddenSpecialFeatureCount > 0 ? <p className={styles.moreItems}>+ อีก {hiddenSpecialFeatureCount} รายการ · ทั้งหมด {summary.specialFeatureLabels.length} รายการ</p> : null}
+            {hiddenSpecialFeatureCount > 0 ? <p className={styles.moreItems}>+ อีก {hiddenSpecialFeatureCount} รายการ · ทั้งหมด {summary.specialFeatures.length} รายการ</p> : null}
           </article>
 
           <article className={`${styles.reviewCard} ${styles.qualityCard}`}>
@@ -160,12 +174,11 @@ export function ReviewStep({ configuration, headingRef, onBack, onContinue, onEd
       <aside aria-label="ภาพยืนยันแบบบ้าน" className={styles.previewColumn} data-testid="step-five-preview">
         <figure className={styles.housePreview} data-preview-style={summary.concept?.id ?? "not-selected"}>
           {summary.concept ? (
-            <Image
-              alt={`ภาพยืนยันแบบบ้าน ${summary.concept.thaiLabel} (${summary.concept.englishLabel})`}
-              fill
+            <MaterialHousePreview
+              className={styles.materialHousePreview}
+              configuration={configuration}
               priority
               sizes="(max-width: 899px) 100vw, 52vw"
-              src={summary.concept.image}
             />
           ) : <AssetPlaceholder type="preview" />}
         </figure>
@@ -203,7 +216,6 @@ export function ReviewStep({ configuration, headingRef, onBack, onContinue, onEd
 
       <nav aria-label="การดำเนินการขั้นตอนที่ 5" className={styles.actions}>
         <Button onClick={onBack} variant="ghost">ย้อนกลับ</Button>
-        <Button onClick={onSave} variant="ghost"><ReviewIcon name="save" />บันทึกแบบร่าง</Button>
         <Button aria-label="ไปยังหน้าสรุปค่าใช้จ่าย" onClick={onContinue}>ดูสรุปค่าใช้จ่าย<ReviewIcon name="arrow" /></Button>
       </nav>
     </section>

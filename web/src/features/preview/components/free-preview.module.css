@@ -111,6 +111,8 @@
 .statusBadge svg { width: 15px; height: 15px; flex: 0 0 auto; opacity: 0.72; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.45; }
 
 .experience {
+  --reveal-distance: 20px;
+  --reveal-house-scale: 1.035;
   width: min(1600px, calc(100% - clamp(60px, 6vw, 104px)));
   height: calc(100dvh - 118px);
   min-height: 720px;
@@ -138,10 +140,111 @@
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
 }
 
+.page[data-result-reveal="cinematic"] .materialConceptImage {
+  animation: houseReveal 1.1s cubic-bezier(0.2, 0.72, 0.2, 1) both;
+}
+
+.page[data-result-reveal="cinematic"] .conceptPanel::after {
+  content: "";
+  position: absolute;
+  inset: -35% -75%;
+  z-index: 1;
+  background: linear-gradient(100deg, transparent 39%, rgba(255, 230, 169, 0.04) 44%, rgba(244, 201, 111, 0.38) 50%, rgba(255, 239, 198, 0.08) 56%, transparent 61%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-46%) rotate(7deg);
+  animation: goldSweep 1.25s cubic-bezier(0.32, 0.05, 0.2, 1) 180ms both;
+}
+
+.page[data-result-reveal="cinematic"] .conceptCaption {
+  animation: contentReveal 720ms cubic-bezier(0.2, 0.72, 0.2, 1) 480ms both;
+}
+
+.page[data-result-reveal="cinematic"] .additionalViews {
+  animation: detailReveal 620ms ease-out 760ms both;
+}
+
+.page[data-result-reveal="cinematic"] .introBlock {
+  animation: contentReveal 760ms cubic-bezier(0.2, 0.72, 0.2, 1) 260ms both;
+}
+
+.page[data-result-reveal="cinematic"] .metrics > div {
+  animation: metricReveal 560ms cubic-bezier(0.2, 0.72, 0.2, 1) both;
+}
+
+.page[data-result-reveal="cinematic"] .metrics > div:nth-child(1) { animation-delay: 480ms; }
+.page[data-result-reveal="cinematic"] .metrics > div:nth-child(2) { animation-delay: 560ms; }
+.page[data-result-reveal="cinematic"] .metrics > div:nth-child(3) { animation-delay: 640ms; }
+.page[data-result-reveal="cinematic"] .metrics > div:nth-child(4) { animation-delay: 720ms; }
+.page[data-result-reveal="cinematic"] .metrics > div:nth-child(5) { animation-delay: 800ms; }
+
+.page[data-result-reveal="cinematic"] .budgetCard {
+  animation:
+    cardReveal 680ms cubic-bezier(0.2, 0.72, 0.2, 1) 660ms both,
+    budgetPulse 960ms ease-out 820ms both;
+}
+
+.page[data-result-reveal="cinematic"] .designValueCard {
+  animation: cardReveal 680ms cubic-bezier(0.2, 0.72, 0.2, 1) 800ms both;
+}
+
+.page[data-result-reveal="cinematic"] .personalityCard {
+  animation: cardReveal 640ms cubic-bezier(0.2, 0.72, 0.2, 1) 1.02s both;
+}
+
+.page[data-result-reveal="cinematic"] .resultActions {
+  animation: cardReveal 640ms cubic-bezier(0.2, 0.72, 0.2, 1) 1.14s both;
+}
+
+@keyframes houseReveal {
+  0% { opacity: 0.26; filter: blur(7px) brightness(0.5) saturate(0.76); transform: scale(var(--reveal-house-scale)); }
+  58% { opacity: 1; filter: blur(1px) brightness(1.08) saturate(1.04); }
+  100% { opacity: 1; filter: blur(0) brightness(1) saturate(1); transform: scale(1); }
+}
+
+@keyframes goldSweep {
+  0% { opacity: 0; transform: translateX(-46%) rotate(7deg); }
+  18% { opacity: 0.75; }
+  70% { opacity: 0.42; }
+  100% { opacity: 0; transform: translateX(46%) rotate(7deg); }
+}
+
+@keyframes contentReveal {
+  0% { opacity: 0; filter: blur(5px); transform: translateY(var(--reveal-distance)); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@keyframes detailReveal {
+  0% { opacity: 0; filter: blur(4px); }
+  100% { opacity: 1; filter: blur(0); }
+}
+
+@keyframes metricReveal {
+  0% { opacity: 0; transform: translateY(calc(var(--reveal-distance) * 0.6)); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardReveal {
+  0% { opacity: 0; filter: blur(3px); transform: translateY(var(--reveal-distance)); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@keyframes budgetPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(215, 170, 90, 0.08), 0 0 28px rgba(215, 170, 90, 0.24), inset 0 0 28px rgba(215, 170, 90, 0.06);
+  }
+  48% {
+    box-shadow: 0 0 0 1px rgba(245, 214, 141, 0.34), 0 0 46px rgba(232, 194, 116, 0.42), inset 0 0 38px rgba(215, 170, 90, 0.12);
+  }
+}
+
 .conceptImage { object-fit: cover; object-position: center; }
+.conceptPanel .materialConceptImage { width: 100%; height: 100%; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
 
 .conceptCaption {
   position: absolute;
+  z-index: 2;
   right: 0;
   bottom: 0;
   left: 0;
@@ -501,7 +604,7 @@
   .masthead { position: relative; min-height: auto; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px 16px 10px; }
   .brandLogoFrame { width: 118px; height: 44px; }
   .headerUtilities { width: 100%; grid-column: 1 / -1; grid-row: 2; justify-content: flex-end; }
-  .experience { width: calc(100% - 36px); }
+  .experience { --reveal-distance: 14px; --reveal-house-scale: 1.018; width: calc(100% - 36px); }
   .introBlock h1 { font-size: clamp(2.5rem, 8vw, 3.6rem); }
   .conceptPanel { position: relative; min-height: min(76vw, 520px); }
   .conceptCaption { padding: 60px 24px 132px; }
@@ -557,6 +660,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .page[data-result-reveal="cinematic"] .materialConceptImage,
+  .page[data-result-reveal="cinematic"] .conceptCaption,
+  .page[data-result-reveal="cinematic"] .additionalViews,
+  .page[data-result-reveal="cinematic"] .introBlock,
+  .page[data-result-reveal="cinematic"] .metrics > div,
+  .page[data-result-reveal="cinematic"] .budgetCard,
+  .page[data-result-reveal="cinematic"] .designValueCard,
+  .page[data-result-reveal="cinematic"] .personalityCard,
+  .page[data-result-reveal="cinematic"] .resultActions {
+    animation: none !important;
+  }
+  .page[data-result-reveal="cinematic"] .conceptPanel::after { display: none; animation: none; }
   .fullReportCta,
   .shareButtonIcon { transition: none; }
   .shareStatus { animation: none; opacity: 1; }

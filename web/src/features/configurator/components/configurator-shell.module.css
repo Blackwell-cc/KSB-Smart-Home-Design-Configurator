@@ -171,6 +171,30 @@
 .shell[data-step="site-budget"] .field input:focus,
 .shell[data-step="site-budget"] .field select:focus { border-color: rgba(225, 178, 86, 0.65); outline: 0; box-shadow: 0 0 0 3px rgba(216, 173, 98, 0.1); }
 .shell[data-step="site-budget"] .field input::placeholder { color: rgba(143, 138, 130, 0.7); }
+.provinceCombobox { position: relative; z-index: 4; }
+.provinceInputShell { position: relative; }
+.shell[data-step="site-budget"] .provinceInputShell input { width: 100%; padding-right: 46px; padding-left: 43px; }
+.provinceInputShell[data-open="true"] input { border-color: rgba(225, 178, 86, 0.65); box-shadow: 0 0 0 3px rgba(216, 173, 98, 0.1); }
+.provinceSearchIcon { position: absolute; z-index: 1; top: 50%; left: 15px; width: 18px; height: 18px; color: rgba(232, 188, 104, 0.78); pointer-events: none; transform: translateY(-50%); }
+.provinceToggle { position: absolute; z-index: 2; top: 50%; right: 8px; width: 34px; height: 34px; display: grid; place-items: center; padding: 0; color: var(--config-muted); border: 0; border-radius: 8px; background: transparent; cursor: pointer; transform: translateY(-50%); }
+.provinceToggle:hover { color: var(--config-gold-light); background: rgba(216, 173, 98, 0.07); }
+.provinceToggle svg { width: 16px; height: 16px; transition: transform 160ms ease; }
+.provinceInputShell[data-open="true"] .provinceToggle svg { transform: rotate(180deg); }
+.provinceDropdown { position: absolute; z-index: 30; top: calc(100% + 7px); right: 0; left: 0; overflow: hidden; border: 1px solid rgba(216, 173, 98, 0.32); border-radius: 12px; background: rgba(8, 14, 18, 0.985); box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.025) inset; backdrop-filter: blur(16px); }
+.provinceDropdown ul { max-height: 252px; overflow-y: auto; margin: 0; padding: 6px; list-style: none; scrollbar-color: rgba(216, 173, 98, 0.55) rgba(255, 255, 255, 0.035); scrollbar-width: thin; }
+.provinceDropdown li { min-height: 39px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 11px; color: rgba(243, 238, 229, 0.78); border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
+.provinceDropdown li[data-active="true"] { color: var(--config-ivory); background: rgba(216, 173, 98, 0.1); }
+.provinceDropdown li[aria-selected="true"] { color: var(--config-gold-light); }
+.provinceCheck { color: var(--config-gold); font-size: 0.75rem; }
+.provinceEmpty { margin: 0; padding: 20px 14px; color: var(--config-muted); font-size: 0.78rem; text-align: center; }
+.siteAccessSelect { position: relative; z-index: 3; }
+.siteAccessTrigger { width: 100%; min-height: 47px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 14px 10px 16px; color: var(--config-ivory); border: 1px solid rgba(216, 173, 98, 0.32); border-radius: 10px; background: rgba(8, 14, 18, 0.78); font: inherit; font-size: 0.82rem; text-align: left; cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
+.siteAccessTrigger:hover { border-color: rgba(225, 178, 86, 0.5); background: rgba(12, 18, 21, 0.92); }
+.siteAccessTrigger:focus-visible, .siteAccessTrigger[data-open="true"] { border-color: rgba(225, 178, 86, 0.65); outline: 0; box-shadow: 0 0 0 3px rgba(216, 173, 98, 0.1); }
+.siteAccessTrigger svg { width: 16px; height: 16px; flex: 0 0 auto; color: var(--config-muted); transition: color 160ms ease, transform 160ms ease; }
+.siteAccessTrigger:hover svg, .siteAccessTrigger[data-open="true"] svg { color: var(--config-gold-light); }
+.siteAccessTrigger[data-open="true"] svg { transform: rotate(180deg); }
+.siteAccessDropdown { top: calc(100% + 7px); }
 .fieldHelper, .budgetRangeHelp { color: var(--config-muted); font-size: 0.67rem; line-height: 1.45; }
 .budgetRangeHelp { margin-left: 34px; }
 .budgetRangeGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 2px; }

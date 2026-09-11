@@ -6,6 +6,7 @@ export type ConceptCatalogEntry = {
   description: string;
   image: string;
   floorImages?: Partial<Record<1 | 2 | 3, string>>;
+  materialPreviewKey?: "classic" | "modern" | "nordic" | "loft" | "minimal" | "tropical" | "contemporary";
   category: "classic" | "modern" | "natural" | "loft" | "minimalist" | "luxury" | "vintage";
   pricingStyleId: "contemporary-warm-luxury" | "modern-tropical-resort" | "timeless-contemporary-luxury" | "not-sure";
   publicAssetId: "contemporary-warm-luxury" | "modern-tropical-resort" | "timeless-contemporary-luxury" | "not-sure";
@@ -23,6 +24,24 @@ export type ConceptCatalogEntry = {
 
 export const STYLE_SELECTION_FLOORS = 2 as const;
 
+const LIVE_PREVIEW_IMAGE_OVERRIDES: Readonly<Record<string, string>> = {
+  "classic-style-1": "/material-previews/classic/1f/base.webp?v=20260828-classic-1f-ai-v2",
+  "classic-style-2": "/material-previews/classic/2f/base.webp?v=20260911-classic-2f-ai-v1",
+  "classic-style-3": "/material-previews/classic/3f/base.webp?v=20260909-classic-3f-ai-v1",
+  "vintage-style-1": "/material-previews/contemporary/1f/base.webp?v=20260910-contemporary-base-v3",
+  "vintage-style-2": "/material-previews/contemporary/2f/base.webp?v=20260910-contemporary-base-v3",
+  "vintage-style-3": "/material-previews/contemporary/3f/base.webp?v=20260910-contemporary-base-v3",
+  "luxury-style-1": "/material-previews/tropical/1f/base.webp?v=20260910-tropical-1f-ai-v1",
+  "luxury-style-2": "/material-previews/tropical/2f/base.webp?v=20260910-tropical-2f-ai-v1",
+  "luxury-style-3": "/material-previews/tropical/3f/base.webp?v=20260911-tropical-3f-ai-v1",
+  "loft-style-1": "/material-previews/loft/1f/base.webp?v=20260827-loft-1f-base-v2",
+  "loft-style-2": "/material-previews/loft/2f/base.webp?v=20260827-loft-2f-ai-v1",
+  "loft-style-3": "/material-previews/loft/3f/base.webp?v=20260827-loft-3f-ai-v1",
+  "minimalist-style-1": "/material-previews/minimal/1f/base.webp?v=20260827-minimal-1f-ai-v1",
+  "minimalist-style-2": "/material-previews/minimal/2f/base.webp?v=20260828-minimal-2f-ai-v1",
+  "minimalist-style-3": "/material-previews/minimal/3f/base.webp?v=20260828-minimal-3f-ai-v1",
+};
+
 export const CONCEPT_CATALOG = [
   {
     id: "classic-style",
@@ -32,6 +51,7 @@ export const CONCEPT_CATALOG = [
     description: "สัดส่วนสง่างามและรายละเอียดประณีต ให้บ้านดูภูมิฐานเหนือกาลเวลา",
     image: "/concepts/base-classic-2f-master.webp",
     floorImages: { 1: "/concepts/base-classic-1f-master.webp", 2: "/concepts/base-classic-2f-master.webp", 3: "/concepts/base-classic-3f-master.webp" },
+    materialPreviewKey: "classic",
     category: "classic",
     pricingStyleId: "timeless-contemporary-luxury",
     publicAssetId: "timeless-contemporary-luxury",
@@ -47,6 +67,7 @@ export const CONCEPT_CATALOG = [
     description: "รูปทรงเรขาคณิต เส้นสายคม และช่องเปิดขนาดใหญ่ รองรับการใช้ชีวิตร่วมสมัย",
     image: "/concepts/base-modern-2f-master-2.webp",
     floorImages: { 1: "/concepts/base-modern-1f-master-2.webp", 2: "/concepts/base-modern-2f-master-2.webp", 3: "/concepts/base-modern-3f-master-2.webp" },
+    materialPreviewKey: "modern",
     category: "modern",
     pricingStyleId: "contemporary-warm-luxury",
     publicAssetId: "contemporary-warm-luxury",
@@ -62,6 +83,7 @@ export const CONCEPT_CATALOG = [
     description: "ผสานวัสดุธรรมชาติ แสง ลม และพื้นที่สีเขียว เพื่อบรรยากาศที่ผ่อนคลาย",
     image: "/concepts/base-nordic-2f-master.webp",
     floorImages: { 1: "/concepts/base-nordic-1f-master.webp", 2: "/concepts/base-nordic-2f-master.webp", 3: "/concepts/base-nordic-3f-master.webp" },
+    materialPreviewKey: "nordic",
     category: "natural",
     pricingStyleId: "modern-tropical-resort",
     publicAssetId: "modern-tropical-resort",
@@ -77,6 +99,7 @@ export const CONCEPT_CATALOG = [
     description: "เผยผิววัสดุและโครงสร้างอย่างตรงไปตรงมา ให้พื้นที่โปร่ง เท่ และยืดหยุ่น",
     image: "/concepts/base-loft-2f-master.webp",
     floorImages: { 1: "/concepts/base-loft-1f-master.webp", 2: "/concepts/base-loft-2f-master.webp", 3: "/concepts/base-loft-3f-master.webp" },
+    materialPreviewKey: "loft",
     category: "loft",
     pricingStyleId: "contemporary-warm-luxury",
     publicAssetId: "contemporary-warm-luxury",
@@ -91,7 +114,8 @@ export const CONCEPT_CATALOG = [
     englishLabel: "Minimalist Style",
     description: "ลดทอนรายละเอียด เหลือเฉพาะสิ่งจำเป็น จัดพื้นที่เป็นระเบียบและดูแลรักษาง่าย",
     image: "/concepts/base-minimal-2f-master.webp",
-    floorImages: { 2: "/concepts/base-minimal-2f-master.webp" },
+    floorImages: { 1: "/concepts/base-minimal-1f-master.webp", 2: "/concepts/base-minimal-2f-master.webp", 3: "/concepts/base-minimal-3f-master.webp" },
+    materialPreviewKey: "minimal",
     category: "minimalist",
     pricingStyleId: "contemporary-warm-luxury",
     publicAssetId: "contemporary-warm-luxury",
@@ -105,8 +129,13 @@ export const CONCEPT_CATALOG = [
     thaiLabel: "สไตล์ทรอปิคอล",
     englishLabel: "Tropical",
     description: "สัดส่วนโอ่อ่า วัสดุพรีเมียม และรายละเอียดเฉพาะตัวที่สะท้อนรสนิยมเจ้าของบ้าน",
-    image: "/concepts/base-tropical-2f-master.webp",
-    floorImages: { 1: "/concepts/base-tropical-1f-master.webp", 2: "/concepts/base-tropical-2f-master.webp", 3: "/concepts/base-tropical-3f-master.webp" },
+    image: "/concepts/base-tropical-2f-master.webp?v=20260910-tropical-v3",
+    floorImages: {
+      1: "/concepts/base-tropical-1f-master.webp?v=20260910-tropical-v3",
+      2: "/concepts/base-tropical-2f-master.webp?v=20260910-tropical-v3",
+      3: "/concepts/base-tropical-3f-master.webp?v=20260910-tropical-v3",
+    },
+    materialPreviewKey: "tropical",
     category: "luxury",
     pricingStyleId: "timeless-contemporary-luxury",
     publicAssetId: "timeless-contemporary-luxury",
@@ -120,8 +149,13 @@ export const CONCEPT_CATALOG = [
     thaiLabel: "สไตล์ร่วมสมัย",
     englishLabel: "Contemporary",
     description: "กลิ่นอายย้อนยุคจากสัดส่วน สี และรายละเอียดคลาสสิก ให้บรรยากาศอบอุ่นมีเรื่องราว",
-    image: "/concepts/base-contemporary-2f-master.webp",
-    floorImages: { 1: "/concepts/base-contemporary-1f-master.webp", 2: "/concepts/base-contemporary-2f-master.webp", 3: "/concepts/base-contemporary-3f-master.webp" },
+    image: "/concepts/base-contemporary-2f-master.webp?v=20260910-contemporary-v3",
+    floorImages: {
+      1: "/concepts/base-contemporary-1f-master.webp?v=20260910-contemporary-v3",
+      2: "/concepts/base-contemporary-2f-master.webp?v=20260910-contemporary-v3",
+      3: "/concepts/base-contemporary-3f-master.webp?v=20260910-contemporary-v3",
+    },
+    materialPreviewKey: "contemporary",
     category: "vintage",
     pricingStyleId: "timeless-contemporary-luxury",
     publicAssetId: "timeless-contemporary-luxury",
@@ -237,7 +271,10 @@ export function resolveConceptImage(concept: ConceptCatalogEntry, floors: number
 }
 
 export function conceptForFloors(concept: ConceptCatalogEntry, floors: number): ConceptCatalogEntry {
-  return { ...concept, image: resolveConceptImage(concept, floors) };
+  const supportedFloor = floors <= 1 ? 1 : floors >= 3 ? 3 : 2;
+  const previewImage = LIVE_PREVIEW_IMAGE_OVERRIDES[`${concept.id}-${supportedFloor}`]
+    ?? resolveConceptImage(concept, supportedFloor);
+  return { ...concept, image: previewImage };
 }
 
 export type ConceptId = (typeof CONCEPT_CATALOG)[number]["id"];

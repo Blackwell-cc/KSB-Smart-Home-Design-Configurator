@@ -95,6 +95,25 @@ test("validates inline and submits only contact request fields beside the origin
   expect(body).not.toHaveProperty("usableArea");
 });
 
+test("shows a visible rate-limit message beside the actions and allows retrying", async () => {
+  const user = userEvent.setup();
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: { code: "RATE_LIMITED" } }), {
+    status: 429,
+    headers: { "retry-after": "60", "content-type": "application/json" },
+  })));
+  render(<SoftGateForm configuration={configuration} preview={preview} open onClose={vi.fn()} onSuccess={vi.fn()} />);
+
+  await user.type(screen.getByLabelText("ชื่อ–นามสกุล *"), "dw");
+  await user.type(screen.getByLabelText("เบอร์โทรศัพท์ *"), "0812345678");
+  await user.type(screen.getByLabelText("อีเมล *"), "dwad@fwf.dw");
+  await user.selectOptions(screen.getByLabelText("วัตถุประสงค์ในการขอข้อมูล *"), "view_full_report");
+  await user.click(screen.getByLabelText(/ยินยอมให้ใช้ข้อมูล/));
+  await user.click(screen.getByRole("button", { name: "รับรายงานฉบับเต็ม" }));
+
+  expect(await screen.findByRole("alert")).toHaveTextContent("ส่งคำขอหลายครั้งเกินไป กรุณารอสักครู่แล้วลองใหม่");
+  expect(screen.getByRole("button", { name: "รับรายงานฉบับเต็ม" })).toBeEnabled();
+});
+
 test("closes accessibly, restores focus, traps keyboard focus, and preserves unfinished values", async () => {
   const user = userEvent.setup();
   function Harness() {

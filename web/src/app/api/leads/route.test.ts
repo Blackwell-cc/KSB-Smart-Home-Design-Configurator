@@ -1,6 +1,6 @@
 import { expect, test, vi } from "vitest";
 import { createDefaultConfiguration, projectDesignBriefConfiguration } from "@/features/configurator/domain/configuration";
-import { createLeadPostHandler, POST } from "./route";
+import { createLeadPostHandler, POST, shouldApplyLeadRateLimit } from "./route";
 
 const validBody = {
   configurationId: "11111111-1111-4111-8111-111111111111",
@@ -56,6 +56,12 @@ test("returns a no-store 429 envelope before Lead services run", async () => {
   expect(response.headers.get("cache-control")).toBe("no-store");
   expect(await response.json()).toEqual({ error: { code: "RATE_LIMITED" } });
   expect(submit).not.toHaveBeenCalled();
+});
+
+test("keeps repeated local testing available while retaining production lead protection", () => {
+  expect(shouldApplyLeadRateLimit("development")).toBe(false);
+  expect(shouldApplyLeadRateLimit("test")).toBe(false);
+  expect(shouldApplyLeadRateLimit("production")).toBe(true);
 });
 
 test("submits through the non-production runtime when Supabase is not configured", async () => {

@@ -52,10 +52,15 @@ describe("buildReviewSummary", () => {
       expect.objectContaining({ categoryLabel: "หลังคา", imageSrc: "/materials/roof/1.png", optionLabel: "กระเบื้องคอนกรีต" }),
       expect.objectContaining({ categoryLabel: "ผนังภายนอก", imageSrc: "/materials/wall/2.png", optionLabel: "หินธรรมชาติ" }),
       expect.objectContaining({ categoryLabel: "หน้าต่าง", imageSrc: "/materials/window/1.png", optionLabel: "อลูมิเนียมสีดำ" }),
-      expect.objectContaining({ categoryLabel: "ประตูทางเข้า", imageSrc: "/materials/door/4.png", optionLabel: "ไม้สัก" }),
-      expect.objectContaining({ categoryLabel: "พื้น", imageSrc: "/materials/flooring/1.png", optionLabel: "หินอ่อนธรรมชาติ" }),
+      expect.objectContaining({ categoryLabel: "ประตูทางเข้า", imageSrc: "/materials/door/4.png", optionLabel: "โมเดิร์น" }),
     ]));
+    expect(summary.materials).toHaveLength(4);
     expect(summary.specialFeatureLabels).toEqual(["สระว่ายน้ำ", "ระบบ Smart Home", "ที่ชาร์จรถ EV"]);
+    expect(summary.specialFeatures).toEqual([
+      { id: "pool", label: "สระว่ายน้ำ", imageSrc: "/materials/special-features/1.png" },
+      { id: "smart-home", label: "ระบบ Smart Home", imageSrc: "/materials/special-features/3.png" },
+      { id: "ev-charger", label: "ที่ชาร์จรถ EV", imageSrc: "/materials/special-features/5.png" },
+    ]);
     expect(summary.quality).toMatchObject({ label: "SIGNATURE", thaiLabel: "ซิกเนเจอร์" });
     expect(summary.isReady).toBe(true);
 
@@ -76,6 +81,7 @@ describe("buildReviewSummary", () => {
     expect(summary.budgetLabel).toBe("ยังไม่ระบุช่วงงบประมาณ");
     expect(summary.functionLabels).toEqual([]);
     expect(summary.specialFeatureLabels).toEqual([]);
+    expect(summary.specialFeatures).toEqual([]);
     expect(summary.isReady).toBe(true);
   });
 
@@ -95,9 +101,90 @@ describe("buildReviewSummary", () => {
       "กระเบื้องเซรามิก",
       "หินธรรมชาติ",
       "อลูมิเนียมสีธรรมชาติ",
-      "ไม้เอ็นจิเนียร์",
-      "กระเบื้องพอร์ซเลน",
+      "วอลนัทธรรมชาติ",
     ]);
+  });
+
+  test("carries the locked Loft roof and wall policy into Step 5 and the full report", () => {
+    const summary = buildReviewSummary({
+      ...createDefaultConfiguration(),
+      styleId: "loft-style",
+      floors: 1,
+      materialSelections: {
+        roof: "ceramic-tile",
+        wall: "natural-stone",
+        window: "natural-aluminium",
+        door: "engineered-wood",
+        flooring: "porcelain-tile",
+      },
+    });
+
+    expect(summary.materials).toEqual([
+      expect.objectContaining({ categoryLabel: "หลังคา", imageSrc: null, optionLabel: "คงรูปแบบต้นฉบับ Loft" }),
+      expect.objectContaining({ categoryLabel: "ผนังภายนอก", imageSrc: null, optionLabel: "คงรูปแบบต้นฉบับ Loft" }),
+      expect.objectContaining({ categoryLabel: "หน้าต่าง", optionLabel: "อลูมิเนียมสีธรรมชาติ" }),
+      expect.objectContaining({ categoryLabel: "ประตูทางเข้า", optionLabel: "วอลนัทธรรมชาติ" }),
+    ]);
+  });
+
+  test("carries the locked Classic wall policy into Step 5 and the full report", () => {
+    const summary = buildReviewSummary({
+      ...createDefaultConfiguration(),
+      styleId: "classic-style",
+      floors: 3,
+      materialSelections: {
+        ...createDefaultConfiguration().materialSelections,
+        wall: "natural-stone",
+      },
+    });
+
+    expect(summary.materials).toContainEqual(expect.objectContaining({
+      categoryLabel: "ผนังภายนอก",
+      imageSrc: null,
+      optionLabel: "คงรูปแบบต้นฉบับ Classic",
+    }));
+  });
+
+  test("carries the Contemporary roof colors and locked wall policy into Step 5 and the full report", () => {
+    const summary = buildReviewSummary({
+      ...createDefaultConfiguration(),
+      styleId: "vintage-style",
+      floors: 1,
+      materialSelections: {
+        ...createDefaultConfiguration().materialSelections,
+        roof: "metal-roof",
+        wall: "natural-stone",
+      },
+    });
+
+    expect(summary.materials).toContainEqual(expect.objectContaining({
+      categoryLabel: "หลังคา",
+      imageSrc: "/materials/roof/minimal/roof-soft-greige.png",
+      optionLabel: "สีซอฟต์เกรจ",
+    }));
+    expect(summary.materials).toContainEqual(expect.objectContaining({
+      categoryLabel: "ผนังภายนอก",
+      imageSrc: null,
+      optionLabel: "คงรูปแบบต้นฉบับ Contemporary",
+    }));
+  });
+
+  test("keeps the selected Minimal roof color and thumbnail in Step 5", () => {
+    const summary = buildReviewSummary({
+      ...createDefaultConfiguration(),
+      styleId: "minimalist-style",
+      floors: 1,
+      materialSelections: {
+        ...createDefaultConfiguration().materialSelections,
+        roof: "metal-roof",
+      },
+    });
+
+    expect(summary.materials).toContainEqual(expect.objectContaining({
+      categoryLabel: "หลังคา",
+      imageSrc: "/materials/roof/minimal/roof-soft-greige.png",
+      optionLabel: "สีซอฟต์เกรจ",
+    }));
   });
 
   test("identifies the required section that still needs review", () => {
@@ -110,13 +197,15 @@ describe("buildReviewSummary", () => {
     expect(summary.missingSections).not.toContain("ส่วนพิเศษ");
   });
 
-  test("keeps the floor-specific house image in the Step 5 summary", () => {
+  test("keeps the floor-specific layered preview base in the Step 5 summary", () => {
     const summary = buildReviewSummary({
       ...createDefaultConfiguration(),
       styleId: "vintage-style",
       floors: 3,
     });
 
-    expect(summary.concept?.image).toBe("/concepts/base-contemporary-3f-master.webp");
+    expect(summary.concept?.image).toBe(
+      "/material-previews/contemporary/3f/base.webp?v=20260910-contemporary-base-v3",
+    );
   });
 });

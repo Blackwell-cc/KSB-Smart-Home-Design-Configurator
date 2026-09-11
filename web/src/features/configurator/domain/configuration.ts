@@ -4,6 +4,7 @@ import {
   DEFAULT_MATERIAL_SELECTIONS,
   MATERIAL_CATALOG,
   MATERIAL_QUALITY_IDS,
+  ORIGINAL_MATERIAL_OPTION_ID,
   SPECIAL_FEATURE_CATALOG,
   materialLevelForQuality,
   type MaterialCategoryId,
@@ -33,7 +34,10 @@ function materialOptionSchema(categoryId: MaterialCategoryId): z.ZodType<string>
   if (!category) throw new Error(`MATERIAL_CATEGORY_NOT_FOUND:${categoryId}`);
 
   const [first, second, third, fourth] = category.options;
-  return z.enum([first.id, second.id, third.id, fourth.id]);
+  return z.union([
+    z.literal(ORIGINAL_MATERIAL_OPTION_ID),
+    z.enum([first.id, second.id, third.id, fourth.id]),
+  ]);
 }
 
 const materialSelectionShape = {

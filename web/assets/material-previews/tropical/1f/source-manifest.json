@@ -1,0 +1,21 @@
+{
+  "sceneId": "tropical-1f",
+  "styleId": "luxury-style",
+  "floors": 1,
+  "width": 1672,
+  "height": 941,
+  "base": "../../../../public/concepts/base-tropical-1f-master.webp",
+  "masks": {
+    "roof": "masks/roof.png",
+    "wall": "masks/wall.png",
+    "window": "masks/window.png",
+    "door": "masks/door.png"
+  },
+  "generatedScenes": {
+    "roof": "generated-roof-scenes",
+    "wall": "generated-wall-scenes",
+    "window": "generated-window-scenes",
+    "door": "generated-door-scenes"
+  },
+  "status": "published"
+}

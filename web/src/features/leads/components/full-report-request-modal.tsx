@@ -165,6 +165,11 @@ export function FullReportRequestModal({ configuration, preview, open, onClose, 
         }),
       });
       const payload = await response.json();
+      if (response.status === 429) {
+        setErrors({ submit: "ส่งคำขอหลายครั้งเกินไป กรุณารอสักครู่แล้วลองใหม่" });
+        setIsSubmitting(false);
+        return;
+      }
       if (!response.ok || typeof payload?.reportUrl !== "string" || !payload.reportUrl.startsWith("/report/access#")) throw new Error("SUBMISSION_FAILED");
       clearIntent(); onSuccess(payload.reportUrl);
     } catch {
@@ -199,7 +204,6 @@ export function FullReportRequestModal({ configuration, preview, open, onClose, 
             <span className={styles.trustIcon}><Icon name="shield" /></span>
             <div><h4>มั่นใจในความปลอดภัยของข้อมูล</h4><p>ข้อมูลของคุณจะใช้เพื่อจัดทำรายงานและติดต่อเกี่ยวกับโครงการนี้เท่านั้น และจะไม่เปิดเผยให้บุคคลภายนอกโดยไม่ได้รับอนุญาต</p><label className={styles.consent} htmlFor="full-report-consent"><input aria-describedby={errors.consent ? "full-report-consent-error" : undefined} aria-invalid={Boolean(errors.consent)} checked={values.consent} id="full-report-consent" onChange={(event) => update("consent", event.target.checked)} type="checkbox" /><span>ยินยอมให้ใช้ข้อมูลเพื่อจัดทำรายงานและติดต่อเกี่ยวกับโครงการนี้</span></label>{errors.consent ? <small className={styles.consentError} id="full-report-consent-error">{errors.consent}</small> : null}</div>
           </div>
-          {errors.submit ? <p className={styles.submitError} role="alert">{errors.submit}</p> : null}
         </div>
 
         <aside className={styles.informationPanel}>
@@ -207,7 +211,7 @@ export function FullReportRequestModal({ configuration, preview, open, onClose, 
           <section className={styles.project} aria-labelledby="selected-project-title"><h3 id="selected-project-title">โครงการที่คุณเลือก</h3><div className={styles.projectMain}><div className={styles.mainThumbnail}><Image alt={`ภาพหลัก ${projectName}`} fill sizes="145px" src={imageSrc} /></div><div className={styles.projectCopy}><strong>{projectName}</strong><span><Icon name="location" />{province}</span><span><Icon name="area" />พื้นที่ใช้สอย {preview.usableAreaM2.toLocaleString("th-TH")} ตร.ม.</span></div></div><div className={styles.gallery}>{["มุมด้านหน้า", "มุมด้านข้าง", "มุมภายใน"].map((label, index) => <div className={styles.miniThumbnail} data-testid="additional-house-view" key={label}><Image alt={`${label} (ภาพตัวอย่าง)`} fill sizes="70px" src={imageSrc} style={{ objectPosition: `${36 + index * 14}% center`, transform: `scale(${1.04 + index * 0.05})` }} /></div>)}<div className={styles.moreViews}><strong>+12 มุมเพิ่มเติม</strong><span>ในรายงานฉบับเต็ม</span></div></div></section>
         </aside>
 
-        <div className={styles.actions}><button className={styles.back} onClick={onClose} type="button">←&nbsp; ย้อนกลับ</button><button className={styles.submit} disabled={isSubmitting} type="submit">{isSubmitting ? "กำลังจัดทำรายงาน…" : "รับรายงานฉบับเต็ม"}<Icon name="arrow" /></button></div>
+        <div className={styles.actions}>{errors.submit ? <p className={styles.submitError} role="alert">{errors.submit}</p> : null}<button className={styles.back} onClick={onClose} type="button">←&nbsp; ย้อนกลับ</button><button className={styles.submit} disabled={isSubmitting} type="submit">{isSubmitting ? "กำลังจัดทำรายงาน…" : "รับรายงานฉบับเต็ม"}<Icon name="arrow" /></button></div>
       </form>
     </div>
   </div>;

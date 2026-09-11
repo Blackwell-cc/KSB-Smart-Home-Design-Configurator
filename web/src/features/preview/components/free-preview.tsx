@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { AiLoader } from "@/components/ui/ai-loader";
 import type { DesignBriefConfiguration } from "@/features/configurator/domain/configuration";
+import { MaterialHousePreview } from "@/features/configurator/components/material-house-preview";
+import { buildMaterialPreviewScene } from "@/features/configurator/presentation/material-preview-scene";
 import type { FreePreviewPayload } from "../application/build-free-preview";
-import { CONCEPT_CATALOG, resolveConceptImage } from "../domain/concept-catalog";
+import { CONCEPT_CATALOG } from "../domain/concept-catalog";
 import { buildProjectInsight } from "../presentation/project-insight";
 import styles from "./free-preview.module.css";
 
@@ -177,10 +179,10 @@ export function FreePreview({ status, preview, configuration, shareStatus, share
   const concept = CONCEPT_CATALOG.find((item) => item.id === configuration.styleId) ?? CONCEPT_CATALOG.find((item) => item.id === preview.conceptAssetId);
   if (!concept) return <StatusCard status="unavailable" onBack={onBack} />;
   const insight = buildProjectInsight(configuration);
-  const conceptImage = resolveConceptImage(concept, configuration.floors);
+  const conceptImage = buildMaterialPreviewScene(configuration).baseSrc;
 
   return (
-    <main className={styles.page} aria-labelledby="preview-title">
+    <main className={styles.page} data-result-reveal="cinematic" aria-labelledby="preview-title">
       <header className={styles.masthead}>
         <button aria-label="กลับไปแก้ไขข้อมูลบ้าน" className={styles.brandButton} onClick={onBack} type="button">
           <span className={styles.brandLogoFrame}>
@@ -196,7 +198,7 @@ export function FreePreview({ status, preview, configuration, shareStatus, share
 
       <div className={styles.experience}>
         <section className={styles.conceptPanel} aria-label="ภาพคอนเซปต์บ้าน">
-          <Image className={styles.conceptImage} src={conceptImage} alt={`Concept บ้านสไตล์ ${concept.label}`} fill sizes="(max-width: 899px) 100vw, 50vw" priority />
+          <MaterialHousePreview className={styles.materialConceptImage} configuration={configuration} sizes="(max-width: 899px) 100vw, 50vw" priority />
           <div className={styles.conceptCaption}><span>CONCEPT DIRECTION</span><strong>{insight.conceptDirection.title}</strong><p>{insight.conceptDirection.description}</p></div>
           <AdditionalViews image={conceptImage} styleLabel={concept.label} />
         </section>

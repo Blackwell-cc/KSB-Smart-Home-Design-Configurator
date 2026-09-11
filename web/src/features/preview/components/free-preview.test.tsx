@@ -38,6 +38,7 @@ test("renders the complete PII-free free preview and semantic CTA handoffs", asy
   const onStartOver = vi.fn();
   render(<FreePreview status="ready" preview={preview} configuration={configuration} onBack={onBack} onFullReport={onFullReport} onShare={onShare} onStartOver={onStartOver} />);
 
+  expect(screen.getByRole("main")).toHaveAttribute("data-result-reveal", "cinematic");
   expect(screen.getByText("สรุปข้อมูลแบบคร่าว ๆ ยังไม่ใช่ฉบับสมบูรณ์")).toBeVisible();
   expect(screen.getByRole("img", { name: "โลโก้ KSB Architect" })).toHaveAttribute("src", expect.stringContaining("ksb-architect-logo.png"));
   expect(screen.getByText("SMART HOME DESIGN CONFIGURATOR")).toBeVisible();
@@ -56,7 +57,7 @@ test("renders the complete PII-free free preview and semantic CTA handoffs", asy
   expect(additionalViews).toHaveTextContent("ในรายงานฉบับเต็ม");
   expect(within(additionalViews).getAllByRole("img", { name: /มุมมองเพิ่มเติม/ })).toHaveLength(3);
 
-  expect(screen.getByRole("img", { name: /^Concept บ้านสไตล์ Contemporary Warm Luxury$/i })).toHaveAttribute("src", expect.stringContaining("contemporary-warm-luxury"));
+  expect(screen.getByRole("img", { name: "Modern Luxury 2 ชั้น" })).toHaveAttribute("src", expect.stringContaining("contemporary-warm-luxury"));
   expect(screen.getByText("2 ชั้น")).toBeInTheDocument();
   expect(screen.getByText("3 ห้องนอน")).toBeInTheDocument();
   expect(screen.getByText("3 ห้องน้ำ")).toBeInTheDocument();
@@ -100,6 +101,23 @@ test("places the preliminary status in the right-side utility group", () => {
   const utilityGroup = screen.getByRole("button", { name: "เริ่มทำใหม่" }).parentElement;
 
   expect(utilityGroup).toContainElement(status);
+});
+
+test("uses the same selected style and floor scene as the configurator", () => {
+  const nordicConfiguration = projectDesignBriefConfiguration({
+    ...createDefaultConfiguration(),
+    styleId: "natural-style",
+    floors: 3,
+  });
+
+  render(<FreePreview status="ready" preview={preview} configuration={nordicConfiguration} onBack={vi.fn()} onFullReport={vi.fn()} onShare={vi.fn()} onStartOver={vi.fn()} />);
+
+  const scene = screen.getByTestId("material-preview-scene");
+  expect(scene).toHaveAttribute("data-scene", "nordic-3f");
+  expect(within(scene).getByRole("img", { name: "Nordic Style 3 ชั้น" })).toHaveAttribute(
+    "src",
+    expect.stringContaining("material-previews%2Fnordic%2F3f%2Fbase.webp"),
+  );
 });
 
 test("renders accessible loading and service-unavailable guidance", () => {

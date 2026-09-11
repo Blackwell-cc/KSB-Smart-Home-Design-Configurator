@@ -5,6 +5,8 @@ import {
   MATERIAL_QUALITY_CATALOG,
   materialLevelForQuality,
   SPECIAL_FEATURE_CATALOG,
+  VISIBLE_MATERIAL_CATALOG,
+  visibleMaterialCatalogForStyle,
 } from "./material-catalog";
 
 describe("material catalog", () => {
@@ -44,8 +46,17 @@ describe("material catalog", () => {
       { id: "roof", labels: ["กระเบื้องคอนกรีต", "กระเบื้องเซรามิก", "หลังคาเมทัลชีท", "หินชนวนธรรมชาติ"] },
       { id: "wall", labels: ["ปูนฉาบเรียบ", "หินธรรมชาติ", "ไม้ตกแต่งภายนอก", "คอนกรีตเปลือย"] },
       { id: "window", labels: ["อลูมิเนียมสีดำ", "อลูมิเนียมสีธรรมชาติ", "ไม้จริง", "uPVC"] },
-      { id: "door", labels: ["ไม้สัก", "ไม้เอ็นจิเนียร์", "อลูมิเนียม + กระจก", "ประตูกรอบเหล็ก"] },
+      { id: "door", labels: ["โมเดิร์น", "วอลนัทธรรมชาติ", "โอ๊คธรรมชาติ", "อะลูมิเนียมซิลเวอร์"] },
       { id: "flooring", labels: ["หินอ่อนธรรมชาติ", "ไม้เอ็นจิเนียร์", "กระเบื้องพอร์ซเลน", "หินขัดเทอร์ราซโซ"] },
+    ]);
+  });
+
+  test("hides flooring from customer-facing material selection", () => {
+    expect(VISIBLE_MATERIAL_CATALOG.map(({ id }) => id)).toEqual([
+      "roof",
+      "wall",
+      "window",
+      "door",
     ]);
   });
 
@@ -73,6 +84,28 @@ describe("material catalog", () => {
     ]);
   });
 
+  test("maps Classic roof choices to the four supplied color swatches", () => {
+    const roof = visibleMaterialCatalogForStyle("classic-style").find(({ id }) => id === "roof");
+
+    expect(roof?.options).toEqual([
+      { id: "concrete-tile", label: "สีชาร์โคล", imageSrc: "/materials/roof/classic/roof-charcoal.png" },
+      { id: "ceramic-tile", label: "สีโอลีฟเกรย์", imageSrc: "/materials/roof/classic/roof-olive-gray.png" },
+      { id: "metal-roof", label: "สีซอฟต์เกรจ", imageSrc: "/materials/roof/classic/roof-soft-greige.png" },
+      { id: "natural-slate", label: "สีวอร์มเทาป์", imageSrc: "/materials/roof/classic/roof-warm-taupe.png" },
+    ]);
+  });
+
+  test("maps Contemporary roof choices to the Minimal roof color swatches", () => {
+    const roof = visibleMaterialCatalogForStyle("vintage-style").find(({ id }) => id === "roof");
+
+    expect(roof?.options).toEqual([
+      { id: "concrete-tile", label: "สีชาร์โคล", imageSrc: "/materials/roof/minimal/roof-charcoal.png" },
+      { id: "ceramic-tile", label: "สีโอลีฟเกรย์", imageSrc: "/materials/roof/minimal/roof-olive-gray.png" },
+      { id: "metal-roof", label: "สีซอฟต์เกรจ", imageSrc: "/materials/roof/minimal/roof-soft-greige.png" },
+      { id: "natural-slate", label: "สีวอร์มเทาป์", imageSrc: "/materials/roof/minimal/roof-warm-taupe.png" },
+    ]);
+  });
+
   test("maps the four exterior-wall choices to their supplied images from left to right", () => {
     const wall = MATERIAL_CATALOG.find(({ id }) => id === "wall");
 
@@ -84,15 +117,17 @@ describe("material catalog", () => {
     ]);
   });
 
-  test("maps the four window choices to their supplied images from left to right", () => {
+  test("maps solid wood and uPVC to their matching window thumbnails", () => {
     const window = MATERIAL_CATALOG.find(({ id }) => id === "window");
 
-    expect(window?.options.map((option) => ("imageSrc" in option ? option.imageSrc : null))).toEqual([
-      "/materials/window/1.png",
-      "/materials/window/2.png",
-      "/materials/window/3.png",
-      "/materials/window/4.png",
-    ]);
+    expect(window?.options.find(({ id }) => id === "solid-wood")).toMatchObject({
+      label: "ไม้จริง",
+      imageSrc: "/materials/window/4.png",
+    });
+    expect(window?.options.find(({ id }) => id === "upvc")).toMatchObject({
+      label: "uPVC",
+      imageSrc: "/materials/window/3.png",
+    });
   });
 
   test("maps the four door choices to the explicitly requested file order", () => {

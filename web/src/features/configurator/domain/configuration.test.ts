@@ -13,6 +13,19 @@ import { BUDGET_RANGE_IDS } from "./budget-ranges";
 import { DEFAULT_MATERIAL_SELECTIONS, SPECIAL_FEATURE_CATALOG } from "./material-catalog";
 
 describe("HouseConfigurationSchema", () => {
+  test("accepts the original finish for every material category", () => {
+    const configuration = createDefaultConfiguration();
+    configuration.materialSelections = {
+      roof: "original",
+      wall: "original",
+      window: "original",
+      door: "original",
+      flooring: "original",
+    };
+
+    expect(HouseConfigurationSchema.safeParse(configuration).success).toBe(true);
+  });
+
   test("creates complete Step 4 defaults", () => {
     const value = createDefaultConfiguration();
 

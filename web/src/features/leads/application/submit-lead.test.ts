@@ -72,7 +72,7 @@ describe("submitLead", () => {
     }, deps);
 
     expect((captured.mock.calls[0]?.[0] as unknown as { calculationSnapshot: { concept: { imageSrc: string } } }).calculationSnapshot.concept.imageSrc)
-      .toBe("/concepts/base-tropical-1f-master.webp");
+      .toBe("/concepts/base-tropical-1f-master.webp?v=20260910-tropical-v3");
   });
 
   test("persists the complete contact request without copying project data into it", async () => {

@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { mockEstimate, selectStyleWithKeyboard } from "./helpers/complete-configurator";
+import { mockEstimate, selectProvince, selectStyleWithKeyboard } from "./helpers/complete-configurator";
 
 async function expectNoSeriousAxeViolations(page: Page) {
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
@@ -18,7 +18,7 @@ test("keeps the public journey accessible from landing through the Soft Gate", a
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await expectNoSeriousAxeViolations(page);
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await page.getByLabel("จังหวัด").selectOption("10");
+  await selectProvince(page);
   await expectNoSeriousAxeViolations(page);
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await expectNoSeriousAxeViolations(page);

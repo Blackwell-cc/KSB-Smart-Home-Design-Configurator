@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { selectProvince } from "./helpers/complete-configurator";
 
 const viewports = [
   { name: "mobile", width: 375, height: 812 },
@@ -15,7 +16,7 @@ async function openStepFive(page: Page) {
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("checkbox", { name: "ห้องทำงาน" }).check();
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await page.getByLabel("จังหวัด").selectOption("10");
+  await selectProvince(page);
   await page.getByRole("radio", { name: "40–80 ล้านบาท" }).locator("..").click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("checkbox", { name: "สระว่ายน้ำ" }).check();
@@ -73,23 +74,30 @@ for (const viewport of viewports) {
       await expect.soft(materialList).toHaveCSS("overflow-y", "auto");
     }
 
-    await expect(page.getByRole("img", { name: /บ้านสไตล์นอร์ดิก/ })).toBeVisible();
+    await expect(page.getByTestId("step-five-preview").getByRole("img", { name: "Nordic Style 2 ชั้น" })).toBeVisible();
     await expect(page.getByText("Nordic Style")).toBeVisible();
     await expect(page.getByText("40–80 ล้านบาท")).toBeVisible();
     await expect(page.getByText("SIGNATURE", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "ไปยังหน้าสรุปค่าใช้จ่าย" })).toBeVisible();
     await expect(page.getByText(/ราคาก่อสร้าง|บาท\/ตร\.ม\.|งบประมาณโดยประมาณ/)).toHaveCount(0);
     const materialImages = page.locator('[class*="materialListCard"] img');
-    await expect(materialImages).toHaveCount(5);
+    await expect(materialImages).toHaveCount(4);
     await expect(materialImages.nth(0)).toHaveAttribute("src", "/materials/roof/1.png");
     await expect(materialImages.nth(1)).toHaveAttribute("src", "/materials/wall/1.png");
     await expect(materialImages.nth(2)).toHaveAttribute("src", "/materials/window/1.png");
     await expect(materialImages.nth(3)).toHaveAttribute("src", "/materials/door/4.png");
-    await expect(materialImages.nth(4)).toHaveAttribute("src", "/materials/flooring/1.png");
     await expect.poll(() => materialImages.evaluateAll((images) => images.every((image) => {
       const element = image as HTMLImageElement;
       return element.complete && element.naturalWidth > 0;
     }))).toBe(true);
+    const specialFeatureImages = page.locator('[class*="specialFeatureList"] img');
+    await expect(specialFeatureImages).toHaveCount(1);
+    await expect(specialFeatureImages.first()).toHaveAttribute("src", "/materials/special-features/1.png");
+    await expect.poll(() => specialFeatureImages.first().evaluate((image) => {
+      const element = image as HTMLImageElement;
+      return element.complete && element.naturalWidth > 0;
+    })).toBe(true);
+    await expect(page.getByRole("button", { name: "บันทึกแบบร่าง" })).toHaveCount(1);
 
     if (viewport.width < 1200) {
       const [previewBox, reviewsBox] = await Promise.all([
@@ -122,10 +130,10 @@ test("matches the Step 5 desktop composition at the reference viewport", async (
   expect(leftRatio).toBeLessThanOrEqual(0.5);
   expect(previewBox!.width).toBeGreaterThan(reviewBox!.width);
 
-  const imageBox = await page.getByRole("img", { name: /บ้านสไตล์นอร์ดิก/ }).boundingBox();
+  const imageBox = await page.getByTestId("step-five-preview").getByRole("img", { name: "Nordic Style 2 ชั้น" }).boundingBox();
   expect(imageBox).not.toBeNull();
   expect(imageBox!.width / imageBox!.height).toBeCloseTo(16 / 9, 1);
   await expect(page.getByRole("region", { name: "ความพร้อมก่อนสรุปค่าใช้จ่าย" })).toBeVisible();
   await expect(page.getByRole("region", { name: "สิ่งที่คุณจะได้รับหลังจากนี้" })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "การดำเนินการขั้นตอนที่ 5" }).getByRole("button")).toHaveCount(3);
+  await expect(page.getByRole("navigation", { name: "การดำเนินการขั้นตอนที่ 5" }).getByRole("button")).toHaveCount(2);
 });

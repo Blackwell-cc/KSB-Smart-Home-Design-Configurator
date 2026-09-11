@@ -84,3 +84,13 @@ test("shows copy feedback before slowly fading it away", () => {
   const reducedMotion = stylesheet.slice(stylesheet.indexOf("@media (prefers-reduced-motion: reduce)"));
   expect(reducedMotion).toMatch(/\.shareStatus\s*\{[\s\S]*?animation:\s*none;/);
 });
+
+test("orchestrates a one-shot cinematic result reveal with a reduced-motion fallback", () => {
+  expect(stylesheet).toMatch(/\[data-result-reveal="cinematic"\][\s\S]*?houseReveal/);
+  expect(stylesheet).toMatch(/\.conceptPanel::after[\s\S]*?goldSweep/);
+  expect(stylesheet).toMatch(/\.metrics > div:nth-child\(5\)[\s\S]*?animation-delay/);
+  expect(stylesheet).toMatch(/\.budgetCard[\s\S]*?budgetPulse/);
+
+  const reducedMotion = stylesheet.slice(stylesheet.indexOf("@media (prefers-reduced-motion: reduce)"));
+  expect(reducedMotion).toMatch(/\[data-result-reveal="cinematic"\][\s\S]*?animation:\s*none/);
+});

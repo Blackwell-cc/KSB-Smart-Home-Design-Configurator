@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { selectProvince } from "./helpers/complete-configurator";
 
 const viewports = [
   { name: "desktop", width: 1440, height: 900 },
@@ -90,7 +91,7 @@ test("keeps the compact workspace after leaving step one", async ({ page }, test
   await style.locator("..").click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await page.getByLabel("จังหวัด").selectOption("10");
+  await selectProvince(page);
   await page.getByRole("button", { name: "ถัดไป" }).click();
 
   const layout = page.getByTestId("configurator-layout");

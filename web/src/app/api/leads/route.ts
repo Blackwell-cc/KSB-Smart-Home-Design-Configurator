@@ -37,8 +37,9 @@ export function createLeadPostHandler({ submit, rateLimit }: { submit: Submit; r
 
 const secret = runtimeProjectAccessTokenSecret();
 const leadRateLimiter = createFixedWindowRateLimiter({ limit: 5, windowMs: 10 * 60 * 1_000 });
+export function shouldApplyLeadRateLimit(environment = process.env.NODE_ENV) { return environment === "production"; }
 function optionalNotifier() { try { return createWebhookLeadNotifierFromEnvironment(); } catch { return undefined; } }
 export const POST = createLeadPostHandler({
-  rateLimit: (request) => leadRateLimiter.consume(`lead:${fingerprintRequest(request, process.env.RATE_LIMIT_SECRET ?? secret)}`),
+  rateLimit: shouldApplyLeadRateLimit() ? (request) => leadRateLimiter.consume(`lead:${fingerprintRequest(request, process.env.RATE_LIMIT_SECRET ?? secret)}`) : undefined,
   submit: (input) => submitLead(input, { repository: createRuntimeLeadRepository(), priceBookRepository: createRuntimePriceBookRepository(), createAccessToken: (key) => createDeterministicAccessToken(key, secret), now: () => new Date(), notifier: optionalNotifier() }),
 });

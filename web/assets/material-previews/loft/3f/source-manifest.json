@@ -1,0 +1,18 @@
+{
+  "sceneId": "loft-3f",
+  "base": "public/concepts/base-loft-3f-master.webp",
+  "dimensions": {
+    "width": 1672,
+    "height": 941
+  },
+  "editableCategories": [
+    "window",
+    "door"
+  ],
+  "lockedCategories": [
+    "roof",
+    "wall"
+  ],
+  "lockReason": "The original roof and exterior wall define the Loft identity and must remain unchanged.",
+  "status": "published"
+}

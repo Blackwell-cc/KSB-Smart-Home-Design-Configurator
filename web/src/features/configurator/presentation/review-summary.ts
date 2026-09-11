@@ -4,8 +4,10 @@ import { CONCEPT_CATALOG, conceptForFloors } from "@/features/preview/domain/con
 import type { HouseConfiguration } from "../domain/configuration";
 import { budgetRangeOptionFor } from "../domain/budget-ranges";
 import {
-  MATERIAL_CATALOG,
+  visibleMaterialCatalogForStyle,
   MATERIAL_QUALITY_CATALOG,
+  ORIGINAL_MATERIAL_OPTION_ID,
+  ORIGINAL_MATERIAL_OPTION_LABEL,
   SPECIAL_FEATURE_CATALOG,
   type MaterialQualityId,
 } from "../domain/material-catalog";
@@ -53,20 +55,34 @@ export function buildReviewSummary(configuration: HouseConfiguration) {
     ...configuration.additionalRequirements.map((id) => ADDITIONAL_REQUIREMENT_LABELS[id]),
   );
 
-  const materials = MATERIAL_CATALOG.map((category) => {
+  const materials = visibleMaterialCatalogForStyle(configuration.styleId).map((category) => {
+    const lockedMaterialLabel = configuration.styleId === "loft-style"
+      && (category.id === "roof" || category.id === "wall")
+      ? "คงรูปแบบต้นฉบับ Loft"
+      : configuration.styleId === "classic-style" && category.id === "wall"
+        ? "คงรูปแบบต้นฉบับ Classic"
+        : configuration.styleId === "vintage-style" && category.id === "wall"
+          ? "คงรูปแบบต้นฉบับ Contemporary"
+          : null;
     const selectedId = configuration.materialSelections[category.id];
     const selectedOption = category.options.find((option) => option.id === selectedId);
+    const original = selectedId === ORIGINAL_MATERIAL_OPTION_ID;
     return {
       categoryId: category.id,
       categoryLabel: category.label,
-      imageSrc: selectedOption?.imageSrc ?? null,
-      optionLabel: selectedOption?.label ?? "ยังไม่ได้เลือก",
+      imageSrc: lockedMaterialLabel || original ? null : selectedOption?.imageSrc ?? null,
+      optionLabel: lockedMaterialLabel ?? (original ? ORIGINAL_MATERIAL_OPTION_LABEL : selectedOption?.label) ?? "ยังไม่ได้เลือก",
     };
   });
 
-  const specialFeatureLabels = configuration.specialFeatures.map(
-    (id) => SPECIAL_FEATURE_CATALOG.find((feature) => feature.id === id)?.label ?? "รายการส่วนพิเศษ",
-  );
+  const specialFeatures = configuration.specialFeatures.flatMap((id) => {
+    const feature = SPECIAL_FEATURE_CATALOG.find((item) => item.id === id);
+
+    return feature
+      ? [{ id: feature.id, label: feature.label, imageSrc: feature.imageSrc }]
+      : [];
+  });
+  const specialFeatureLabels = specialFeatures.map((feature) => feature.label);
   const missingSections = [
     ...(concept ? [] : ["สไตล์บ้าน"]),
     ...(configuration.residents > 0 && configuration.floors > 0 && configuration.bedrooms > 0 && configuration.bathrooms > 0 ? [] : ["พื้นที่และฟังก์ชัน"]),
@@ -87,6 +103,7 @@ export function buildReviewSummary(configuration: HouseConfiguration) {
       ? "ยังไม่ระบุช่วงงบประมาณ"
       : budgetRangeOptionFor(configuration.budgetRangeId).label,
     materials,
+    specialFeatures,
     specialFeatureLabels,
     quality: {
       label: quality.label,

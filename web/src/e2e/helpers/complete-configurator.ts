@@ -26,9 +26,18 @@ export async function mockEstimate(page: Page) {
 
 export async function selectStyleWithKeyboard(page: Page, style: string) {
   const choice = page.getByRole("radio", { name: style });
-  await choice.focus();
-  await page.keyboard.press("Space");
+  if (!(await choice.isChecked())) {
+    await choice.focus();
+    await page.keyboard.press("Space");
+  }
   await expect(choice).toBeChecked();
+}
+
+export async function selectProvince(page: Page, name = "กรุงเทพมหานคร") {
+  const province = page.getByRole("combobox", { name: "จังหวัด" });
+  await province.fill(name);
+  await page.getByRole("option", { name, exact: true }).click();
+  await expect(province).toHaveValue(name);
 }
 
 export async function completeConfigurator(page: Page) {
@@ -36,7 +45,7 @@ export async function completeConfigurator(page: Page) {
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await expect(page.getByRole("heading", { name: "พื้นที่และฟังก์ชัน", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await page.getByLabel("จังหวัด").selectOption("10");
+  await selectProvince(page);
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("radio", { name: /PREMIUM/i }).click();
   await page.getByRole("button", { name: "ถัดไป" }).click();

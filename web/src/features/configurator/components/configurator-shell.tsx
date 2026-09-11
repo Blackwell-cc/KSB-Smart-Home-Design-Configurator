@@ -189,7 +189,6 @@ export function ConfiguratorShell({ onPreview, store: injectedStore }: Configura
             onBack={moveBack}
             onContinue={openPreview}
             onEdit={(step) => state.setCurrentStep(step)}
-            onSave={() => store.getState().flushPendingDraft()}
           />
         </div>
       </main>

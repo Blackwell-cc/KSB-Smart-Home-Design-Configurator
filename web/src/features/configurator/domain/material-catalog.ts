@@ -10,6 +10,9 @@ export type MaterialCategoryId = (typeof MATERIAL_CATEGORY_IDS)[number];
 
 export type MaterialSelections = Record<MaterialCategoryId, string>;
 
+export const ORIGINAL_MATERIAL_OPTION_ID = "original";
+export const ORIGINAL_MATERIAL_OPTION_LABEL = "Original / แบบตั้งต้น";
+
 export const MATERIAL_CATALOG = [
   {
     id: "roof",
@@ -37,18 +40,18 @@ export const MATERIAL_CATALOG = [
     options: [
       { id: "black-aluminium", label: "อลูมิเนียมสีดำ", imageSrc: "/materials/window/1.png" },
       { id: "natural-aluminium", label: "อลูมิเนียมสีธรรมชาติ", imageSrc: "/materials/window/2.png" },
-      { id: "solid-wood", label: "ไม้จริง", imageSrc: "/materials/window/3.png" },
-      { id: "upvc", label: "uPVC", imageSrc: "/materials/window/4.png" },
+      { id: "solid-wood", label: "ไม้จริง", imageSrc: "/materials/window/4.png" },
+      { id: "upvc", label: "uPVC", imageSrc: "/materials/window/3.png" },
     ],
   },
   {
     id: "door",
     label: "ประตูทางเข้า",
     options: [
-      { id: "teak", label: "ไม้สัก", imageSrc: "/materials/door/4.png" },
-      { id: "engineered-wood", label: "ไม้เอ็นจิเนียร์", imageSrc: "/materials/door/1.png" },
-      { id: "aluminium-glass", label: "อลูมิเนียม + กระจก", imageSrc: "/materials/door/2.png" },
-      { id: "metal-frame", label: "ประตูกรอบเหล็ก", imageSrc: "/materials/door/3.png" },
+      { id: "teak", label: "โมเดิร์น", imageSrc: "/materials/door/4.png" },
+      { id: "engineered-wood", label: "วอลนัทธรรมชาติ", imageSrc: "/materials/door/1.png" },
+      { id: "aluminium-glass", label: "โอ๊คธรรมชาติ", imageSrc: "/materials/door/2.png" },
+      { id: "metal-frame", label: "อะลูมิเนียมซิลเวอร์", imageSrc: "/materials/door/3.png" },
     ],
   },
   {
@@ -62,6 +65,52 @@ export const MATERIAL_CATALOG = [
     ],
   },
 ] as const;
+
+export const VISIBLE_MATERIAL_CATALOG = MATERIAL_CATALOG.filter(
+  ({ id }) => id !== "flooring",
+);
+
+export type VisibleMaterialCategory = Readonly<{
+  id: Exclude<MaterialCategoryId, "flooring">;
+  label: string;
+  options: readonly Readonly<{
+    id: string;
+    label: string;
+    imageSrc: string;
+  }>[];
+}>;
+
+const MINIMAL_ROOF_OPTIONS = [
+  { id: "concrete-tile", label: "สีชาร์โคล", imageSrc: "/materials/roof/minimal/roof-charcoal.png" },
+  { id: "ceramic-tile", label: "สีโอลีฟเกรย์", imageSrc: "/materials/roof/minimal/roof-olive-gray.png" },
+  { id: "metal-roof", label: "สีซอฟต์เกรจ", imageSrc: "/materials/roof/minimal/roof-soft-greige.png" },
+  { id: "natural-slate", label: "สีวอร์มเทาป์", imageSrc: "/materials/roof/minimal/roof-warm-taupe.png" },
+] as const;
+
+const CLASSIC_ROOF_OPTIONS = [
+  { id: "concrete-tile", label: "สีชาร์โคล", imageSrc: "/materials/roof/classic/roof-charcoal.png" },
+  { id: "ceramic-tile", label: "สีโอลีฟเกรย์", imageSrc: "/materials/roof/classic/roof-olive-gray.png" },
+  { id: "metal-roof", label: "สีซอฟต์เกรจ", imageSrc: "/materials/roof/classic/roof-soft-greige.png" },
+  { id: "natural-slate", label: "สีวอร์มเทาป์", imageSrc: "/materials/roof/classic/roof-warm-taupe.png" },
+] as const;
+
+export function visibleMaterialCatalogForStyle(
+  styleId: string | null | undefined,
+): readonly VisibleMaterialCategory[] {
+  const catalog = VISIBLE_MATERIAL_CATALOG as readonly VisibleMaterialCategory[];
+  const roofOptions = styleId === "minimalist-style" || styleId === "vintage-style"
+    ? MINIMAL_ROOF_OPTIONS
+    : styleId === "classic-style"
+      ? CLASSIC_ROOF_OPTIONS
+      : null;
+  if (!roofOptions) return catalog;
+
+  return catalog.map((category) => (
+    category.id === "roof"
+      ? { ...category, options: roofOptions }
+      : category
+  ));
+}
 
 export const DEFAULT_MATERIAL_SELECTIONS: MaterialSelections = Object.fromEntries(
   MATERIAL_CATALOG.map((category) => [category.id, category.options[0].id]),

@@ -1,0 +1,13 @@
+{
+  "sceneId": "nordic-3f",
+  "width": 1672,
+  "height": 941,
+  "base": "public/concepts/base-nordic-3f-master.webp",
+  "layerOrder": ["wall", "roof", "window", "door"],
+  "categories": {
+    "roof": ["concrete-tile", "ceramic-tile", "metal-roof", "natural-slate"],
+    "wall": ["smooth-plaster", "natural-stone", "exterior-timber", "exposed-concrete"],
+    "window": ["black-aluminium", "natural-aluminium", "solid-wood", "upvc"],
+    "door": ["teak", "engineered-wood", "aluminium-glass", "metal-frame"]
+  }
+}

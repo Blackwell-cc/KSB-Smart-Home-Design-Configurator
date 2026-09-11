@@ -11,7 +11,7 @@ export type ReportLine = Readonly<{ code: CalculationLineCode; label: string; am
 export type FullReportViewModel = Readonly<{
   projectId: string; snapshotId: string; generatedAt: string;
   concept: Readonly<{ styleId: string | null; label: string; thaiLabel: string; imageSrc?: string; direction: Readonly<{ title: string; description: string }> }>;
-  configuration: Readonly<{ residents: number; floors: number; bedrooms: number; bathrooms: number; parkingSpaces: number; materialLevel: string; materialQuality: string; functions: readonly string[]; specialFeatures: readonly string[] }>;
+  configuration: Readonly<{ residents: number; floors: number; bedrooms: number; bathrooms: number; parkingSpaces: number; materialLevel: string; materialQuality: string; materialSelections: Readonly<DesignBriefConfiguration["materialSelections"]>; functions: readonly string[]; specialFeatures: Readonly<DesignBriefConfiguration["specialFeatures"]> }>;
   location: Readonly<{ province: string; district: string; siteAccess: string }>;
   area: Readonly<{ usableAreaM2: number; constructionFloorAreaM2: number }>;
   materials: readonly Readonly<{ categoryId: string; categoryLabel: string; optionLabel: string }>[];
@@ -89,7 +89,7 @@ export function buildFullReport(project: { id: string; targetBudget: { min: numb
   return Object.freeze({
     projectId: project.id, snapshotId: snapshot.id, generatedAt: generatedAt.toISOString(),
     concept: Object.freeze({ styleId: snapshot.configuration.styleId, label: catalogueConcept?.englishLabel ?? snapshot.concept.label, thaiLabel: catalogueConcept?.thaiLabel ?? snapshot.concept.label, imageSrc: snapshot.concept.imageSrc, direction: Object.freeze({ ...insight.conceptDirection }) }),
-    configuration: Object.freeze({ residents: snapshot.configuration.residents, floors: snapshot.configuration.floors, bedrooms: snapshot.configuration.bedrooms, bathrooms: snapshot.configuration.bathrooms, parkingSpaces: snapshot.configuration.parkingSpaces, materialLevel: snapshot.configuration.materialLevel, materialQuality: review.quality.label, functions: Object.freeze([...review.functionLabels]), specialFeatures: Object.freeze([...snapshot.configuration.specialFeatures]) }),
+    configuration: Object.freeze({ residents: snapshot.configuration.residents, floors: snapshot.configuration.floors, bedrooms: snapshot.configuration.bedrooms, bathrooms: snapshot.configuration.bathrooms, parkingSpaces: snapshot.configuration.parkingSpaces, materialLevel: snapshot.configuration.materialLevel, materialQuality: review.quality.label, materialSelections: Object.freeze({ ...snapshot.configuration.materialSelections }), functions: Object.freeze([...review.functionLabels]), specialFeatures: Object.freeze([...snapshot.configuration.specialFeatures]) }),
     location: Object.freeze({ province: review.location.province, district: review.location.district, siteAccess: review.location.access }), area: Object.freeze(snapshot.area),
     materials: Object.freeze(review.materials.map((material) => Object.freeze({ ...material }))),
     specialFeatures: Object.freeze(selectedSpecialFeatures.map((feature) => Object.freeze(feature))),

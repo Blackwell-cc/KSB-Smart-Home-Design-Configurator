@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "assets:material-preview": "node scripts/generate-material-preview-assets.mjs",
+    "assets:special-feature-preview": "node scripts/generate-special-feature-preview-assets.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -15,14 +17,16 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
-    "@react-pdf/renderer": "^4.5.1",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.2",
+    "fontkit": "^2.0.4",
     "html-to-image": "^1.11.13",
     "next": "16.3.0",
+    "pdfkit": "^0.17.2",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-hook-form": "^7.84.0",
+    "sharp": "^0.35.4",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
