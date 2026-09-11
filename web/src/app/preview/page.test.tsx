@@ -3,10 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test, vi } from "vitest";
 import { createDefaultConfiguration } from "@/features/configurator/domain/configuration";
 import type { FreePreviewPayload } from "@/features/preview/application/build-free-preview";
+import { waitForMinimumPreviewLoading } from "./loading-delay";
 import PreviewPage from "./page";
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("./loading-delay", () => ({ waitForMinimumPreviewLoading: vi.fn().mockResolvedValue(undefined) }));
 
 const preview: FreePreviewPayload = {
   conceptAssetId: "contemporary-warm-luxury",
@@ -64,6 +66,7 @@ test("restores a validated anonymous draft and requests its server preview", asy
   expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
   expect(await screen.findByRole("heading", { name: "ภาพรวมบ้านที่คุณกำลังวางแผน" })).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/estimate", expect.objectContaining({ method: "POST" }));
+  expect(waitForMinimumPreviewLoading).toHaveBeenCalledWith(expect.any(Number), expect.any(AbortSignal));
   const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
   expect(JSON.parse(request.body as string)).toEqual(expect.objectContaining({ styleId: "contemporary-warm-luxury", provinceCode: "10" }));
   expect(JSON.parse(request.body as string)).not.toHaveProperty("privateNotes");

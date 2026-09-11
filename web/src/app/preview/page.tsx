@@ -12,6 +12,7 @@ import {
 } from "@/features/configurator/domain/configuration";
 import type { FreePreviewPayload } from "@/features/preview/application/build-free-preview";
 import { projectEstimateRequest } from "@/features/pricing/application/estimate-request";
+import { waitForMinimumPreviewLoading } from "./loading-delay";
 
 type PreviewState =
   | { status: "loading" }
@@ -27,6 +28,7 @@ export default function PreviewPage() {
   const shareOperationRef = useRef(0);
   useEffect(() => {
     let cancelled = false; const controller = new AbortController();
+    const loadingStartedAt = performance.now();
     const loadPreview = async () => {
       let stored; try { stored = createDraftStorage(window.localStorage).load(); } catch { if (!cancelled) setState({ status: "unavailable" }); return; }
       if (stored.status === "none") { if (!cancelled) setState({ status: "no-draft" }); return; }
@@ -38,6 +40,7 @@ export default function PreviewPage() {
         const response = await fetch("/api/estimate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(estimateRequest), signal: controller.signal });
         const payload = await response.json(); const parsed = FreePreviewPayloadSchema.safeParse(payload?.preview);
         if (!response.ok || !parsed.success) throw new Error("ESTIMATE_UNAVAILABLE");
+        await waitForMinimumPreviewLoading(loadingStartedAt, controller.signal);
         if (!cancelled) setState({ status: "ready", preview: parsed.data, configuration });
       } catch (error) { if (error instanceof DOMException && error.name === "AbortError") return; if (!cancelled) setState({ status: "unavailable" }); }
     };
