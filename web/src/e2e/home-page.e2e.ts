@@ -14,8 +14,8 @@ test("communicates the consumer value and enters the configurator", async ({ pag
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "บ้านในฝันของคุณ ราคาเท่าไหร่?" })).toBeVisible();
-  const pageBackground = await page.locator("main").evaluate((main) =>
-    getComputedStyle(main.parentElement!).backgroundImage,
+  const pageBackground = await page.locator('[class*="heroBackdrop"]').evaluate((backdrop) =>
+    getComputedStyle(backdrop).backgroundImage,
   );
   expect(pageBackground).toContain("bg-01.png");
   await expect(page.getByText("ตัวอย่างหน้าจอ · ไม่ใช่ราคาประเมิน")).toBeVisible();
@@ -26,6 +26,21 @@ test("communicates the consumer value and enters the configurator", async ({ pag
   await primary.click();
   await expect(page).toHaveURL(/\/configurator$/);
   await expect(page.getByRole("heading", { name: "เลือกรูปแบบบ้าน" })).toBeVisible();
+});
+
+test("finishes the cinematic reveal without moving the established layout", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const backdrop = page.locator('[class*="heroBackdrop"]');
+  const headingLead = page.locator("h1 > span");
+  const cards = page.getByRole("group", { name: "ตัวอย่างหน้าจอวางแผนบ้าน" }).getByRole("article");
+  expect(await backdrop.evaluate((element) => getComputedStyle(element).animationName)).toContain("houseReveal");
+  expect(await headingLead.evaluate((element) => getComputedStyle(element).animationName)).toContain("landingReveal");
+
+  await expect.poll(() => cards.evaluateAll((elements) => elements.every((element) => Number(getComputedStyle(element).opacity) === 1))).toBe(true);
+  await expect(page.getByRole("heading", { name: "3 ขั้นตอนง่าย ๆ เพื่อบ้านในฝัน" })).toBeInViewport();
+  await page.screenshot({ fullPage: true, path: testInfo.outputPath("landing-cinematic-final.png") });
 });
 
 test("fits the desktop homepage to the viewport and vertically centers the logo", async ({ page }) => {
@@ -121,6 +136,11 @@ test("exposes focus and disables decorative motion when requested", async ({ pag
 
   const animation = await page.locator("[class*='cardFloat']").first().evaluate((element) => getComputedStyle(element).animationName);
   expect(animation).toBe("none");
+  const backdrop = page.locator('[class*="heroBackdrop"]');
+  expect(await backdrop.evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
+  expect(await backdrop.evaluate((element) => getComputedStyle(element, "::after").display)).toBe("none");
+  const headingLead = page.locator("h1 > span");
+  expect(await headingLead.evaluate((element) => ({ animation: getComputedStyle(element).animationName, opacity: getComputedStyle(element).opacity, transform: getComputedStyle(element).transform }))).toEqual({ animation: "none", opacity: "1", transform: "none" });
 
   await page.setViewportSize({ width: 375, height: 812 });
   const mobileMenu = page.locator("header details > summary");

@@ -41,6 +41,30 @@ test("keeps floating-card motion within the approved travel, duration, and reduc
   expect(reducedMotionCards).toContain("transition: none");
 });
 
+test("orchestrates a cinematic first-load reveal without a runtime animation dependency", () => {
+  for (const keyframes of ["landingReveal", "houseReveal", "cardReveal", "lightSweep", "ambientGlow"]) {
+    expect(css).toContain(`@keyframes ${keyframes}`);
+  }
+
+  expect(rule(css, ".heroBackdrop")).toContain("pointer-events: none");
+  expect(rule(css, ".headerReveal")).toContain("animation:");
+  expect(rule(css, ".headlineReveal > span")).toContain("animation:");
+  expect(rule(css, ".headlineReveal > strong")).toContain("0.32s");
+  expect(rule(css, ".cardReveal")).toContain("animation:");
+  expect(rule(css, ".benefitReveal")).toContain("1.05s");
+  expect(rule(css, ".stepsReveal")).toContain("1.18s");
+});
+
+test("shows the final composition immediately when reduced motion is requested", () => {
+  const reducedMotion = mediaBlock("(prefers-reduced-motion: reduce)");
+  const revealReset = rule(reducedMotion, ".headerReveal, .headlineReveal > span, .headlineReveal > strong, .supportReveal, .explanationReveal, .actionReveal, .houseImageReveal, .cardReveal, .benefitReveal, .stepsReveal");
+  expect(revealReset).toContain("animation: none");
+  expect(revealReset).toContain("opacity: 1");
+  expect(revealReset).toContain("transform: none");
+  expect(rule(reducedMotion, ".heroBackdrop, .heroBackdrop::before, .heroBackdrop::after")).toContain("animation: none");
+  expect(reducedMotion).toContain(".heroBackdrop::before, .heroBackdrop::after { display: none; }");
+});
+
 test("switches constrained layouts to normal flow before desktop tracks overflow", () => {
   const mobile = mediaBlock("(max-width: 1023px)");
   expect(rule(mobile, ".previewCards")).toContain("position: static");
@@ -64,7 +88,7 @@ test("fits the desktop homepage to one viewport and centers the logo", () => {
   expect(rule(desktop, ".hero")).toContain("min-height: 0");
   expect(rule(css, ".brand")).toContain("align-self: center");
   expect(rule(css, ".brandLogo")).toContain("object-fit: cover");
-  expect(rule(css, ".page")).toContain('url("/backgrounds/bg-01.png")');
+  expect(rule(css, ".heroBackdrop")).toContain('url("/backgrounds/bg-01.png")');
   expect(rule(desktop, ".houseImage")).toContain("display: none");
 });
 
@@ -73,7 +97,7 @@ test("matches the desktop configurator logo frame position and header height", (
   const page = rule(css, ".page");
   const header = rule(css, ".header");
 
-  expect(page).toContain('url("/backgrounds/bg-01.png") center / cover no-repeat');
+  expect(rule(css, ".heroBackdrop")).toContain('url("/backgrounds/bg-01.png") center / cover no-repeat');
   expect(page).not.toContain("linear-gradient(180deg");
   expect(header).toContain("min-height: 78px");
   expect(header).toContain("padding: 0 38px");

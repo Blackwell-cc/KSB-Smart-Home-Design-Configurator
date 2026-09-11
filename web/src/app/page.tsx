@@ -6,5 +6,5 @@ import styles from "./landing-page.module.css";
 export default function HomePage() {
   const content = getLandingContent();
 
-  return <div className={styles.page}><LandingHeader content={content} /><main><HeroSection content={content} /></main></div>;
+  return <div className={styles.page}><div aria-hidden="true" className={styles.heroBackdrop} /><LandingHeader content={content} /><main><HeroSection content={content} /></main></div>;
 }

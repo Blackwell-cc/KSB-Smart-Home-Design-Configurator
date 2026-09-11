@@ -10,7 +10,7 @@ export function LandingHeader({ content }: { content: LandingContent }) {
   ));
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${styles.headerReveal}`}>
       <Link aria-label={content.brand.homeLabel} className={styles.brand} href="/">
         <Image alt={content.brand.logoAlt} className={styles.brandLogo} fill preload sizes="(max-width: 1023px) 118px, 132px" src="/brand/ksb-architect-logo.png" />
       </Link>

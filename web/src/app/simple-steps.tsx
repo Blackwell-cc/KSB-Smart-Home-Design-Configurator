@@ -6,7 +6,7 @@ type Props = Pick<LandingContent, "steps">;
 
 export function SimpleSteps({ steps }: Props) {
   return (
-    <div className={styles.stepsArea}>
+    <div className={`${styles.stepsArea} ${styles.stepsReveal}`}>
       <div className={styles.stepsCard} id="how-it-works">
         <h2>3 ขั้นตอนง่าย ๆ เพื่อบ้านในฝัน</h2>
         <ol className={styles.stepList}>

@@ -4,6 +4,7 @@ import HomePage from "./page";
 test("renders the consumer acquisition header and one focused hero", () => {
   const { container } = render(<HomePage />);
 
+  expect(container.querySelector('[aria-hidden="true"][class*="heroBackdrop"]')).toBeInTheDocument();
   expect(container.querySelectorAll("main section")).toHaveLength(1);
   expect(screen.getByRole("heading", { name: "บ้านในฝันของคุณราคาเท่าไหร่?" })).toBeInTheDocument();
   expect(screen.getByRole("img", { name: "โลโก้ KSB Architect" })).toBeInTheDocument();
